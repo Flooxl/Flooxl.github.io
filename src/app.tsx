@@ -1,12 +1,12 @@
-// src/main.tsx
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App'; // убедись, что файл src/App.tsx существует с точно таким именем
 
-import './index.css'; // если есть глобальные стили
+function App() {
+  return (
+    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <h1>Hello, Vite + React + TypeScript!</h1>
+      <p>Проект успешно собран!</p>
+    </div>
+  );
+}
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+export default App;
