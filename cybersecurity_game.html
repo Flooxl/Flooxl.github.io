@@ -1165,7 +1165,7 @@
         function markEmail(emailId, markedAsPhishing) {
             const stage = stages[gameState.currentStage];
             const email = stage.emails.find(e => e.id === emailId);
-            const emailElement = document.querySelector(`[data-email-id="${${emailId}}"]`);
+            const emailElement = document.querySelector(`[data-email-id="${emailId}"]`);
             
             emailElement.style.opacity = '0.6';
             emailElement.style.pointerEvents = 'none';
