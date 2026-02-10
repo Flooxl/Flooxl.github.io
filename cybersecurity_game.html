@@ -1,1741 +1,2355 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кибер-Аудит: 3D Офисная Безопасность</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Courier New', monospace;
-        }
-        
-        body {
-            background: #0a0a1a;
-            color: #00ff00;
-            overflow: hidden;
-        }
-        
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-        }
-        
-        canvas {
-            display: block;
-            background: #000;
-        }
-        
-        #ui-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-        
-        .ui-panel {
-            position: absolute;
-            background: rgba(10, 20, 30, 0.95);
-            border: 2px solid #00ff00;
-            padding: 15px;
-            pointer-events: all;
-        }
-        
-        #task-panel {
-            top: 20px;
-            left: 20px;
-            width: 350px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        #stats-panel {
-            top: 20px;
-            right: 20px;
-            width: 300px;
-        }
-        
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border: 1px solid #00ff00;
-            text-align: center;
-        }
-        
-        .task {
-            background: rgba(0, 50, 0, 0.3);
-            border: 1px solid #005500;
-            padding: 10px;
-            margin: 8px 0;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 13px;
-        }
-        
-        .task:hover {
-            background: rgba(0, 100, 0, 0.3);
-            border-color: #00ff00;
-        }
-        
-        .task.completed {
-            background: rgba(0, 100, 0, 0.5);
-            border-color: #00ff00;
-        }
-        
-        .task.failed {
-            background: rgba(100, 0, 0, 0.5);
-            border-color: #ff0000;
-        }
-        
-        .task.tricky {
-            border-color: #ff9900;
-            background: rgba(255, 100, 0, 0.1);
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .modal-content {
-            background: #001a00;
-            border: 3px solid #00ff00;
-            padding: 30px;
-            max-width: 700px;
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 90%;
-        }
-        
-        .button {
-            background: #003300;
-            color: #00ff00;
-            border: 1px solid #00ff00;
-            padding: 10px 20px;
-            margin: 8px 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .button:hover {
-            background: #005500;
-        }
-        
-        .button.danger {
-            background: #330000;
-            border-color: #ff0000;
-        }
-        
-        .button.tricky {
-            background: #333300;
-            border-color: #ff9900;
-            color: #ff9900;
-        }
-        
-        .button.success {
-            background: #003300;
-            border-color: #00ff00;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 100, 0, 0.9);
-            color: white;
-            padding: 15px;
-            border: 1px solid #ff6600;
-            display: none;
-            z-index: 1001;
-            max-width: 300px;
-        }
-        
-        .warning {
-            background: rgba(255, 50, 50, 0.9) !important;
-            border-color: #ff0000 !important;
-        }
-        
-        .success-notification {
-            background: rgba(0, 150, 0, 0.9) !important;
-            border-color: #00ff00 !important;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 15px;
-            background: #003300;
-            border: 1px solid #00ff00;
-            margin: 10px 0;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: #00ff00;
-            width: 0%;
-            transition: width 0.5s;
-        }
-        
-        #minimap {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 150px;
-            height: 150px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #00ff00;
-        }
-        
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
-        }
-        
-        .crosshair-dot {
-            width: 4px;
-            height: 4px;
-            background: #00ff00;
-            position: absolute;
-            top: 8px;
-            left: 8px;
-        }
-        
-        .crosshair-line {
-            position: absolute;
-            background: #00ff00;
-        }
-        
-        .crosshair-line.horizontal {
-            width: 20px;
-            height: 2px;
-            top: 9px;
-            left: 0;
-        }
-        
-        .crosshair-line.vertical {
-            width: 2px;
-            height: 20px;
-            top: 0;
-            left: 9px;
-        }
-        
-        #final-report {
-            display: none;
-        }
-        
-        .score-badge {
-            font-size: 48px;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .score-excellent { color: #00ff00; }
-        .score-good { color: #ff9900; }
-        .score-poor { color: #ff0000; }
-        
-        .email {
-            border: 1px solid #444;
-            margin: 10px 0;
-            padding: 10px;
-            cursor: pointer;
-        }
-        
-        .email.suspicious:hover {
-            border-color: #ff0000;
-            background: rgba(255, 0, 0, 0.1);
-        }
-        
-        .email.legitimate:hover {
-            border-color: #00ff00;
-            background: rgba(0, 255, 0, 0.1);
-        }
-        
-        .hint {
-            color: #ff9900;
-            font-size: 12px;
-            font-style: italic;
-            margin-top: 5px;
-        }
-        
-        .trap-button {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { background: #333300; }
-            50% { background: #666600; }
-            100% { background: #333300; }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>REMEMBER ME — Office Night Incident (Pixel 3D)</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f1722ee;
+      --panel2:#0f1722cc;
+      --text:#e8eef7;
+      --muted:#a8b3c5;
+      --accent:#4de3a8;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --good:#55ff99;
+      --line:#263449;
+      --shadow: 0 14px 40px rgba(0,0,0,.45);
+    }
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; overflow:hidden;}
+    #root{position:fixed; inset:0; display:flex; align-items:stretch; justify-content:stretch;}
+    #gameWrap{position:relative; flex:1; overflow:hidden;}
+    canvas{display:block; width:100%; height:100%;}
+    /* Pixelated upscale */
+    #threeCanvas, #fallbackCanvas{
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* HUD */
+    #hud{
+      position:absolute; inset:0; pointer-events:none;
+      display:flex; flex-direction:column; justify-content:space-between;
+      padding:12px;
+    }
+    #topBar{
+      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+    }
+    .chip{
+      pointer-events:none;
+      background: linear-gradient(180deg, #0f1722cc, #0f1722aa);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:8px 10px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+      max-width: 52vw;
+    }
+    .chipRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .kv{display:flex; gap:8px; align-items:baseline;}
+    .k{color:var(--muted);}
+    .v{font-weight:700;}
+    .badge{padding:2px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted);}
+    .badge.good{color:var(--good); border-color:#2d7a58;}
+    .badge.bad{color:var(--bad); border-color:#7a2d2d;}
+    .badge.warn{color:var(--warn); border-color:#7a652d;}
+
+    #centerPrompt{
+      position:absolute; left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      pointer-events:none;
+      text-align:center;
+      text-shadow: 0 2px 10px rgba(0,0,0,.6);
+      opacity:.0;
+      transition: opacity .12s ease;
+    }
+    #centerPrompt .big{font-weight:800; font-size:16px;}
+    #centerPrompt .small{color:var(--muted); margin-top:3px; font-size:12px;}
+    #crosshair{
+      position:absolute; left:50%; top:50%;
+      width:10px; height:10px; transform:translate(-50%,-50%);
+      pointer-events:none;
+      opacity:.75;
+    }
+    #crosshair:before, #crosshair:after{
+      content:""; position:absolute; left:50%; top:50%;
+      background: rgba(232,238,247,.85);
+      transform: translate(-50%,-50%);
+      border-radius:1px;
+    }
+    #crosshair:before{width:10px; height:2px;}
+    #crosshair:after{width:2px; height:10px;}
+
+    #logToast{
+      position:absolute; left:12px; bottom:12px;
+      width:min(520px, 70vw);
+      pointer-events:none;
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .toast{
+      background: var(--panel2);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:9px 10px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .toast.show{opacity:1; transform: translateY(0);}
+    .toast .t{font-weight:700;}
+    .toast .d{color:var(--muted); margin-top:2px; font-size:12px;}
+
+    /* Overlays */
+    #overlay{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background: radial-gradient(1200px 800px at 50% 40%, rgba(13,20,31,.75), rgba(4,6,10,.92));
+      backdrop-filter: blur(6px);
+      z-index:10;
+    }
+    #overlay.hidden{display:none;}
+    .panel{
+      width:min(920px, 92vw);
+      background: var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .panel h1{margin:0 0 8px 0; font-size:18px;}
+    .panel p{margin:8px 0; color:var(--muted);}
+    .panel .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:12px;}
+    .btn{
+      pointer-events:auto;
+      border:1px solid var(--line);
+      background: #0d1520;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      user-select:none;
+      font-weight:700;
+      transition: transform .06s ease, border-color .12s ease, background .12s ease;
+    }
+    .btn:hover{border-color:#375072;}
+    .btn:active{transform: translateY(1px);}
+    .btn.primary{background: linear-gradient(180deg, #173253, #0d1520); border-color:#355a86;}
+    .btn.good{background: linear-gradient(180deg, #133527, #0d1520); border-color:#2d7a58;}
+    .btn.bad{background: linear-gradient(180deg, #3b1c1c, #0d1520); border-color:#7a2d2d;}
+    .btn.small{padding:8px 10px; font-weight:700;}
+    .hint{color:var(--muted); font-size:12px;}
+    .grid2{display:grid; grid-template-columns: 1.2fr .8fr; gap:12px;}
+    @media (max-width:860px){ .grid2{grid-template-columns:1fr; } }
+
+    /* Phone/Task UI */
+    #phone{
+      position:absolute; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      background: rgba(0,0,0,.55);
+      z-index:9;
+      pointer-events:auto;
+    }
+    #phone.show{display:flex;}
+    #phoneCard{
+      width:min(860px, 94vw);
+      max-height: min(86vh, 780px);
+      overflow:auto;
+      background: var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    #phoneHeader{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      position:sticky; top:0;
+      background: linear-gradient(180deg, rgba(15,23,34,1), rgba(15,23,34,.9));
+      border-bottom:1px solid var(--line);
+      margin:-14px -14px 12px -14px;
+      padding:12px 14px;
+      border-radius:16px 16px 0 0;
+      z-index:1;
+    }
+    #phoneHeader .title{font-weight:900;}
+    #tabs{display:flex; gap:8px; flex-wrap:wrap;}
+    .tab{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      cursor:pointer;
+      user-select:none;
+      background:#0d1520;
+      color:var(--muted);
+      font-weight:800;
+    }
+    .tab.active{color:var(--text); border-color:#375072; background:#0f1b2a;}
+    .section{border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:12px; background:#0c121b;}
+    .section h2{margin:0 0 8px 0; font-size:14px;}
+    .section p{margin:6px 0; color:var(--muted);}
+    .rowLine{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .field{display:flex; flex-direction:column; gap:6px; margin:8px 0;}
+    .field label{color:var(--muted); font-size:12px;}
+    input[type="text"], input[type="password"], select{
+      background:#0b111a; color:var(--text);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 10px;
+      outline:none;
+    }
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 10px;
+      background:#0b111a;
+      margin:8px 0;
+    }
+    .toggle input{transform: scale(1.15);}
+    .list{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+    .item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      background:#0b111a;
+    }
+    .item .top{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
+    .item .name{font-weight:900;}
+    .item .meta{color:var(--muted); font-size:12px;}
+    .item .actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;}
+    .hr{height:1px; background: var(--line); margin:10px 0;}
+
+    /* Pause overlay indicator */
+    #pausedTag{
+      position:absolute; right:12px; bottom:12px;
+      pointer-events:none;
+      opacity:0;
+      transition: opacity .15s ease;
+    }
+    #pausedTag.show{opacity:1;}
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-        
-        <div id="ui-overlay">
-            <div id="crosshair">
-                <div class="crosshair-dot"></div>
-                <div class="crosshair-line horizontal"></div>
-                <div class="crosshair-line vertical"></div>
-            </div>
-            
-            <div class="ui-panel" id="task-panel">
-                <h3>🔒 ЗАДАНИЯ АУДИТА</h3>
-                <div id="tasks-list"></div>
-            </div>
-            
-            <div class="ui-panel" id="stats-panel">
-                <h3>📊 СТАТИСТИКА</h3>
-                <div>Время: <span id="time-display">18:00</span></div>
-                <div>Безопасность: <span id="security-score">100%</span></div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="security-progress"></div>
-                </div>
-                <div>Заданий: <span id="tasks-completed">0/12</span></div>
-                <div>Нарушений: <span id="violations-count">0</span></div>
-            </div>
-            
-            <div id="controls">
-                <div>Управление: WASD - движение, мышь - поворот, ЛКМ - взаимодействие</div>
-                <div style="margin-top: 5px; font-size: 12px; color: #888;">
-                    Цель: Проверить все устройства и выйти через главную дверь
-                </div>
-            </div>
-            
-            <div id="minimap"></div>
+<div id="root">
+  <div id="gameWrap">
+    <canvas id="threeCanvas"></canvas>
+    <canvas id="fallbackCanvas" style="display:none"></canvas>
+
+    <div id="hud">
+      <div id="topBar">
+        <div class="chip">
+          <div class="chipRow">
+            <div class="kv"><span class="k">День:</span><span class="v" id="dayName">Офисная смена</span></div>
+            <span class="badge warn" id="timeBadge">⏳ 08:00</span>
+            <span class="badge" id="hintBadge">💡 Подсказки: 3</span>
+          </div>
+          <div class="hint" id="softGoal">Цель: подготовить среду так, чтобы ночью не случился инцидент. Чеклиста не будет.</div>
         </div>
-        
-        <div id="computer-modal" class="modal">
-            <div class="modal-content" id="computer-content"></div>
+
+        <div class="chip">
+          <div class="chipRow">
+            <span class="badge" id="renderBadge">Renderer: ...</span>
+            <span class="badge" id="zoneBadge">Зона: —</span>
+            <span class="badge" id="lockBadge">🔓 Мышь: свободна</span>
+          </div>
+          <div class="hint">WASD/стрелки — движение · мышь — обзор · E — взаимодействовать · Tab — смартфон · Esc — пауза/выход</div>
         </div>
-        
-        <div id="phone-modal" class="modal">
-            <div class="modal-content" id="phone-content"></div>
-        </div>
-        
-        <div id="router-modal" class="modal">
-            <div class="modal-content" id="router-content"></div>
-        </div>
-        
-        <div id="server-modal" class="modal">
-            <div class="modal-content" id="server-content"></div>
-        </div>
-        
-        <div id="printer-modal" class="modal">
-            <div class="modal-content" id="printer-content"></div>
-        </div>
-        
-        <div id="safe-modal" class="modal">
-            <div class="modal-content" id="safe-content"></div>
-        </div>
-        
-        <div class="notification" id="notification"></div>
-        
-        <div id="final-report" class="modal">
-            <div class="modal-content">
-                <h2 style="text-align: center; color: #ff0000;">ОТЧЁТ КИБЕР-АУДИТА</h2>
-                <div id="final-score" class="score-badge">0%</div>
-                
-                <h3>📊 РЕЗУЛЬТАТЫ ПРОВЕРКИ:</h3>
-                <div id="report-details"></div>
-                
-                <h3>✅ ВЫПОЛНЕННЫЕ ЗАДАЧИ:</h3>
-                <div id="completed-tasks-list"></div>
-                
-                <h3>⚠️ НАРУШЕНИЯ БЕЗОПАСНОСТИ:</h3>
-                <div id="final-violations"></div>
-                
-                <h3>💡 ОЦЕНКА КИБЕРГРАМОТНОСТИ:</h3>
-                <div id="cyber-literacy-assessment"></div>
-                
-                <h3>🎯 РЕКОМЕНДАЦИИ:</h3>
-                <div id="recommendations-list"></div>
-                
-                <div style="text-align: center; margin-top: 30px;">
-                    <button class="button" onclick="restartGame()">🔄 ПРОЙТИ АУДИТ СНОВА</button>
-                </div>
-            </div>
-        </div>
+      </div>
+
+      <div id="centerPrompt">
+        <div class="big" id="promptBig">E: взаимодействовать</div>
+        <div class="small" id="promptSmall">...</div>
+      </div>
+
+      <div id="crosshair"></div>
+
+      <div id="logToast"></div>
+      <div id="pausedTag" class="chip"><span class="badge warn">Пауза</span> <span class="hint">Esc — продолжить</span></div>
     </div>
 
-    <script>
-        // ========== 3D ДВИЖОК ==========
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Размеры канваса
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+    <div id="phone">
+      <div id="phoneCard">
+        <div id="phoneHeader">
+          <div>
+            <div class="title">Смартфон</div>
+            <div class="hint">Здесь нет списка обязательных задач. Есть инструменты и журнал.</div>
+          </div>
+          <div class="rowLine">
+            <div id="tabs">
+              <div class="tab active" data-tab="help">Помощь</div>
+              <div class="tab" data-tab="log">Журнал</div>
+              <div class="tab" data-tab="hint">Подсказка</div>
+            </div>
+            <button class="btn small" id="btnClosePhone">Закрыть (Tab)</button>
+          </div>
+        </div>
+
+        <div id="tab_help" class="tabBody">
+          <div class="section">
+            <h2>Ориентиры</h2>
+            <p>В офисе есть рабочие терминалы по зонам. У каждой зоны есть «обычная рутина», но некоторые мелочи критичны ночью.</p>
+            <p>Признаки проблемы: стикеры, мигающие индикаторы, уведомления на терминалах, сообщения коллег.</p>
+          </div>
+          <div class="section">
+            <h2>Управление</h2>
+            <div class="rowLine">
+              <span class="badge">WASD / стрелки</span>
+              <span class="badge">Мышь — обзор (Pointer Lock)</span>
+              <span class="badge">E — взаимодействие</span>
+              <span class="badge">Tab — смартфон</span>
+              <span class="badge">Esc — пауза/выход</span>
+            </div>
+          </div>
+          <div class="section">
+            <h2>Пиксельный режим</h2>
+            <p>Рендер идёт в низком разрешении с апскейлом. Можно уменьшить/увеличить пикселизацию.</p>
+            <div class="rowLine">
+              <button class="btn small" id="btnPixMinus">− Пиксели</button>
+              <button class="btn small" id="btnPixPlus">+ Пиксели</button>
+              <span class="hint" id="pixInfo">scale: …</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab_log" class="tabBody" style="display:none">
+          <div class="section">
+            <h2>Журнал событий</h2>
+            <div class="hint">Фиксируются действия, которые имеют последствия ночью.</div>
+            <div class="hr"></div>
+            <div id="logList" class="list"></div>
+          </div>
+        </div>
+
+        <div id="tab_hint" class="tabBody" style="display:none">
+          <div class="section">
+            <h2>Ограниченные подсказки</h2>
+            <p>Подсказки не раскрывают список задач. Они только намекают, где «тонко». Использование снижает итоговый %.</p>
+            <div class="rowLine">
+              <button class="btn small primary" id="btnUseHint">Использовать подсказку</button>
+              <span class="badge" id="hintLeft2">Осталось: 3</span>
+              <span class="badge warn">Штраф: −2% за подсказку</span>
+            </div>
+            <div class="hr"></div>
+            <div class="item">
+              <div class="name">Текущая подсказка</div>
+              <div class="meta" id="hintText">—</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="overlay">
+      <div class="panel">
+        <h1>REMEMBER ME — офисная смена</h1>
+        <p>Ты стажёр-аналитик. Днём всё выглядит обычно, но ночью любые недочёты превращаются в инцидент.</p>
+        <p>Осматривай зоны, взаимодействуй с терминалами, делай разумные меры безопасности.</p>
+        <p>Когда решишь, что всё готово — нажми «Уйти домой». Ночь проверит результат.</p>
+        <div class="row">
+          <button class="btn primary" id="btnStart">Начать смену</button>
+          <button class="btn" id="btnLockMouse">Захватить мышь (Pointer Lock)</button>
+          <span class="hint">Открывать файл можно двойным кликом. Интернет не обязателен.</span>
+        </div>
+        <div class="row">
+          <span class="badge warn">Таймер: 8 минут</span>
+          <span class="badge">Подсказки: 3 (штраф к %)</span>
+          <span class="badge">Невыполненные меры → ночной инцидент</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="report" style="display:none; position:absolute; inset:0; z-index:11; background:rgba(0,0,0,.72); backdrop-filter:blur(6px); pointer-events:auto; overflow:auto;">
+      <div class="panel" style="margin:18px auto; width:min(980px,94vw);">
+        <h1 id="reportTitle">Отчёт</h1>
+        <p id="reportSubtitle" class="hint"></p>
+        <div class="grid2">
+          <div class="section">
+            <h2>Итог</h2>
+            <div class="rowLine" style="margin-top:8px">
+              <span class="badge" id="finalPct">—%</span>
+              <span class="badge" id="finalVerdict">—</span>
+              <span class="badge warn" id="finalTime">—</span>
+            </div>
+            <div class="hr"></div>
+            <div id="finalSummary" class="list"></div>
+          </div>
+          <div class="section">
+            <h2>Рекомендации</h2>
+            <div id="finalRecs" class="list"></div>
+            <div class="hr"></div>
+            <button class="btn primary" id="btnRestart">Начать заново</button>
+          </div>
+        </div>
+        <div class="section">
+          <h2>Журнал</h2>
+          <div id="finalLog" class="list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/**
+ * REMEMBER ME — single-file browser game (Pixel 3D + offline fallback)
+ * Core goals:
+ * - No checklist shown; player deduces actions via environment/UI hints
+ * - Night simulation validates security checks; missing -> incident (loss)
+ * - Score starts at 100%; penalties; hints also penalize
+ * - One day / one office location with 6 zones + "Go Home" door
+ *
+ * This file works offline. If Three.js CDN fails, it uses a minimal canvas fallback renderer.
+ */
+
+(() => {
+  "use strict";
+
+  // ---------- Utilities ----------
+  const $ = (sel) => document.querySelector(sel);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const now = () => performance.now();
+
+  function choice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+  }
+  function fmtTime(sec){
+    sec = Math.max(0, Math.floor(sec));
+    const m = String(Math.floor(sec/60)).padStart(2,"0");
+    const s = String(sec%60).padStart(2,"0");
+    return `${m}:${s}`;
+  }
+
+  // ---------- UI Elements ----------
+  const el = {
+    overlay: $("#overlay"),
+    btnStart: $("#btnStart"),
+    btnLockMouse: $("#btnLockMouse"),
+    threeCanvas: $("#threeCanvas"),
+    fbCanvas: $("#fallbackCanvas"),
+    prompt: $("#centerPrompt"),
+    promptBig: $("#promptBig"),
+    promptSmall: $("#promptSmall"),
+    timeBadge: $("#timeBadge"),
+    hintBadge: $("#hintBadge"),
+    zoneBadge: $("#zoneBadge"),
+    lockBadge: $("#lockBadge"),
+    renderBadge: $("#renderBadge"),
+    pausedTag: $("#pausedTag"),
+    logToast: $("#logToast"),
+
+    phone: $("#phone"),
+    phoneClose: $("#btnClosePhone"),
+    tabs: Array.from(document.querySelectorAll(".tab")),
+    tabBodies: {
+      help: $("#tab_help"),
+      log: $("#tab_log"),
+      hint: $("#tab_hint")
+    },
+    logList: $("#logList"),
+    btnUseHint: $("#btnUseHint"),
+    hintLeft2: $("#hintLeft2"),
+    hintText: $("#hintText"),
+    btnPixMinus: $("#btnPixMinus"),
+    btnPixPlus: $("#btnPixPlus"),
+    pixInfo: $("#pixInfo"),
+
+    report: $("#report"),
+    reportTitle: $("#reportTitle"),
+    reportSubtitle: $("#reportSubtitle"),
+    finalPct: $("#finalPct"),
+    finalVerdict: $("#finalVerdict"),
+    finalTime: $("#finalTime"),
+    finalSummary: $("#finalSummary"),
+    finalRecs: $("#finalRecs"),
+    finalLog: $("#finalLog"),
+    btnRestart: $("#btnRestart")
+  };
+
+  // ---------- Game Data / Checks ----------
+  const PENALTIES = {
+    // Examples given + expanded
+    twoFA_off: { pts: 10, msg: "2FA выключена (риск компрометации учётки)" },
+    phishing_open: { pts: 5, msg: "Открыто подозрительное письмо/вложение (риск заражения)" },
+    workstation_unlocked: { pts: 3, msg: "Рабочее место не заблокировано (посторонний доступ)" },
+
+    usb_left: { pts: 6, msg: "USB оставлен в ПК (вынос/заражение через носитель)" },
+    updates_off: { pts: 6, msg: "Обновления выключены (известные уязвимости)" },
+    av_not_run: { pts: 4, msg: "Антивирус/сканирование не проверено (пропуск индикаторов)" },
+
+    default_password: { pts: 8, msg: "Оставлен стандартный пароль (подбор/утечка баз)" },
+    weak_password: { pts: 6, msg: "Слабый пароль (легко угадать/подобрать)" },
+    reused_password: { pts: 6, msg: "Пароль не уникален (credential stuffing)" },
+    browser_pw_on: { pts: 4, msg: "Пароли сохраняются в браузере (риск эксфильтрации)" },
+
+    unknown_device: { pts: 7, msg: "Неизвестное устройство в сети (внутренняя атака)" },
+    guest_wifi_on: { pts: 5, msg: "Гостевой Wi-Fi включён без нужды (поверхность атаки)" },
+    firmware_old: { pts: 5, msg: "Прошивка роутера устарела (эксплойты)" },
+
+    cloud_public: { pts: 8, msg: "Публичные ссылки в облаке (утечка документов)" },
+    cloud_everyone: { pts: 6, msg: "Доступ 'всем по ссылке' (неконтролируемое распространение)" },
+    cloud_alerts_off: { pts: 3, msg: "Уведомления о входе выключены (пропуск компрометации)" },
+
+    social_public: { pts: 4, msg: "Профиль слишком публичный (соц.инженерия)" },
+    social_fake_not_blocked: { pts: 5, msg: "Фейк-аккаунт не заблокирован (фишинг через соцсети)" },
+    social_dm_open: { pts: 3, msg: "ЛС от всех разрешены (вектор фишинга/спама)" },
+
+    hint_used: { pts: 2, msg: "Использована подсказка (штраф за помощь)" }
+  };
+
+  // Security checks (must be satisfied to win)
+  const CRITICAL_CHECKS = [
+    "workstationLocked",
+    "usbRemoved",
+    "updatesOn",
+    "twoFAOn",
+    "passwordStrongUnique",
+    "browserPwOff",
+    "phishingSafe",
+    "networkSafe",
+    "cloudSafe",
+    "socialSafe"
+  ];
+
+  // ---------- Random scenario generation ----------
+  function buildScenario(){
+    // Emails: 4 total; 1-2 phishing guaranteed
+    const legitPool = [
+      { from:"hr@corp.local", subj:"Обновление правил удалёнки", body:"Короткий анонс, без вложений. Ссылка ведёт на внутренний портал.", kind:"legit", link:"intra://policy" },
+      { from:"it@corp.local", subj:"Плановое обновление VPN-клиента", body:"Инструкция внутри портала. Вложения нет.", kind:"legit", link:"intra://vpn" },
+      { from:"finance@corp.local", subj:"Отчёт по командировкам за январь", body:"Только просмотр. Без просьб вводить пароль.", kind:"legit", link:"intra://trips" },
+      { from:"teamlead@corp.local", subj:"Созвон в 16:30", body:"Календарное приглашение. Никаких файлов.", kind:"legit", link:"intra://meet" }
+    ];
+    const phishPool = [
+      { from:"security-alert@corр.local", subj:"СРОЧНО: подтверждение пароля", body:"Сессия истекает. Перейдите по ссылке и войдите.", kind:"phish", link:"http://corp-login.verify-session.example" },
+      { from:"delivery@ship-fast.example", subj:"Неудачная доставка: откройте акт", body:"Вложение 'act.zip'. Требуется подтвердить.", kind:"phish", attach:"act.zip" },
+      { from:"payments@finаnce.local", subj:"Счёт просрочен — оплатить", body:"Ссылка на оплату. Давление по времени.", kind:"phish", link:"http://pay-now.invoice-check.example" }
+    ];
+    const emails = shuffle([...legitPool]).slice(0, 4);
+    // Replace 1-2 with phishing
+    const phCount = (Math.random() < 0.55) ? 2 : 1;
+    const idxs = shuffle([0,1,2,3]).slice(0, phCount);
+    const pickedPh = shuffle([...phishPool]).slice(0, phCount);
+    idxs.forEach((i, k) => emails[i] = pickedPh[k]);
+    // Devices: list + maybe suspicious guaranteed (for gameplay)
+    const knownDevices = [
+      { name:"Office-PC", mac:"A4:11:2C:9D:1F:02", trust:"known" },
+      { name:"Printer-3F", mac:"B0:22:10:AA:77:03", trust:"known" },
+      { name:"Meeting-TV", mac:"10:9F:EA:01:02:03", trust:"known" }
+    ];
+    const suspicious = { name: choice(["Android-??","iPhone-??","ESP32-Board","Unknown-Device"]), mac:"DE:AD:BE:EF:"+String(Math.floor(Math.random()*90+10))+":"+String(Math.floor(Math.random()*90+10)), trust:"unknown" };
+    const devices = shuffle([...knownDevices, suspicious]);
+
+    // Cloud folders: at least one public link present
+    const folders = shuffle([
+      { name:"Roadmap_Q1", share:"team", publicLink:false },
+      { name:"Incidents_Notes", share:"team", publicLink:true },       // risky
+      { name:"Budget_Drafts", share:"everyone", publicLink:false },    // risky
+      { name:"Onboarding", share:"team", publicLink:false }
+    ]).slice(0,4);
+    // Ensure at least one publicLink true
+    if(!folders.some(f=>f.publicLink)) folders[0].publicLink = true;
+    // Ensure at least one "everyone" sometimes
+    if(!folders.some(f=>f.share==="everyone") && Math.random()<0.8) folders[1].share="everyone";
+
+    // Social: fake account always exists
+    const fake = {
+      name: choice(["hr-support_official","it_helpdesk_secure","corp.security.team","teamlead_backup"]),
+      note:"Похожее имя и аватар. Просит подтвердить данные.",
+      isFake:true,
+      blocked:false
+    };
+
+    return {
+      emails,
+      devices,
+      folders,
+      fakeAccount: fake
+    };
+  }
+
+  // ---------- Finite State Machine ----------
+  const State = Object.freeze({
+    BOOT:"BOOT",
+    MENU:"MENU",
+    PLAYING:"PLAYING",
+    PAUSED:"PAUSED",
+    MODAL:"MODAL",
+    REPORT:"REPORT"
+  });
+
+  // ---------- Core Game ----------
+  const game = {
+    state: State.BOOT,
+    rendererMode: "unknown", // "three" | "fallback"
+    // Time pressure
+    dayLengthSec: 8 * 60,
+    timeLeftSec: 8 * 60,
+    startedAt: 0,
+    lastTick: 0,
+
+    // Score / hints / logs
+    score: 100,
+    hintsLeft: 3,
+    hintsUsed: 0,
+    logs: [],
+
+    // Scenario
+    scenario: buildScenario(),
+
+    // Checks / flags
+    checks: {
+      workstationLocked: false,
+      usbRemoved: false,
+      updatesOn: false,
+      avRun: false,
+
+      passwordChanged: false,
+      passwordStrong: false,
+      passwordUnique: false,
+      twoFAOn: false,
+      browserPwOff: false,
+
+      phishingSafe: true, // becomes false if user opens phishing
+      phishingReported: 0, // count
+      phishingOpened: 0,
+
+      unknownDeviceRemoved: false,
+      guestWifiOff: false,
+      firmwareUpdated: false,
+
+      cloudNoPublicLinks: false,
+      cloudNoEveryone: false,
+      cloudAlertsOn: false,
+
+      socialPrivacyTight: false,
+      socialFakeBlocked: false,
+      socialDmRestricted: false
+    },
+
+    // Derived per-zone label (no checklist)
+    currentZone: "—",
+
+    // Player movement
+    input: {
+      keys: new Set(),
+      mouseDX: 0,
+      mouseDY: 0,
+      pointerLocked: false
+    }
+  };
+
+  function logEvent(title, detail){
+    const ts = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+    game.logs.push({ts, title, detail});
+    // Toast
+    const div = document.createElement("div");
+    div.className = "toast";
+    div.innerHTML = `<div class="t">${escapeHtml(title)}</div><div class="d">${escapeHtml(detail)}</div>`;
+    el.logToast.prepend(div);
+    requestAnimationFrame(()=>div.classList.add("show"));
+    setTimeout(()=>{ div.classList.remove("show"); setTimeout(()=>div.remove(), 250); }, 2400);
+    renderLogList();
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+  function setState(next){
+    game.state = next;
+    el.pausedTag.classList.toggle("show", next === State.PAUSED);
+    // Phone blocks pointer lock
+    if(next === State.MODAL || next === State.REPORT || next === State.MENU){
+      closePointerLock();
+    }
+  }
+
+  function updateHUD(){
+    el.timeBadge.textContent = `⏳ ${fmtTime(game.timeLeftSec)}`;
+    el.hintBadge.textContent = `💡 Подсказки: ${game.hintsLeft}`;
+    el.hintLeft2.textContent = `Осталось: ${game.hintsLeft}`;
+    el.lockBadge.textContent = game.input.pointerLocked ? "🔒 Мышь: захвачена" : "🔓 Мышь: свободна";
+    el.zoneBadge.textContent = `Зона: ${game.currentZone}`;
+  }
+
+  // ---------- Hints (no checklist, only directional) ----------
+  function computeHint(){
+    // Prioritize risky/unfinished clusters with "soft" phrasing.
+    const c = game.checks;
+
+    const candidates = [];
+    if(!c.workstationLocked || !c.usbRemoved || !c.updatesOn) {
+      candidates.push("На рабочем месте мелочи решают исход ночи: физический доступ, носители и обновления.");
+    }
+    if(!c.twoFAOn || !c.browserPwOff || !(c.passwordStrong && c.passwordUnique)) {
+      candidates.push("Учётки чаще ломают не эксплойтами, а привычками: стандартные пароли, повтор и отсутствие 2FA.");
+    }
+    if(c.phishingSafe && game.scenario.emails.some(e=>e.kind==="phish") && c.phishingReported === 0){
+      candidates.push("Почта обычно шумная: ищи письма, которые давят на срочность или просят перейти на внешние домены/вложения.");
+    }
+    if(!c.unknownDeviceRemoved || !c.guestWifiOff || !c.firmwareUpdated){
+      candidates.push("Сеть — это не только пароль от Wi-Fi. Подозрительные устройства, гостевой доступ и прошивка — частые причины ночных сюрпризов.");
+    }
+    if(!c.cloudNoPublicLinks || !c.cloudNoEveryone || !c.cloudAlertsOn){
+      candidates.push("Облако часто «течёт» через ссылки и права. Проверь публичность и уведомления о входах.");
+    }
+    if(!c.socialFakeBlocked || !c.socialPrivacyTight || !c.socialDmRestricted){
+      candidates.push("Соцсети — любимый канал социнженерии: фейки, открытая видимость и ЛС «для всех».");
+    }
+    if(candidates.length === 0) candidates.push("Похоже, основные риски закрыты. Осталось оценить, готов ли офис к ночи.");
+
+    return choice(candidates);
+  }
+
+  function useHint(){
+    if(game.hintsLeft <= 0) return;
+    game.hintsLeft--;
+    game.hintsUsed++;
+    game.score = Math.max(0, game.score - PENALTIES.hint_used.pts);
+    el.hintText.textContent = computeHint();
+    logEvent("Подсказка использована", "Намёк выдан. Итоговый % снижен.");
+    updateHUD();
+  }
+
+  // ---------- Phone UI ----------
+  function openPhone(){
+    if(game.state === State.REPORT) return;
+    el.phone.classList.add("show");
+    setState(State.MODAL);
+    renderLogList();
+    el.hintText.textContent = "—";
+    el.pixInfo.textContent = `scale: ${render.pixelScale.toFixed(2)}`;
+  }
+  function closePhone(){
+    el.phone.classList.remove("show");
+    if(game.state === State.MODAL) setState(State.PLAYING);
+  }
+  function setTab(name){
+    el.tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+    for(const k of Object.keys(el.tabBodies)){
+      el.tabBodies[k].style.display = (k === name) ? "" : "none";
+    }
+  }
+  el.tabs.forEach(t => t.addEventListener("click", () => setTab(t.dataset.tab)));
+  el.phoneClose.addEventListener("click", closePhone);
+  el.btnUseHint.addEventListener("click", useHint);
+  el.btnPixMinus.addEventListener("click", () => { render.setPixelScale(render.pixelScale * 0.90); el.pixInfo.textContent = `scale: ${render.pixelScale.toFixed(2)}`; });
+  el.btnPixPlus.addEventListener("click", () => { render.setPixelScale(render.pixelScale * 1.10); el.pixInfo.textContent = `scale: ${render.pixelScale.toFixed(2)}`; });
+
+  function renderLogList(){
+    const list = el.logList;
+    list.innerHTML = "";
+    const last = game.logs.slice(-60).reverse();
+    if(last.length === 0){
+      list.innerHTML = `<div class="item"><div class="meta">Пока пусто. Действия появятся здесь.</div></div>`;
+      return;
+    }
+    for(const e of last){
+      const it = document.createElement("div");
+      it.className = "item";
+      it.innerHTML = `<div class="top"><div><div class="name">${escapeHtml(e.title)}</div><div class="meta">${escapeHtml(e.detail)}</div></div><div class="meta mono">${escapeHtml(e.ts)}</div></div>`;
+      list.appendChild(it);
+    }
+  }
+
+  // ---------- Interaction Modal (per object) ----------
+  let activeTask = null;
+
+  function openTaskUI(taskId){
+    activeTask = taskId;
+    el.phone.classList.add("show");
+    setState(State.MODAL);
+    setTab("help"); // will switch to content pane below
+    // Replace phone content with task UI on top of tabs (still keep close)
+    injectTask(taskId);
+  }
+
+  function injectTask(taskId){
+    // Build task UI inside phoneCard (below header)
+    // Keep tabs; add a new temporary body "task"
+    const existing = $("#tab_task");
+    if(existing) existing.remove();
+
+    const task = document.createElement("div");
+    task.id = "tab_task";
+    task.className = "tabBody";
+    task.style.display = "";
+    // Hide other bodies
+    for(const k of Object.keys(el.tabBodies)) el.tabBodies[k].style.display = "none";
+    // Deactivate tabs
+    el.tabs.forEach(t => t.classList.remove("active"));
+
+    const content = taskContent(taskId);
+    task.innerHTML = content.html;
+    el.phoneCard.appendChild(task);
+
+    // Wire actions
+    content.bind(task);
+
+    // Add top hint
+    const hdrHint = document.createElement("div");
+    hdrHint.className = "hint";
+    hdrHint.style.margin = "8px 0 12px 0";
+    hdrHint.textContent = "Закрой: Tab. Это не список задач — это инструменты текущей зоны.";
+    task.prepend(hdrHint);
+  }
+
+  function closeTaskUI(){
+    const t = $("#tab_task");
+    if(t) t.remove();
+    activeTask = null;
+    // return to phone home tabs
+    setTab("help");
+  }
+
+  function taskContent(taskId){
+    const c = game.checks;
+    const scenario = game.scenario;
+
+    if(taskId === "workstation"){
+      return {
+        html: `
+          <div class="section">
+            <h2>Рабочее место — ПК</h2>
+            <p>Обычная рутина. Некоторые вещи критичны ночью.</p>
+
+            <div class="toggle">
+              <input id="ws_lock" type="checkbox" ${c.workstationLocked?"checked":""}/>
+              <div>
+                <div class="name">Заблокировать сессию перед уходом</div>
+                <div class="meta">Если оставить разблокированным — посторонний доступ ночью.</div>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input id="ws_usb" type="checkbox" ${c.usbRemoved?"checked":""}/>
+              <div>
+                <div class="name">Извлечь USB-флешку</div>
+                <div class="meta">Носитель — частый источник заражения/выноса данных.</div>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input id="ws_updates" type="checkbox" ${c.updatesOn?"checked":""}/>
+              <div>
+                <div class="name">Включить автообновления</div>
+                <div class="meta">Выключенные обновления повышают риск эксплуатации уязвимостей.</div>
+              </div>
+            </div>
+
+            <div class="rowLine">
+              <button class="btn small good" id="ws_scan">Запустить быструю проверку</button>
+              <span class="badge ${c.avRun?"good":"warn"}" id="ws_scan_badge">${c.avRun?"Проверка: выполнена":"Проверка: не запускалась"}</span>
+            </div>
+
+            <div class="hr"></div>
+            <div class="hint">Стикер на мониторе: «Перед уходом: Win+L, носители, обновления».</div>
+          </div>
+        `,
+        bind(root){
+          root.querySelector("#ws_lock").addEventListener("change", (e)=>{
+            c.workstationLocked = e.target.checked;
+            logEvent("ПК", c.workstationLocked ? "Сессия заблокирована." : "Сессия оставлена разблокированной.");
+          });
+          root.querySelector("#ws_usb").addEventListener("change", (e)=>{
+            c.usbRemoved = e.target.checked;
+            logEvent("USB", c.usbRemoved ? "USB извлечён." : "USB оставлен в ПК.");
+          });
+          root.querySelector("#ws_updates").addEventListener("change", (e)=>{
+            c.updatesOn = e.target.checked;
+            logEvent("Обновления", c.updatesOn ? "Автообновления включены." : "Автообновления выключены.");
+          });
+          root.querySelector("#ws_scan").addEventListener("click", ()=>{
+            c.avRun = true;
+            root.querySelector("#ws_scan_badge").textContent = "Проверка: выполнена";
+            root.querySelector("#ws_scan_badge").className = "badge good";
+            logEvent("Проверка", "Быстрая проверка выполнена (индикаторы просмотрены).");
+          });
         }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        
-        // Конфигурация мира
-        const world = {
-            width: 40,
-            height: 40,
-            grid: [],
-            objects: []
+      };
+    }
+
+    if(taskId === "accounts"){
+      const defaultPwd = !c.passwordChanged;
+      const pwdStrong = c.passwordStrong;
+      const pwdUnique = c.passwordUnique;
+
+      return {
+        html: `
+          <div class="section">
+            <h2>Учётки и пароли — терминал</h2>
+            <p>Коллега в чате: «Проверь, что стажёрский пароль не остался 'Welcome123'».</p>
+
+            <div class="field">
+              <label>Новый пароль (не хранится, только проверка правил)</label>
+              <input id="acc_pwd" type="password" placeholder="Введите новый пароль..." />
+              <div class="hint">Правила: длина ≥ 12, буквы разного регистра, цифры, символ. Не должен быть похож на 'Welcome123'.</div>
+            </div>
+
+            <div class="toggle">
+              <input id="acc_unique" type="checkbox" ${pwdUnique?"checked":""}/>
+              <div>
+                <div class="name">Пароль уникальный (не повторяется с другими сервисами)</div>
+                <div class="meta">Повтор паролей → credential stuffing.</div>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input id="acc_2fa" type="checkbox" ${c.twoFAOn?"checked":""}/>
+              <div>
+                <div class="name">Включить 2FA</div>
+                <div class="meta">Без 2FA компрометация учётки обычно вопрос времени.</div>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input id="acc_browser" type="checkbox" ${!c.browserPwOff?"checked":""}/>
+              <div>
+                <div class="name">Разрешить сохранение паролей в браузере</div>
+                <div class="meta">Рекомендуется отключить на корпоративных станциях.</div>
+              </div>
+            </div>
+
+            <div class="rowLine">
+              <span class="badge ${defaultPwd?"bad":"good"}" id="acc_default">${defaultPwd?"Статус: стандартный пароль":"Статус: пароль изменён"}</span>
+              <span class="badge ${pwdStrong?"good":"warn"}" id="acc_strength">${pwdStrong?"Сила: ок":"Сила: сомнительно"}</span>
+              <span class="badge ${pwdUnique?"good":"warn"}" id="acc_unique_badge">${pwdUnique?"Уникальность: ок":"Уникальность: не подтверждена"}</span>
+            </div>
+
+            <div class="hr"></div>
+            <button class="btn small primary" id="acc_apply">Применить настройки</button>
+          </div>
+        `,
+        bind(root){
+          const inp = root.querySelector("#acc_pwd");
+          const tUnique = root.querySelector("#acc_unique");
+          const t2fa = root.querySelector("#acc_2fa");
+          const tBrowser = root.querySelector("#acc_browser");
+
+          function checkStrength(p){
+            if(!p) return false;
+            if(p.toLowerCase().includes("welcome")) return false;
+            if(p.length < 12) return false;
+            const hasU = /[A-Z]/.test(p);
+            const hasL = /[a-z]/.test(p);
+            const hasD = /\d/.test(p);
+            const hasS = /[^A-Za-z0-9]/.test(p);
+            return hasU && hasL && hasD && hasS;
+          }
+
+          root.querySelector("#acc_apply").addEventListener("click", ()=>{
+            const p = inp.value || "";
+            c.passwordChanged = p.length > 0;
+            c.passwordStrong = checkStrength(p);
+            c.passwordUnique = !!tUnique.checked;
+            c.twoFAOn = !!t2fa.checked;
+            c.browserPwOff = !tBrowser.checked;
+
+            root.querySelector("#acc_default").textContent = c.passwordChanged ? "Статус: пароль изменён" : "Статус: стандартный пароль";
+            root.querySelector("#acc_default").className = "badge " + (c.passwordChanged ? "good":"bad");
+
+            root.querySelector("#acc_strength").textContent = c.passwordStrong ? "Сила: ок" : "Сила: сомнительно";
+            root.querySelector("#acc_strength").className = "badge " + (c.passwordStrong ? "good":"warn");
+
+            root.querySelector("#acc_unique_badge").textContent = c.passwordUnique ? "Уникальность: ок" : "Уникальность: не подтверждена";
+            root.querySelector("#acc_unique_badge").className = "badge " + (c.passwordUnique ? "good":"warn");
+
+            logEvent("Учётки", "Настройки учётки применены.");
+            if(c.twoFAOn) logEvent("2FA", "2FA включена.");
+            if(c.browserPwOff) logEvent("Браузер", "Сохранение паролей отключено.");
+          });
+
+          tBrowser.addEventListener("change", ()=>{
+            // no log spam; will be logged on apply
+          });
+        }
+      };
+    }
+
+    if(taskId === "mail"){
+      // Build email list HTML
+      const emailsHtml = scenario.emails.map((m, i) => {
+        const kindTag = (m.kind==="phish") ? `<span class="badge bad">подозр.</span>` : `<span class="badge good">внутр.</span>`;
+        const attach = m.attach ? ` · <span class="badge warn">вложение: ${escapeHtml(m.attach)}</span>` : "";
+        const link = m.link ? ` · <span class="badge">${escapeHtml(m.link.startsWith("intra://")?"внутр. ссылка":"внешняя ссылка")}</span>` : "";
+        return `
+          <div class="item" data-mail="${i}">
+            <div class="top">
+              <div>
+                <div class="name">${escapeHtml(m.subj)} ${kindTag}</div>
+                <div class="meta">От: <span class="mono">${escapeHtml(m.from)}</span>${attach}${link}</div>
+              </div>
+              <div class="meta mono">#${i+1}</div>
+            </div>
+            <div class="meta" style="margin-top:6px">${escapeHtml(m.body)}</div>
+            <div class="actions">
+              <button class="btn small" data-act="open">Открыть</button>
+              <button class="btn small" data-act="report">Сообщить как фишинг</button>
+              <button class="btn small" data-act="delete">Удалить</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return {
+        html: `
+          <div class="section">
+            <h2>Почта — терминал</h2>
+            <p>Стикер на рамке: «Не спеши. Смотри на домен, срочность, вложения и внешний URL».</p>
+            <div class="list">${emailsHtml}</div>
+            <div class="hr"></div>
+            <div class="rowLine">
+              <span class="badge ${game.checks.phishingOpened>0?"bad":"good"}" id="mail_opened">Открыто подозр.: ${game.checks.phishingOpened}</span>
+              <span class="badge" id="mail_reported">Сообщено: ${game.checks.phishingReported}</span>
+              <span class="hint">Открытие подозрительного письма может иметь последствия ночью.</span>
+            </div>
+          </div>
+        `,
+        bind(root){
+          root.querySelectorAll("[data-mail]").forEach(card=>{
+            const idx = Number(card.getAttribute("data-mail"));
+            const msg = scenario.emails[idx];
+            card.querySelectorAll("button[data-act]").forEach(btn=>{
+              btn.addEventListener("click", ()=>{
+                const act = btn.getAttribute("data-act");
+                if(act === "open"){
+                  logEvent("Почта", `Открыто письмо: "${msg.subj}".`);
+                  if(msg.kind === "phish"){
+                    game.checks.phishingSafe = false;
+                    game.checks.phishingOpened++;
+                    logEvent("Риск", "Подозрительное письмо было открыто. Ночью это может стать заражением.");
+                    root.querySelector("#mail_opened").textContent = `Открыто подозр.: ${game.checks.phishingOpened}`;
+                    root.querySelector("#mail_opened").className = "badge bad";
+                  }
+                } else if(act === "report"){
+                  if(msg.kind === "phish"){
+                    game.checks.phishingReported++;
+                    logEvent("Почта", `Сообщено ИБ: "${msg.subj}".`);
+                  } else {
+                    logEvent("Почта", `Пометка отправлена: "${msg.subj}" (возможно ложное срабатывание).`);
+                  }
+                  root.querySelector("#mail_reported").textContent = `Сообщено: ${game.checks.phishingReported}`;
+                } else if(act === "delete"){
+                  logEvent("Почта", `Удалено письмо: "${msg.subj}".`);
+                  card.style.opacity = .55;
+                  card.querySelectorAll("button").forEach(b=>b.disabled=true);
+                }
+              });
+            });
+          });
+        }
+      };
+    }
+
+    if(taskId === "network"){
+      const devHtml = scenario.devices.map((d,i)=>{
+        const badge = d.trust==="unknown" ? `<span class="badge bad">неизвестно</span>` : `<span class="badge good">известно</span>`;
+        return `
+          <div class="item" data-dev="${i}">
+            <div class="top">
+              <div>
+                <div class="name">${escapeHtml(d.name)} ${badge}</div>
+                <div class="meta mono">${escapeHtml(d.mac)}</div>
+              </div>
+              <div class="meta">${d.trust==="unknown"?"⚠":"✓"}</div>
+            </div>
+            <div class="actions">
+              <button class="btn small" data-act="kick">Отключить</button>
+              <button class="btn small" data-act="whitelist">Пометить как доверенное</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return {
+        html: `
+          <div class="section">
+            <h2>Корпоративная сеть — роутер/щиток</h2>
+            <p>Индикатор мигает: «Новые подключения за день: 1».</p>
+
+            <div class="toggle">
+              <input id="net_guest" type="checkbox" ${!c.guestWifiOff?"checked":""}/>
+              <div>
+                <div class="name">Гостевой Wi-Fi включён</div>
+                <div class="meta">Если не нужен — лучше выключить.</div>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input id="net_alert" type="checkbox" checked disabled />
+              <div>
+                <div class="name">Логи подключений включены</div>
+                <div class="meta">Только просмотр.</div>
+              </div>
+            </div>
+
+            <div class="rowLine">
+              <button class="btn small good" id="net_fw">Обновить прошивку</button>
+              <span class="badge ${c.firmwareUpdated?"good":"warn"}" id="net_fw_badge">${c.firmwareUpdated?"Прошивка: актуальна":"Прошивка: устарела"}</span>
+            </div>
+
+            <div class="hr"></div>
+            <div class="name">Устройства</div>
+            <div class="list">${devHtml}</div>
+
+            <div class="hr"></div>
+            <span class="badge ${c.unknownDeviceRemoved?"good":"warn"}" id="net_unknown">${c.unknownDeviceRemoved?"Неизвестные отключены":"Есть неизвестные устройства"}</span>
+          </div>
+        `,
+        bind(root){
+          const tGuest = root.querySelector("#net_guest");
+          tGuest.addEventListener("change", ()=>{
+            c.guestWifiOff = !tGuest.checked;
+            logEvent("Сеть", c.guestWifiOff ? "Гостевой Wi-Fi выключен." : "Гостевой Wi-Fi включён.");
+          });
+
+          root.querySelector("#net_fw").addEventListener("click", ()=>{
+            c.firmwareUpdated = true;
+            const b = root.querySelector("#net_fw_badge");
+            b.textContent = "Прошивка: актуальна";
+            b.className = "badge good";
+            logEvent("Сеть", "Прошивка роутера обновлена.");
+          });
+
+          root.querySelectorAll("[data-dev]").forEach(card=>{
+            const idx = Number(card.getAttribute("data-dev"));
+            const dev = scenario.devices[idx];
+            card.querySelectorAll("button[data-act]").forEach(btn=>{
+              btn.addEventListener("click", ()=>{
+                const act = btn.getAttribute("data-act");
+                if(act === "kick"){
+                  if(dev.trust === "unknown"){
+                    c.unknownDeviceRemoved = true;
+                    root.querySelector("#net_unknown").textContent = "Неизвестные отключены";
+                    root.querySelector("#net_unknown").className = "badge good";
+                    logEvent("Сеть", `Неизвестное устройство отключено (${dev.name}).`);
+                  } else {
+                    logEvent("Сеть", `Отключено устройство (${dev.name}).`);
+                  }
+                  card.style.opacity = .55;
+                  card.querySelectorAll("button").forEach(b=>b.disabled=true);
+                } else if(act === "whitelist"){
+                  if(dev.trust === "unknown"){
+                    logEvent("Сеть", `Устройство помечено доверенным (${dev.name}).`);
+                    // Still risky: does not satisfy unknownDeviceRemoved
+                  } else {
+                    logEvent("Сеть", `Устройство уже доверенное (${dev.name}).`);
+                  }
+                }
+              });
+            });
+          });
+        }
+      };
+    }
+
+    if(taskId === "cloud"){
+      const folderHtml = scenario.folders.map((f,i)=>{
+        const pub = f.publicLink ? `<span class="badge bad">публичная ссылка</span>` : `<span class="badge good">без публичных ссылок</span>`;
+        const share = f.share==="everyone" ? `<span class="badge warn">доступ: всем по ссылке</span>` : `<span class="badge good">доступ: команда</span>`;
+        return `
+          <div class="item" data-fold="${i}">
+            <div class="top">
+              <div>
+                <div class="name">${escapeHtml(f.name)}</div>
+                <div class="meta">${pub} ${share}</div>
+              </div>
+              <div class="meta">☁</div>
+            </div>
+            <div class="actions">
+              <button class="btn small" data-act="revoke">Отозвать публичную ссылку</button>
+              <button class="btn small" data-act="restrict">Сделать доступ только команде</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return {
+        html: `
+          <div class="section">
+            <h2>Облако — терминал</h2>
+            <p>Уведомление: «Обнаружены общие ссылки. Проверь публичность перед уходом.»</p>
+
+            <div class="toggle">
+              <input id="cloud_alerts" type="checkbox" ${c.cloudAlertsOn?"checked":""}/>
+              <div>
+                <div class="name">Уведомления о входах и новых сессиях</div>
+                <div class="meta">Помогают быстро заметить компрометацию.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+            <div class="name">Папки</div>
+            <div class="list">${folderHtml}</div>
+
+            <div class="hr"></div>
+            <div class="rowLine">
+              <span class="badge ${c.cloudNoPublicLinks?"good":"warn"}" id="cloud_pub">${c.cloudNoPublicLinks?"Публичных ссылок нет":"Есть публичные ссылки"}</span>
+              <span class="badge ${c.cloudNoEveryone?"good":"warn"}" id="cloud_every">${c.cloudNoEveryone?"Нет доступа 'всем'":"Есть доступ 'всем'"} </span>
+            </div>
+          </div>
+        `,
+        bind(root){
+          root.querySelector("#cloud_alerts").addEventListener("change", (e)=>{
+            c.cloudAlertsOn = e.target.checked;
+            logEvent("Облако", c.cloudAlertsOn ? "Уведомления о входах включены." : "Уведомления о входах выключены.");
+          });
+
+          function recompute(){
+            c.cloudNoPublicLinks = !scenario.folders.some(f=>f.publicLink);
+            c.cloudNoEveryone = !scenario.folders.some(f=>f.share==="everyone");
+            root.querySelector("#cloud_pub").textContent = c.cloudNoPublicLinks ? "Публичных ссылок нет" : "Есть публичные ссылки";
+            root.querySelector("#cloud_pub").className = "badge " + (c.cloudNoPublicLinks ? "good":"warn");
+            root.querySelector("#cloud_every").textContent = c.cloudNoEveryone ? "Нет доступа 'всем'" : "Есть доступ 'всем'";
+            root.querySelector("#cloud_every").className = "badge " + (c.cloudNoEveryone ? "good":"warn");
+          }
+          recompute();
+
+          root.querySelectorAll("[data-fold]").forEach(card=>{
+            const idx = Number(card.getAttribute("data-fold"));
+            const fold = scenario.folders[idx];
+            card.querySelectorAll("button[data-act]").forEach(btn=>{
+              btn.addEventListener("click", ()=>{
+                const act = btn.getAttribute("data-act");
+                if(act === "revoke"){
+                  if(fold.publicLink){
+                    fold.publicLink = false;
+                    logEvent("Облако", `Публичная ссылка отозвана: ${fold.name}.`);
+                  } else {
+                    logEvent("Облако", `Публичных ссылок не было: ${fold.name}.`);
+                  }
+                }
+                if(act === "restrict"){
+                  if(fold.share === "everyone"){
+                    fold.share = "team";
+                    logEvent("Облако", `Доступ ограничен командой: ${fold.name}.`);
+                  } else {
+                    logEvent("Облако", `Доступ уже командный: ${fold.name}.`);
+                  }
+                }
+                card.querySelector(".meta").innerHTML =
+                  `${fold.publicLink ? `<span class="badge bad">публичная ссылка</span>` : `<span class="badge good">без публичных ссылок</span>`}
+                   ${fold.share==="everyone" ? `<span class="badge warn">доступ: всем по ссылке</span>` : `<span class="badge good">доступ: команда</span>`}`;
+                recompute();
+              });
+            });
+          });
+        }
+      };
+    }
+
+    if(taskId === "social"){
+      const fake = scenario.fakeAccount;
+
+      return {
+        html: `
+          <div class="section">
+            <h2>Соцсети — терминал</h2>
+            <p>Сообщение коллеги: «Мне пришёл запрос на добавление от 'службы поддержки'. Проверь, не фейк ли это.»</p>
+
+            <div class="toggle">
+              <input id="soc_public" type="checkbox" ${!c.socialPrivacyTight?"checked":""}/>
+              <div>
+                <div class="name">Профиль публичный</div>
+                <div class="meta">Чем больше открыто — тем проще собирать данные для соц.инженерии.</div>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input id="soc_dm" type="checkbox" ${!c.socialDmRestricted?"checked":""}/>
+              <div>
+                <div class="name">ЛС разрешены всем</div>
+                <div class="meta">Ограничение снижает поток фишинга и спама.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+            <div class="item">
+              <div class="top">
+                <div>
+                  <div class="name">${escapeHtml(fake.name)} <span class="badge bad">подозрительный аккаунт</span></div>
+                  <div class="meta">${escapeHtml(fake.note)}</div>
+                </div>
+                <div class="meta">👤</div>
+              </div>
+              <div class="actions">
+                <button class="btn small bad" id="soc_block">${fake.blocked ? "Заблокирован" : "Заблокировать"}</button>
+                <button class="btn small" id="soc_report">Пожаловаться</button>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+            <div class="rowLine">
+              <span class="badge ${c.socialPrivacyTight?"good":"warn"}" id="soc_priv">${c.socialPrivacyTight?"Приватность усилена":"Приватность слабая"}</span>
+              <span class="badge ${c.socialDmRestricted?"good":"warn"}" id="soc_dm_badge">${c.socialDmRestricted?"ЛС ограничены":"ЛС открыты всем"}</span>
+              <span class="badge ${c.socialFakeBlocked?"good":"warn"}" id="soc_fake">${c.socialFakeBlocked?"Фейк заблокирован":"Фейк активен"}</span>
+            </div>
+          </div>
+        `,
+        bind(root){
+          const tPublic = root.querySelector("#soc_public");
+          const tDm = root.querySelector("#soc_dm");
+          const bPriv = root.querySelector("#soc_priv");
+          const bDm = root.querySelector("#soc_dm_badge");
+          const bFake = root.querySelector("#soc_fake");
+          const btnBlock = root.querySelector("#soc_block");
+
+          tPublic.addEventListener("change", ()=>{
+            c.socialPrivacyTight = !tPublic.checked;
+            bPriv.textContent = c.socialPrivacyTight ? "Приватность усилена" : "Приватность слабая";
+            bPriv.className = "badge " + (c.socialPrivacyTight ? "good":"warn");
+            logEvent("Соцсети", c.socialPrivacyTight ? "Профиль сделан менее публичным." : "Профиль оставлен публичным.");
+          });
+
+          tDm.addEventListener("change", ()=>{
+            c.socialDmRestricted = !tDm.checked;
+            bDm.textContent = c.socialDmRestricted ? "ЛС ограничены" : "ЛС открыты всем";
+            bDm.className = "badge " + (c.socialDmRestricted ? "good":"warn");
+            logEvent("Соцсети", c.socialDmRestricted ? "ЛС ограничены." : "ЛС разрешены всем.");
+          });
+
+          btnBlock.addEventListener("click", ()=>{
+            scenario.fakeAccount.blocked = true;
+            c.socialFakeBlocked = true;
+            btnBlock.textContent = "Заблокирован";
+            btnBlock.disabled = true;
+            bFake.textContent = "Фейк заблокирован";
+            bFake.className = "badge good";
+            logEvent("Соцсети", "Подозрительный аккаунт заблокирован.");
+          });
+
+          root.querySelector("#soc_report").addEventListener("click", ()=>{
+            logEvent("Соцсети", "Жалоба отправлена на подозрительный аккаунт.");
+          });
+        }
+      };
+    }
+
+    if(taskId === "home"){
+      return {
+        html: `
+          <div class="section">
+            <h2>Лифт — уйти домой</h2>
+            <p>Ночь смоделирует последствия дневных решений. Если есть дыры — они «всплывут».</p>
+            <div class="rowLine">
+              <button class="btn good" id="go_home">Уйти домой → ночная симуляция</button>
+              <button class="btn" id="go_back">Вернуться в офис</button>
+            </div>
+            <div class="hr"></div>
+            <div class="hint">Подсказка у лифта: «Перед уходом — физика, учётки, почта, сеть, облако, соцсети».</div>
+          </div>
+        `,
+        bind(root){
+          root.querySelector("#go_back").addEventListener("click", ()=>{
+            closeTaskUI();
+            closePhone();
+          });
+          root.querySelector("#go_home").addEventListener("click", ()=>{
+            closeTaskUI();
+            closePhone();
+            nightSimulation();
+          });
+        }
+      };
+    }
+
+    return { html:`<div class="section"><h2>—</h2><p>Неизвестный терминал.</p></div>`, bind(){} };
+  }
+
+  // ---------- Night Simulation / Scoring ----------
+  function nightSimulation(){
+    // Freeze play
+    setState(State.REPORT);
+
+    // Evaluate checks -> incidents and penalties
+    const c = game.checks;
+
+    // Derived flags
+    c.passwordStrongUnique = c.passwordStrong && c.passwordUnique && c.passwordChanged;
+
+    c.networkSafe = c.unknownDeviceRemoved && c.guestWifiOff && c.firmwareUpdated;
+    c.cloudSafe = c.cloudNoPublicLinks && c.cloudNoEveryone && c.cloudAlertsOn;
+    c.socialSafe = c.socialPrivacyTight && c.socialFakeBlocked && c.socialDmRestricted;
+
+    const errors = [];
+    const incidents = [];
+
+    function addPenalty(key){
+      const p = PENALTIES[key];
+      if(!p) return;
+      errors.push({ key, pts:p.pts, msg:p.msg });
+    }
+
+    // Workstation
+    if(!c.workstationLocked) addPenalty("workstation_unlocked");
+    if(!c.usbRemoved) addPenalty("usb_left");
+    if(!c.updatesOn) addPenalty("updates_off");
+    if(!c.avRun) addPenalty("av_not_run");
+
+    // Accounts
+    if(!c.twoFAOn) addPenalty("twoFA_off");
+    if(!c.passwordChanged) addPenalty("default_password");
+    else {
+      if(!c.passwordStrong) addPenalty("weak_password");
+      if(!c.passwordUnique) addPenalty("reused_password");
+    }
+    if(!c.browserPwOff) addPenalty("browser_pw_on");
+
+    // Mail
+    if(!c.phishingSafe || c.phishingOpened>0) addPenalty("phishing_open");
+
+    // Network
+    if(!c.unknownDeviceRemoved) addPenalty("unknown_device");
+    if(!c.guestWifiOff) addPenalty("guest_wifi_on");
+    if(!c.firmwareUpdated) addPenalty("firmware_old");
+
+    // Cloud
+    if(!c.cloudNoPublicLinks) addPenalty("cloud_public");
+    if(!c.cloudNoEveryone) addPenalty("cloud_everyone");
+    if(!c.cloudAlertsOn) addPenalty("cloud_alerts_off");
+
+    // Social
+    if(!c.socialPrivacyTight) addPenalty("social_public");
+    if(!c.socialFakeBlocked) addPenalty("social_fake_not_blocked");
+    if(!c.socialDmRestricted) addPenalty("social_dm_open");
+
+    // Hints penalties already applied directly to score, but record them as issues for report clarity
+    if(game.hintsUsed > 0){
+      for(let i=0;i<game.hintsUsed;i++) addPenalty("hint_used");
+    }
+
+    // Calculate final score
+    const base = 100;
+    const penaltySum = errors.reduce((s,e)=>s+e.pts, 0);
+    const finalScore = clamp(base - penaltySum, 0, 100);
+
+    // Determine win/lose based on critical checks
+    const missingCritical = [];
+    for(const k of CRITICAL_CHECKS){
+      if(k === "passwordStrongUnique"){
+        if(!c.passwordStrongUnique) missingCritical.push("Пароль: сильный и уникальный");
+      } else if(!c[k]){
+        const map = {
+          workstationLocked:"ПК заблокирован",
+          usbRemoved:"USB извлечён",
+          updatesOn:"Обновления включены",
+          twoFAOn:"2FA включена",
+          browserPwOff:"Сохранение паролей выключено",
+          phishingSafe:"Почта: фишинг не открыт",
+          networkSafe:"Сеть: безопасна",
+          cloudSafe:"Облако: безопасно",
+          socialSafe:"Соцсети: безопасны"
         };
-        
-        // Игрок
-        const player = {
-            x: 5,
-            y: 5,
-            height: 1.7,
-            angle: 0,
-            speed: 0.1,
-            fov: Math.PI / 3,
-            moveSpeed: 0.15,
-            rotateSpeed: 0.04
-        };
-        
-        // Клавиши управления
-        const keys = {
-            w: false, a: false, s: false, d: false
-        };
-        
-        // Мышь
-        let mouse = { x: 0, y: 0 };
-        let mouseSensitivity = 0.002;
-        
-        // Инициализация мира
-        function initWorld() {
-            // Создаем сетку
-            for (let x = 0; x < world.width; x++) {
-                world.grid[x] = [];
-                for (let y = 0; y < world.height; y++) {
-                    // Границы - стены
-                    if (x === 0 || y === 0 || x === world.width-1 || y === world.height-1) {
-                        world.grid[x][y] = 1; // Стена
-                    } else {
-                        world.grid[x][y] = 0; // Пусто
-                    }
-                }
-            }
-            
-            // Добавляем внутренние стены для комнат
-            // Комната 1
-            for (let x = 3; x <= 12; x++) world.grid[x][12] = 1;
-            for (let y = 3; y <= 12; y++) world.grid[12][y] = 1;
-            world.grid[12][5] = 0; // Дверь
-            
-            // Комната 2
-            for (let x = 15; x <= 25; x++) world.grid[x][12] = 1;
-            for (let y = 3; y <= 12; y++) world.grid[25][y] = 1;
-            world.grid[25][8] = 0; // Дверь
-            
-            // Серверная
-            for (let x = 28; x <= 35; x++) world.grid[x][20] = 1;
-            for (let y = 15; y <= 20; y++) world.grid[28][y] = 1;
-            world.grid[35][15] = 0; // Дверь
-            
-            // Объекты офиса
-            world.objects = [
-                // Рабочие компьютеры
-                { type: 'computer', x: 5, y: 7, interactable: true, task: 'check_computer1' },
-                { type: 'computer', x: 8, y: 10, interactable: true, task: 'check_computer2' },
-                
-                // Телефоны
-                { type: 'phone', x: 6, y: 3, interactable: true, task: 'check_phone1' },
-                { type: 'phone', x: 10, y: 3, interactable: true, task: 'check_phone2' },
-                
-                // Роутер и сетевое оборудование
-                { type: 'router', x: 18, y: 5, interactable: true, task: 'check_router' },
-                { type: 'server', x: 20, y: 8, interactable: true, task: 'check_server' },
-                
-                // Принтеры и периферия
-                { type: 'printer', x: 17, y: 10, interactable: true, task: 'check_printer' },
-                { type: 'safe', x: 22, y: 3, interactable: true, task: 'check_safe' },
-                
-                // Документы
-                { type: 'documents', x: 4, y: 9, interactable: true, task: 'check_documents' },
-                { type: 'whiteboard', x: 9, y: 5, interactable: false },
-                
-                // Главный выход
-                { type: 'exit', x: 1, y: 20, interactable: true, task: 'exit_office' },
-                
-                // Различный офисный хлам (ловушки)
-                { type: 'usb_drive', x: 7, y: 8, interactable: true, task: 'trap_usb' },
-                { type: 'coffee_machine', x: 3, y: 4, interactable: true, task: 'trap_coffee' },
-                { type: 'plant', x: 11, y: 11, interactable: false },
-                { type: 'chair', x: 6, y: 6, interactable: false },
-                { type: 'chair', x: 9, y: 9, interactable: false },
-                { type: 'table', x: 8, y: 8, interactable: false }
-            ];
+        missingCritical.push(map[k] || k);
+      }
+    }
+
+    const win = missingCritical.length === 0;
+
+    // Incidents story (non-graphic)
+    if(!c.workstationLocked || !c.usbRemoved || !c.updatesOn){
+      incidents.push("Ночью злоумышленник получил доступ к рабочей станции/носителю и выгрузил часть данных.");
+    }
+    if(!c.passwordStrongUnique || !c.twoFAOn || !c.browserPwOff){
+      incidents.push("Ночью учётная запись была скомпрометирована через слабую аутентификацию.");
+    }
+    if(!c.phishingSafe){
+      incidents.push("Ночью сработала цепочка заражения через почту (вредонос закрепился).");
+    }
+    if(!c.networkSafe){
+      incidents.push("Ночью атака пришла изнутри сети через устройство/гостевой доступ/уязвимую прошивку.");
+    }
+    if(!c.cloudSafe){
+      incidents.push("Ночью документы утекли через публичные ссылки или слишком широкие права.");
+    }
+    if(!c.socialSafe){
+      incidents.push("Ночью произошла социнженерия через соцсети (фейк/публичность/ЛС).");
+    }
+    if(incidents.length === 0) incidents.push("Ночь прошла спокойно: тревог и утечек не обнаружено.");
+
+    // Render report UI
+    el.report.style.display = "";
+    el.reportTitle.textContent = win ? "Победа — ночь без инцидента" : "Поражение — ночной инцидент";
+    el.reportSubtitle.textContent = win
+      ? "Критичные проверки закрыты. Офис выдержал ночную нагрузку."
+      : "Не все критичные меры выполнены. Ночь показала последствия (без деталей).";
+
+    el.finalPct.textContent = `Итог: ${finalScore}%`;
+    el.finalPct.className = "badge " + (finalScore>=85 ? "good" : finalScore>=60 ? "warn" : "bad");
+    el.finalVerdict.textContent = win ? "Статус: OK" : "Статус: INCIDENT";
+    el.finalVerdict.className = "badge " + (win ? "good" : "bad");
+
+    const spent = game.dayLengthSec - game.timeLeftSec;
+    el.finalTime.textContent = `Время: ${fmtTime(spent)} / ${fmtTime(game.dayLengthSec)}`;
+
+    el.finalSummary.innerHTML = "";
+    const addSummary = (title, text, kind="") => {
+      const d = document.createElement("div");
+      d.className = "item";
+      d.innerHTML = `<div class="top"><div><div class="name">${escapeHtml(title)}</div><div class="meta">${escapeHtml(text)}</div></div><div class="meta">${kind}</div></div>`;
+      el.finalSummary.appendChild(d);
+    };
+
+    addSummary("Ночная симуляция", incidents.join(" "));
+    if(!win){
+      addSummary("Критично пропущено", missingCritical.join(" · "), "⚠");
+    } else {
+      addSummary("Критические проверки", "Все ключевые меры выполнены.", "✓");
+    }
+
+    // Errors list
+    const errBox = document.createElement("div");
+    errBox.className = "item";
+    const sorted = errors.sort((a,b)=>b.pts-a.pts);
+    const errLines = sorted.length ? sorted.map(e=>`−${e.pts}% — ${e.msg}`).join("<br/>") : "Ошибок не найдено.";
+    errBox.innerHTML = `<div class="name">Штрафы</div><div class="meta" style="margin-top:6px">${errLines}</div>`;
+    el.finalSummary.appendChild(errBox);
+
+    // Recommendations
+    el.finalRecs.innerHTML = "";
+    const recs = [];
+    if(!c.workstationLocked) recs.push("Перед уходом блокируй сессию (Win+L) и не оставляй рабочее место открытым.");
+    if(!c.usbRemoved) recs.push("Не оставляй носители в ПК. Для переноса — только согласованные устройства и контроль.");
+    if(!c.updatesOn) recs.push("Автообновления ОС/ПО должны быть включены и проверяемы.");
+    if(!c.twoFAOn) recs.push("Включай 2FA на корпоративных учётках (в идеале — аппаратные ключи/приложение).");
+    if(!c.passwordStrongUnique) recs.push("Сильный уникальный пароль + отсутствие повторов между сервисами.");
+    if(!c.browserPwOff) recs.push("На корпоративной станции отключай сохранение паролей в браузере (или управляй через корпоративный менеджер).");
+    if(!c.phishingSafe) recs.push("Почту проверяй по доменам/срочности/вложениям. Подозрительное — сообщай, не открывая.");
+    if(!c.networkSafe) recs.push("Контроль сети: отключать неизвестные устройства, выключать гостевой Wi-Fi, обновлять роутер.");
+    if(!c.cloudSafe) recs.push("В облаке закрывай публичные ссылки, убирай доступ 'всем', включай уведомления о входах.");
+    if(!c.socialSafe) recs.push("В соцсетях снижай публичность, ограничивай ЛС, блокируй фейки и жалуйся на них.");
+    if(game.hintsUsed>0) recs.push("Старайся опираться на индикаторы окружения, чтобы экономить подсказки и повышать итоговый %.");
+
+    if(recs.length===0) recs.push("Продолжай в том же стиле: действия устойчивые к ночным сценариям.");
+    for(const r of recs){
+      const it = document.createElement("div");
+      it.className = "item";
+      it.innerHTML = `<div class="meta">${escapeHtml(r)}</div>`;
+      el.finalRecs.appendChild(it);
+    }
+
+    // Final log
+    el.finalLog.innerHTML = "";
+    const logItems = game.logs.slice(-120);
+    if(logItems.length===0){
+      const it = document.createElement("div");
+      it.className = "item";
+      it.innerHTML = `<div class="meta">Журнал пуст.</div>`;
+      el.finalLog.appendChild(it);
+    } else {
+      for(const e of logItems){
+        const it = document.createElement("div");
+        it.className = "item";
+        it.innerHTML = `<div class="top"><div><div class="name">${escapeHtml(e.title)}</div><div class="meta">${escapeHtml(e.detail)}</div></div><div class="meta mono">${escapeHtml(e.ts)}</div></div>`;
+        el.finalLog.appendChild(it);
+      }
+    }
+
+    // store final score
+    game.score = finalScore;
+  }
+
+  el.btnRestart.addEventListener("click", ()=>location.reload());
+
+  // ---------- Input ----------
+  window.addEventListener("keydown", (e)=>{
+    if(e.code === "Tab"){
+      e.preventDefault();
+      if(game.state === State.PLAYING) openPhone();
+      else if(game.state === State.MODAL) {
+        // If task open, close task then phone
+        if($("#tab_task")) closeTaskUI();
+        closePhone();
+      }
+      return;
+    }
+    if(e.code === "Escape"){
+      if(game.state === State.MODAL){
+        if($("#tab_task")) closeTaskUI();
+        closePhone();
+        return;
+      }
+      if(game.state === State.PLAYING){
+        setState(State.PAUSED);
+        return;
+      }
+      if(game.state === State.PAUSED){
+        setState(State.PLAYING);
+        return;
+      }
+      return;
+    }
+    game.input.keys.add(e.code);
+    // Interaction
+    if(e.code === "KeyE"){
+      if(game.state === State.PLAYING){
+        interact.tryInteract();
+      }
+    }
+  });
+  window.addEventListener("keyup", (e)=> game.input.keys.delete(e.code));
+
+  // Mouse look
+  window.addEventListener("mousemove", (e)=>{
+    if(!game.input.pointerLocked) return;
+    game.input.mouseDX += e.movementX || 0;
+    game.input.mouseDY += e.movementY || 0;
+  });
+
+  document.addEventListener("pointerlockchange", ()=>{
+    game.input.pointerLocked = (document.pointerLockElement === el.threeCanvas || document.pointerLockElement === el.fbCanvas);
+    updateHUD();
+  });
+
+  function requestPointerLock(){
+    const canvas = (game.rendererMode === "three") ? el.threeCanvas : el.fbCanvas;
+    if(canvas.requestPointerLock) canvas.requestPointerLock();
+  }
+  function closePointerLock(){
+    if(document.pointerLockElement) document.exitPointerLock?.();
+  }
+
+  el.btnLockMouse.addEventListener("click", requestPointerLock);
+
+  // ---------- Rendering Backends ----------
+  const render = {
+    pixelScale: 0.35, // lower -> chunkier pixels
+    setPixelScale(v){
+      render.pixelScale = clamp(v, 0.18, 0.75);
+      if(game.rendererMode === "three") three.setPixelScale(render.pixelScale);
+      else fallback.setPixelScale(render.pixelScale);
+    }
+  };
+
+  // ----- Three.js backend (optional) -----
+  const three = {
+    enabled:false,
+    THREE:null,
+    // scene objects
+    scene:null, camera:null, world:null,
+    // low-res render target + blit
+    gl:null,
+    rt:null,
+    rtW:0, rtH:0,
+
+    // player
+    yaw: 0,
+    pitch: 0,
+    pos: {x:0, y:1.65, z:0},
+    vel: {x:0, z:0},
+
+    // interactables (mesh + id + label + zone)
+    interactables: [],
+
+    init(THREE){
+      this.enabled = true;
+      this.THREE = THREE;
+
+      // Setup WebGL renderer
+      const gl = new THREE.WebGLRenderer({
+        canvas: el.threeCanvas,
+        antialias: false,
+        alpha: false,
+        powerPreference: "high-performance"
+      });
+      gl.setClearColor(0x0b0f14, 1);
+      gl.outputColorSpace = THREE.SRGBColorSpace;
+      gl.toneMapping = THREE.NoToneMapping;
+      gl.shadowMap.enabled = false;
+      this.gl = gl;
+
+      this.scene = new THREE.Scene();
+      this.scene.fog = new THREE.FogExp2(0x0b0f14, 0.035);
+
+      this.camera = new THREE.PerspectiveCamera(70, 1, 0.05, 80);
+      this.camera.position.set(this.pos.x, this.pos.y, this.pos.z);
+
+      // Lights
+      const hemi = new THREE.HemisphereLight(0x9db4ff, 0x2a2f3a, 0.9);
+      this.scene.add(hemi);
+      const dir = new THREE.DirectionalLight(0xffffff, 0.35);
+      dir.position.set(8, 10, 3);
+      this.scene.add(dir);
+
+      // World group
+      this.world = new THREE.Group();
+      this.scene.add(this.world);
+
+      // Build office layout (procedural boxes)
+      this.buildOffice();
+
+      // Pixelation target
+      this.setPixelScale(render.pixelScale);
+      this.resize();
+
+      // Start at entrance
+      this.pos = {x:-8, y:1.65, z:5};
+      this.yaw = Math.PI * 0.15;
+      this.pitch = 0;
+    },
+
+    setPixelScale(scale){
+      // Recreate RT on next resize
+      this.pixelScale = scale;
+      this.resize(true);
+    },
+
+    resize(force=false){
+      if(!this.enabled) return;
+      const w = Math.max(2, el.gameWrap?.clientWidth || el.threeCanvas.clientWidth || window.innerWidth);
+      const h = Math.max(2, el.gameWrap?.clientHeight || el.threeCanvas.clientHeight || window.innerHeight);
+      this.camera.aspect = w / h;
+      this.camera.updateProjectionMatrix();
+
+      // Low-res target size
+      const rtW = Math.max(64, Math.floor(w * this.pixelScale));
+      const rtH = Math.max(64, Math.floor(h * this.pixelScale));
+
+      // Set renderer size to screen; render into RT then draw to screen via full-res pass:
+      // We avoid postprocessing libs and use WebGLRenderer.setRenderTarget + copyTextureToTexture-like approach
+      // Simpler: render RT to canvas by setting renderer size to RT, then upscale canvas via CSS.
+      // Implementation: set internal drawing buffer to RT size and rely on CSS upscale.
+      // (This keeps true pixelated look, and works offline.)
+      this.gl.setSize(rtW, rtH, false);
+      el.threeCanvas.style.width = "100%";
+      el.threeCanvas.style.height = "100%";
+      // Remember for info
+      this.rtW = rtW; this.rtH = rtH;
+    },
+
+    buildOffice(){
+      const THREE = this.THREE;
+      const g = this.world;
+
+      // Materials (flat-ish to mimic pixel art)
+      const matFloor = new THREE.MeshLambertMaterial({color:0x101826});
+      const matWall  = new THREE.MeshLambertMaterial({color:0x162235});
+      const matTrim  = new THREE.MeshLambertMaterial({color:0x2a3b55});
+      const matDesk  = new THREE.MeshLambertMaterial({color:0x2b2a2c});
+      const matScreen= new THREE.MeshLambertMaterial({color:0x0b111a, emissive:0x102a2a, emissiveIntensity:0.35});
+      const matTerm  = new THREE.MeshLambertMaterial({color:0x1b2434});
+      const matDoor  = new THREE.MeshLambertMaterial({color:0x25364f});
+      const matGlow  = new THREE.MeshLambertMaterial({color:0x1f8f68});
+
+      // Floor
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(26, 1, 18), matFloor);
+      floor.position.set(0, -0.5, 0);
+      g.add(floor);
+
+      // Walls (simple rectangle)
+      function wall(x,z,w,h,d){
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), matWall);
+        m.position.set(x,h/2-0.0,z);
+        g.add(m);
+        return m;
+      }
+      wall(0, -9, 26, 4, 1);
+      wall(0,  9, 26, 4, 1);
+      wall(-13, 0, 1, 4, 18);
+      wall( 13, 0, 1, 4, 18);
+
+      // Inner partitions to suggest 6 zones
+      wall(-4.5, 0, 1, 3.2, 14);
+      wall(4.5, 0, 1, 3.2, 14);
+      // horizontal partitions
+      wall(0, -2.6, 8.8, 3.2, 1);
+      wall(0,  2.6, 8.8, 3.2, 1);
+
+      // Zone sign (bright trim blocks)
+      function sign(x,z,text){
+        const s = new THREE.Mesh(new THREE.BoxGeometry(2.8,0.25,0.25), matTrim);
+        s.position.set(x,2.55,z);
+        g.add(s);
+        // tiny emissive dot to guide
+        const dot = new THREE.Mesh(new THREE.BoxGeometry(0.2,0.2,0.2), matGlow);
+        dot.position.set(x,2.2,z+0.2);
+        g.add(dot);
+        // store as non-interactive landmark
+        return {mesh:s, text};
+      }
+
+      // Layout (left to right, top to bottom)
+      // Zones positions:
+      const zones = [
+        { id:"workstation", name:"Этап 1: Рабочее место", x:-9, z:-6 },
+        { id:"accounts",    name:"Этап 2: Учётки",        x:-9, z:  6 },
+        { id:"mail",        name:"Этап 3: Почта",         x: 0, z:-6 },
+        { id:"network",     name:"Этап 4: Сеть",          x: 0, z:  6 },
+        { id:"cloud",       name:"Этап 5: Облако",        x: 9, z:-6 },
+        { id:"social",      name:"Этап 6: Соцсети",       x: 9, z:  6 },
+      ];
+      zones.forEach(z => sign(z.x, z.z-2.2, z.name));
+
+      // Helper to add interactable terminal
+      const addInteractable = (id, label, x,y,z, sx,sy,sz, mat, zoneName) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz), mat);
+        m.position.set(x,y,z);
+        m.userData = {id, label, zoneName};
+        g.add(m);
+        this.interactables.push(m);
+        return m;
+      };
+
+      // Workstation props: desk + PC + monitor + usb
+      const desk = new THREE.Mesh(new THREE.BoxGeometry(2.6,0.8,1.3), matDesk);
+      desk.position.set(-9,0.4,-6);
+      g.add(desk);
+      addInteractable("workstation", "ПК и стол", -9, 1.15, -5.5, 0.9,0.55,0.35, matScreen, "Рабочее место");
+
+      const usb = new THREE.Mesh(new THREE.BoxGeometry(0.18,0.06,0.32), new THREE.MeshLambertMaterial({color:0xffcc66}));
+      usb.position.set(-8.5, 0.86, -6.2);
+      usb.userData = {id:"workstation", label:"USB-флешка", zoneName:"Рабочее место"};
+      g.add(usb);
+      this.interactables.push(usb);
+
+      // Accounts terminal (laptop)
+      const lapBase = new THREE.Mesh(new THREE.BoxGeometry(1.1,0.12,0.75), matTerm);
+      lapBase.position.set(-9, 0.85, 6);
+      g.add(lapBase);
+      addInteractable("accounts", "Терминал учёток", -9, 1.25, 6, 0.9,0.55,0.15, matScreen, "Учётки и пароли");
+
+      // Mail terminal
+      const mailStand = new THREE.Mesh(new THREE.BoxGeometry(0.6,1.0,0.6), matTerm);
+      mailStand.position.set(0,0.5,-6);
+      g.add(mailStand);
+      addInteractable("mail", "Почтовый терминал", 0, 1.35, -6, 1.0,0.7,0.15, matScreen, "Почта");
+
+      // Network rack/router
+      const rack = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.4,0.8), matTerm);
+      rack.position.set(0,0.7,6);
+      g.add(rack);
+      const router = addInteractable("network", "Роутер/щиток", 0, 1.5, 6, 1.2,0.6,0.35, matScreen, "Корпоративная сеть");
+      // blinking light cube as hint
+      const led = new THREE.Mesh(new THREE.BoxGeometry(0.12,0.12,0.12), matGlow);
+      led.position.set(0.55, 1.35, 6.25);
+      led.userData.blink = true;
+      g.add(led);
+
+      // Cloud terminal
+      const cloudStand = new THREE.Mesh(new THREE.BoxGeometry(0.6,1.0,0.6), matTerm);
+      cloudStand.position.set(9,0.5,-6);
+      g.add(cloudStand);
+      addInteractable("cloud", "Облачный терминал", 9, 1.35, -6, 1.0,0.7,0.15, matScreen, "Облако");
+
+      // Social terminal
+      const socStand = new THREE.Mesh(new THREE.BoxGeometry(0.6,1.0,0.6), matTerm);
+      socStand.position.set(9,0.5,6);
+      g.add(socStand);
+      addInteractable("social", "Терминал соцсетей", 9, 1.35, 6, 1.0,0.7,0.15, matScreen, "Соцсети");
+
+      // Go Home door
+      const door = new THREE.Mesh(new THREE.BoxGeometry(2.0,2.9,0.35), matDoor);
+      door.position.set(12.0, 1.45, 0);
+      door.userData = {id:"home", label:"Дверь домой", zoneName:"Выход"};
+      g.add(door);
+      this.interactables.push(door);
+
+      // Decorative columns (helps navigation)
+      for(let i=0;i<8;i++){
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.35,2.2,0.35), matTrim);
+        col.position.set(-11.5 + (i%4)*7.5, 1.1, -8 + Math.floor(i/4)*16);
+        g.add(col);
+      }
+
+      // Place a few “sticker” panels (non-interactive)
+      function sticker(x,z,text){
+        const s = new THREE.Mesh(new THREE.BoxGeometry(0.6,0.4,0.05), new THREE.MeshLambertMaterial({color:0xffe58a}));
+        s.position.set(x, 1.7, z);
+        s.rotation.y = (x<0? Math.PI/2 : -Math.PI/2);
+        g.add(s);
+      }
+      sticker(-11.6,-5.8,"Win+L");
+      sticker(-11.6, 6.3,"2FA");
+      sticker( 11.6,-5.8,"Links?");
+      sticker( 11.6, 6.3,"Fakes?");
+
+      // Store blinkers
+      this.blinkers = g.children.filter(o => o.userData && o.userData.blink);
+    },
+
+    tick(dt){
+      const THREE = this.THREE;
+
+      // blink
+      const t = now() * 0.004;
+      if(this.blinkers){
+        for(const b of this.blinkers){
+          b.visible = (Math.sin(t) > -0.15);
         }
-        
-        // 3D рендерер
-        function render3D() {
-            const width = canvas.width;
-            const height = canvas.height;
-            
-            // Очистка экрана
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, width, height);
-            
-            // Рендер пола и потолка
-            ctx.fillStyle = '#224422';
-            ctx.fillRect(0, height/2, width, height/2); // Пол
-            
-            ctx.fillStyle = '#111133';
-            ctx.fillRect(0, 0, width, height/2); // Потолок
-            
-            // Raycasting для стен
-            const rayCount = width;
-            for (let i = 0; i < rayCount; i++) {
-                const rayAngle = player.angle - player.fov/2 + (i / rayCount) * player.fov;
-                
-                let distance = 0;
-                let hitWall = false;
-                let hitObject = null;
-                
-                // Трассировка луча
-                while (!hitWall && distance < 20) {
-                    distance += 0.1;
-                    
-                    // Позиция луча
-                    const rayX = player.x + Math.sin(rayAngle) * distance;
-                    const rayY = player.y + Math.cos(rayAngle) * distance;
-                    
-                    // Проверка стены
-                    const gridX = Math.floor(rayX);
-                    const gridY = Math.floor(rayY);
-                    
-                    if (gridX < 0 || gridX >= world.width || gridY < 0 || gridY >= world.height) {
-                        hitWall = true;
-                    } else if (world.grid[gridX][gridY] === 1) {
-                        hitWall = true;
-                    }
-                    
-                    // Проверка объектов
-                    if (!hitWall) {
-                        for (const obj of world.objects) {
-                            const objDist = Math.sqrt(
-                                Math.pow(rayX - obj.x, 2) + 
-                                Math.pow(rayY - obj.y, 2)
-                            );
-                            if (objDist < 0.5 && obj.interactable) {
-                                hitObject = obj;
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                // Коррекция искажения
-                distance *= Math.cos(player.angle - rayAngle);
-                
-                // Высота стены
-                const wallHeight = Math.min(height, height / (distance + 0.0001));
-                
-                // Цвет стены в зависимости от расстояния
-                const brightness = Math.max(50, 255 - distance * 30);
-                const wallColor = `rgb(${brightness}, ${brightness}, ${brightness})`;
-                
-                // Рисуем стену
-                ctx.fillStyle = wallColor;
-                const wallTop = (height - wallHeight) / 2;
-                ctx.fillRect(i, wallTop, 1, wallHeight);
-                
-                // Рисуем объекты
-                if (hitObject && distance < 5) {
-                    const objHeight = Math.min(height/3, height / (distance + 0.0001));
-                    const objTop = (height - objHeight) / 2;
-                    
-                    // Цвет объекта
-                    let objColor = '#00ff00';
-                    if (hitObject.type === 'exit') objColor = '#ff0000';
-                    else if (hitObject.type.includes('trap')) objColor = '#ff9900';
-                    
-                    ctx.fillStyle = objColor;
-                    ctx.fillRect(i - 2, objTop - objHeight/4, 5, objHeight * 1.5);
-                }
-            }
-            
-            // Рендер мини-карты
-            renderMinimap();
+      }
+
+      // mouse look
+      const sens = 0.0022;
+      this.yaw   -= game.input.mouseDX * sens;
+      this.pitch -= game.input.mouseDY * sens;
+      game.input.mouseDX = 0; game.input.mouseDY = 0;
+      this.pitch = clamp(this.pitch, -1.35, 1.35);
+
+      // movement
+      const speed = 4.0;
+      const accel = 18.0;
+      const friction = 10.0;
+
+      let ix = 0, iz = 0;
+      const k = game.input.keys;
+      const up = k.has("KeyW") || k.has("ArrowUp");
+      const dn = k.has("KeyS") || k.has("ArrowDown");
+      const lt = k.has("KeyA") || k.has("ArrowLeft");
+      const rt = k.has("KeyD") || k.has("ArrowRight");
+      if(up) iz -= 1;
+      if(dn) iz += 1;
+      if(lt) ix -= 1;
+      if(rt) ix += 1;
+      const len = Math.hypot(ix, iz) || 1;
+      ix/=len; iz/=len;
+
+      const forward = {x: Math.sin(this.yaw), z: Math.cos(this.yaw)};
+      const right = {x: Math.cos(this.yaw), z: -Math.sin(this.yaw)};
+      const wishX = (forward.x * iz + right.x * ix) * speed;
+      const wishZ = (forward.z * iz + right.z * ix) * speed;
+
+      // accelerate to wish
+      this.vel.x += (wishX - this.vel.x) * clamp(dt*accel, 0, 1);
+      this.vel.z += (wishZ - this.vel.z) * clamp(dt*accel, 0, 1);
+
+      // friction when no input
+      if(ix===0 && iz===0){
+        this.vel.x -= this.vel.x * clamp(dt*friction, 0, 1);
+        this.vel.z -= this.vel.z * clamp(dt*friction, 0, 1);
+      }
+
+      // integrate + simple bounds collision
+      const nextX = this.pos.x + this.vel.x * dt;
+      const nextZ = this.pos.z + this.vel.z * dt;
+
+      // world bounds (inside outer walls)
+      this.pos.x = clamp(nextX, -11.5, 11.5);
+      this.pos.z = clamp(nextZ, -8.0, 8.0);
+
+      // bump from inner partitions (approx)
+      // vertical partitions at x=-4.5 and x=4.5 across z in [-7,7]
+      const bump = 0.22;
+      if(this.pos.z>-7 && this.pos.z<7){
+        if(Math.abs(this.pos.x + 4.5) < bump) this.pos.x = (this.pos.x < -4.5) ? -4.5-bump : -4.5+bump;
+        if(Math.abs(this.pos.x - 4.5) < bump) this.pos.x = (this.pos.x <  4.5) ?  4.5-bump :  4.5+bump;
+      }
+      // horizontal partitions at z=-2.6 and z=2.6 for x in [-4.4,4.4]
+      if(this.pos.x>-4.2 && this.pos.x<4.2){
+        if(Math.abs(this.pos.z + 2.6) < bump) this.pos.z = (this.pos.z < -2.6) ? -2.6-bump : -2.6+bump;
+        if(Math.abs(this.pos.z - 2.6) < bump) this.pos.z = (this.pos.z <  2.6) ?  2.6-bump :  2.6+bump;
+      }
+
+      // Update camera
+      this.camera.position.set(this.pos.x, this.pos.y, this.pos.z);
+      this.camera.rotation.order = "YXZ";
+      this.camera.rotation.y = this.yaw;
+      this.camera.rotation.x = this.pitch;
+
+      // Determine zone label by position quadrant (soft)
+      game.currentZone = zoneNameFromPos(this.pos.x, this.pos.z);
+
+      // Interact prompt via raycast
+      interact.updateThree(this.camera, this.interactables);
+
+      // render (low-res internal buffer)
+      this.gl.render(this.scene, this.camera);
+    }
+  };
+
+  function zoneNameFromPos(x,z){
+    // Map to 6 zones + exit (door)
+    if(x > 10.4 && Math.abs(z) < 2.2) return "Выход";
+    const left = x < -4.5;
+    const right = x > 4.5;
+    const top = z > 0;
+    if(left && !top) return "Рабочее место";
+    if(left && top)  return "Учётки и пароли";
+    if(!left && !right && !top) return "Почта";
+    if(!left && !right && top)  return "Корпоративная сеть";
+    if(right && !top) return "Облако";
+    if(right && top)  return "Соцсети";
+    return "Офис";
+  }
+
+  // ----- Fallback backend (offline, no three.js) -----
+  const fallback = {
+    enabled:false,
+    ctx:null,
+    w:0,h:0,
+    scale: 0.35,
+    // player (2D top-down but same zones)
+    x:-8, z:5,
+    yaw:0,
+    velx:0, velz:0,
+    interactables: [],
+    init(){
+      this.enabled = true;
+      el.fbCanvas.style.display = "block";
+      el.threeCanvas.style.display = "none";
+      const c = el.fbCanvas;
+      this.ctx = c.getContext("2d", {alpha:false, desynchronized:true});
+      this.setPixelScale(render.pixelScale);
+      this.resize();
+      this.build();
+    },
+    setPixelScale(scale){
+      this.scale = scale;
+      this.resize(true);
+    },
+    resize(force=false){
+      const W = Math.max(2, el.gameWrap.clientWidth || window.innerWidth);
+      const H = Math.max(2, el.gameWrap.clientHeight || window.innerHeight);
+      // internal low-res buffer
+      this.w = Math.max(160, Math.floor(W * this.scale));
+      this.h = Math.max(120, Math.floor(H * this.scale));
+      el.fbCanvas.width = this.w;
+      el.fbCanvas.height = this.h;
+      el.fbCanvas.style.width = "100%";
+      el.fbCanvas.style.height = "100%";
+    },
+    build(){
+      // In fallback, interactables are rectangles in world space (same coords as 3D)
+      // We'll use simple AABB checks around player.
+      this.interactables = [
+        {id:"workstation", label:"ПК и стол", x:-9, z:-6, r:1.1, zoneName:"Рабочее место"},
+        {id:"accounts", label:"Терминал учёток", x:-9, z:6, r:1.2, zoneName:"Учётки и пароли"},
+        {id:"mail", label:"Почтовый терминал", x:0, z:-6, r:1.2, zoneName:"Почта"},
+        {id:"network", label:"Роутер/щиток", x:0, z:6, r:1.3, zoneName:"Корпоративная сеть"},
+        {id:"cloud", label:"Облачный терминал", x:9, z:-6, r:1.2, zoneName:"Облако"},
+        {id:"social", label:"Терминал соцсетей", x:9, z:6, r:1.2, zoneName:"Соцсети"},
+        {id:"home", label:"Дверь домой", x:12, z:0, r:1.2, zoneName:"Выход"},
+      ];
+    },
+    tick(dt){
+      // movement
+      const k = game.input.keys;
+      let ix=0, iz=0;
+      if(k.has("KeyW")||k.has("ArrowUp")) iz -= 1;
+      if(k.has("KeyS")||k.has("ArrowDown")) iz += 1;
+      if(k.has("KeyA")||k.has("ArrowLeft")) ix -= 1;
+      if(k.has("KeyD")||k.has("ArrowRight")) ix += 1;
+      const len = Math.hypot(ix,iz) || 1;
+      ix/=len; iz/=len;
+
+      const speed = 4.2;
+      const accel = 16.0;
+      const friction = 10.0;
+      const wishX = ix * speed;
+      const wishZ = iz * speed;
+
+      this.velx += (wishX - this.velx) * clamp(dt*accel,0,1);
+      this.velz += (wishZ - this.velz) * clamp(dt*accel,0,1);
+      if(ix===0 && iz===0){
+        this.velx -= this.velx * clamp(dt*friction,0,1);
+        this.velz -= this.velz * clamp(dt*friction,0,1);
+      }
+
+      this.x = clamp(this.x + this.velx*dt, -11.5, 11.5);
+      this.z = clamp(this.z + this.velz*dt, -8.0, 8.0);
+
+      // zone
+      game.currentZone = zoneNameFromPos(this.x, this.z);
+
+      // interaction prompt (nearest within radius)
+      interact.updateFallback(this.x, this.z, this.interactables);
+
+      // draw
+      this.draw();
+    },
+    draw(){
+      const ctx = this.ctx;
+      const w = this.w, h = this.h;
+      // Map world coords [-13..13]x[-9..9] to screen
+      const toX = (x)=> (x+13)/26 * w;
+      const toY = (z)=> (z+9)/18 * h;
+
+      ctx.fillStyle = "#0b0f14";
+      ctx.fillRect(0,0,w,h);
+
+      // floor
+      ctx.fillStyle = "#101826";
+      ctx.fillRect(0,0,w,h);
+
+      // partitions
+      ctx.fillStyle = "#162235";
+      // outer border
+      ctx.fillRect(0,0,w,2);
+      ctx.fillRect(0,h-2,w,2);
+      ctx.fillRect(0,0,2,h);
+      ctx.fillRect(w-2,0,2,h);
+      // verticals x=-4.5, +4.5
+      const vx1 = toX(-4.5), vx2 = toX(4.5);
+      ctx.fillRect(vx1-1, toY(-7), 2, toY(7)-toY(-7));
+      ctx.fillRect(vx2-1, toY(-7), 2, toY(7)-toY(-7));
+      // horizontals z=-2.6, +2.6 (between x=-4.2..4.2)
+      const hz1 = toY(-2.6), hz2 = toY(2.6);
+      ctx.fillRect(toX(-4.2), hz1-1, toX(4.2)-toX(-4.2), 2);
+      ctx.fillRect(toX(-4.2), hz2-1, toX(4.2)-toX(-4.2), 2);
+
+      // interactables
+      for(const it of this.interactables){
+        const px = toX(it.x), py = toY(it.z);
+        ctx.fillStyle = (it.id==="home") ? "#25364f" : "#0b111a";
+        ctx.fillRect(px-4, py-4, 8, 8);
+        ctx.fillStyle = "#4de3a8";
+        ctx.fillRect(px-1, py-1, 2, 2);
+      }
+
+      // player
+      const px = toX(this.x), py = toY(this.z);
+      ctx.fillStyle = "#e8eef7";
+      ctx.fillRect(px-2, py-2, 4, 4);
+      ctx.fillStyle = "#ffcc66";
+      ctx.fillRect(px+3, py-1, 2, 2);
+
+      // UI hint labels
+      ctx.fillStyle = "rgba(232,238,247,.85)";
+      ctx.font = "10px ui-monospace, Menlo, Consolas, monospace";
+      ctx.fillText("Fallback renderer (offline)", 6, 12);
+    }
+  };
+
+  // ---------- Interaction system ----------
+  const interact = {
+    hover: null, // {id,label,zoneName}
+    promptVisible:false,
+
+    showPrompt(on, big, small){
+      el.prompt.style.opacity = on ? "1" : "0";
+      el.promptBig.textContent = big || "E: взаимодействовать";
+      el.promptSmall.textContent = small || "";
+      this.promptVisible = on;
+    },
+
+    updateThree(camera, meshes){
+      // raycast from center
+      if(!three.enabled) return;
+      const THREE = three.THREE;
+      if(!this.raycaster) this.raycaster = new THREE.Raycaster();
+      if(!this.ndc) this.ndc = new THREE.Vector2(0,0);
+
+      this.raycaster.setFromCamera(this.ndc, camera);
+      this.raycaster.far = 2.4;
+
+      const hits = this.raycaster.intersectObjects(meshes, false);
+      if(hits && hits.length){
+        const obj = hits[0].object;
+        const ud = obj.userData || {};
+        this.hover = {id: ud.id, label: ud.label, zoneName: ud.zoneName};
+        this.showPrompt(true, "E: взаимодействовать", ud.label ? ud.label : "");
+      } else {
+        this.hover = null;
+        this.showPrompt(false);
+      }
+    },
+
+    updateFallback(px,pz, items){
+      let best = null, bestD = 1e9;
+      for(const it of items){
+        const d = Math.hypot(px-it.x, pz-it.z);
+        if(d < it.r && d < bestD){
+          bestD = d; best = it;
         }
-        
-        function renderMinimap() {
-            const mapSize = 150;
-            const mapScale = mapSize / Math.max(world.width, world.height);
-            const mapX = canvas.width - mapSize - 20;
-            const mapY = 20;
-            
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(mapX, mapY, mapSize, mapSize);
-            
-            // Сетка
-            ctx.strokeStyle = '#00ff00';
-            ctx.strokeRect(mapX, mapY, mapSize, mapSize);
-            
-            // Стены
-            ctx.fillStyle = '#666666';
-            for (let x = 0; x < world.width; x++) {
-                for (let y = 0; y < world.height; y++) {
-                    if (world.grid[x][y] === 1) {
-                        ctx.fillRect(
-                            mapX + x * mapScale,
-                            mapY + y * mapScale,
-                            mapScale, mapScale
-                        );
-                    }
-                }
-            }
-            
-            // Объекты
-            world.objects.forEach(obj => {
-                let color = '#00ff00';
-                if (obj.type === 'exit') color = '#ff0000';
-                else if (!obj.interactable) color = '#888888';
-                else if (obj.type.includes('trap')) color = '#ff9900';
-                
-                ctx.fillStyle = color;
-                ctx.fillRect(
-                    mapX + obj.x * mapScale - 2,
-                    mapY + obj.y * mapScale - 2,
-                    4, 4
-                );
-            });
-            
-            // Игрок
-            ctx.fillStyle = '#ff0000';
-            ctx.beginPath();
-            ctx.arc(
-                mapX + player.x * mapScale,
-                mapY + player.y * mapScale,
-                3, 0, Math.PI * 2
-            );
-            ctx.fill();
-            
-            // Направление игрока
-            ctx.strokeStyle = '#ff0000';
-            ctx.beginPath();
-            ctx.moveTo(
-                mapX + player.x * mapScale,
-                mapY + player.y * mapScale
-            );
-            ctx.lineTo(
-                mapX + (player.x + Math.sin(player.angle) * 3) * mapScale,
-                mapY + (player.y + Math.cos(player.angle) * 3) * mapScale
-            );
-            ctx.stroke();
-        }
-        
-        // ========== ИГРОВАЯ ЛОГИКА ==========
-        const gameState = {
-            time: 18.00,
-            securityScore: 100,
-            completedTasks: 0,
-            totalTasks: 12,
-            violations: [],
-            trapsTriggered: 0,
-            isDayEnded: false,
-            trickyTasksCompleted: 0
-        };
-        
-        // Задания с подвохами
-        const securityTasks = [
-            // Основные задания
-            {
-                id: 'check_computer1',
-                name: 'Проверить компьютер сотрудника Иванова',
-                description: 'Заблокировать сессию, проверить обновления',
-                completed: false,
-                points: 10,
-                tricky: false
-            },
-            {
-                id: 'check_computer2',
-                name: 'Проверить компьютер в переговорке',
-                description: 'Удалить личные файлы, выйти из учетных записей',
-                completed: false,
-                points: 10,
-                tricky: false
-            },
-            {
-                id: 'check_phone1',
-                name: 'Проверить рабочий телефон',
-                description: 'Убедиться, что нет сохраненных паролей',
-                completed: false,
-                points: 8,
-                tricky: false
-            },
-            {
-                id: 'check_phone2',
-                name: 'Проверить телефон на ресепшене',
-                description: 'Отключить автоответчик с конфиденциальной информацией',
-                completed: false,
-                points: 8,
-                tricky: false
-            },
-            {
-                id: 'check_router',
-                name: 'Проверить маршрутизатор',
-                description: 'Обновить прошивку, проверить подключенные устройства',
-                completed: false,
-                points: 12,
-                tricky: true
-            },
-            {
-                id: 'check_server',
-                name: 'Проверить серверную',
-                description: 'Настроить бэкапы, проверить доступы',
-                completed: false,
-                points: 15,
-                tricky: true
-            },
-            {
-                id: 'check_printer',
-                name: 'Проверить сетевой принтер',
-                description: 'Очистить очередь печати, проверить настройки',
-                completed: false,
-                points: 8,
-                tricky: false
-            },
-            {
-                id: 'check_safe',
-                name: 'Проверить сейф с документами',
-                description: 'Убедиться, что сейф закрыт, документы на месте',
-                completed: false,
-                points: 10,
-                tricky: true
-            },
-            {
-                id: 'check_documents',
-                name: 'Проверить конфиденциальные документы',
-                description: 'Уничтожить черновики с паролями',
-                completed: false,
-                points: 8,
-                tricky: false
-            },
-            // Ловушки (не нужно делать, но они привлекают внимание)
-            {
-                id: 'trap_usb',
-                name: 'НАЙДЕН USB-НАКОПИТЕЛЬ',
-                description: '⚠️ НЕ ВСТАВЛЯТЬ! Это тестовая ловушка',
-                completed: false,
-                points: 0,
-                tricky: true,
-                isTrap: true
-            },
-            {
-                id: 'trap_coffee',
-                name: 'КОФЕ-МАШИНА ТРЕБУЕТ НАСТРОЙКИ',
-                description: '⚠️ Это не IT оборудование! Не тратьте время',
-                completed: false,
-                points: 0,
-                tricky: true,
-                isTrap: true
-            },
-            {
-                id: 'exit_office',
-                name: 'ВЫЙТИ ИЗ ОФИСА',
-                description: 'Только после выполнения ВСЕХ реальных задач',
-                completed: false,
-                points: 20,
-                tricky: false,
-                isExit: true
-            }
-        ];
-        
-        // Инициализация игры
-        function initGame() {
-            initWorld();
-            updateTaskList();
-            updateStats();
-            
-            // Управление клавишами
-            window.addEventListener('keydown', (e) => {
-                const key = e.key.toLowerCase();
-                if (['w', 'a', 's', 'd', 'ц', 'ф', 'ы', 'в'].includes(key)) {
-                    keys[key] = true;
-                }
-            });
-            
-            window.addEventListener('keyup', (e) => {
-                const key = e.key.toLowerCase();
-                if (['w', 'a', 's', 'd', 'ц', 'ф', 'ы', 'в'].includes(key)) {
-                    keys[key] = false;
-                }
-            });
-            
-            // Управление мышью
-            canvas.addEventListener('mousemove', (e) => {
-                if (document.pointerLockElement === canvas) {
-                    const movementX = e.movementX || 0;
-                    player.angle += movementX * mouseSensitivity;
-                }
-            });
-            
-            canvas.addEventListener('click', () => {
-                if (!document.pointerLockElement) {
-                    canvas.requestPointerLock();
-                } else {
-                    checkInteraction();
-                }
-            });
-            
-            // Запуск игрового цикла
-            gameLoop();
-            startTimer();
-            
-            // Начальное сообщение
-            setTimeout(() => {
-                showNotification('🔒 Вы - аудитор кибербезопасности. Проверьте офис перед закрытием!');
-                showInstruction();
-            }, 1000);
-        }
-        
-        function gameLoop() {
-            if (!gameState.isDayEnded) {
-                updatePlayer();
-                render3D();
-            }
-            requestAnimationFrame(gameLoop);
-        }
-        
-        function updatePlayer() {
-            // Движение вперед/назад
-            if (keys.w || keys.ц) {
-                const newX = player.x + Math.sin(player.angle) * player.moveSpeed;
-                const newY = player.y + Math.cos(player.angle) * player.moveSpeed;
-                
-                if (!isCollision(newX, newY)) {
-                    player.x = newX;
-                    player.y = newY;
-                }
-            }
-            
-            if (keys.s || keys.ы) {
-                const newX = player.x - Math.sin(player.angle) * player.moveSpeed;
-                const newY = player.y - Math.cos(player.angle) * player.moveSpeed;
-                
-                if (!isCollision(newX, newY)) {
-                    player.x = newX;
-                    player.y = newY;
-                }
-            }
-            
-            // Стороннее движение
-            if (keys.a || keys.ф) {
-                const newX = player.x - Math.cos(player.angle) * player.moveSpeed;
-                const newY = player.y + Math.sin(player.angle) * player.moveSpeed;
-                
-                if (!isCollision(newX, newY)) {
-                    player.x = newX;
-                    player.y = newY;
-                }
-            }
-            
-            if (keys.d || keys.в) {
-                const newX = player.x + Math.cos(player.angle) * player.moveSpeed;
-                const newY = player.y - Math.sin(player.angle) * player.moveSpeed;
-                
-                if (!isCollision(newX, newY)) {
-                    player.x = newX;
-                    player.y = newY;
-                }
-            }
-        }
-        
-        function isCollision(x, y) {
-            const gridX = Math.floor(x);
-            const gridY = Math.floor(y);
-            
-            if (gridX < 0 || gridX >= world.width || gridY < 0 || gridY >= world.height) {
-                return true;
-            }
-            
-            return world.grid[gridX][gridY] === 1;
-        }
-        
-        function checkInteraction() {
-            // Бросаем луч вперед для проверки взаимодействия
-            const checkDistance = 2;
-            const checkX = player.x + Math.sin(player.angle) * checkDistance;
-            const checkY = player.y + Math.cos(player.angle) * checkDistance;
-            
-            // Ищем ближайший объект
-            let closestObj = null;
-            let closestDist = Infinity;
-            
-            for (const obj of world.objects) {
-                if (obj.interactable) {
-                    const dist = Math.sqrt(
-                        Math.pow(checkX - obj.x, 2) + 
-                        Math.pow(checkY - obj.y, 2)
-                    );
-                    
-                    if (dist < 1.5 && dist < closestDist) {
-                        closestDist = dist;
-                        closestObj = obj;
-                    }
-                }
-            }
-            
-            if (closestObj) {
-                interactWithObject(closestObj);
-            }
-        }
-        
-        function interactWithObject(obj) {
-            switch(obj.type) {
-                case 'computer':
-                    showComputerCheck(obj.task);
-                    break;
-                case 'phone':
-                    showPhoneCheck(obj.task);
-                    break;
-                case 'router':
-                    showRouterCheck();
-                    break;
-                case 'server':
-                    showServerCheck();
-                    break;
-                case 'printer':
-                    showPrinterCheck();
-                    break;
-                case 'safe':
-                    showSafeCheck();
-                    break;
-                case 'documents':
-                    showDocumentsCheck();
-                    break;
-                case 'usb_drive':
-                    showUSBTrap();
-                    break;
-                case 'coffee_machine':
-                    showCoffeeTrap();
-                    break;
-                case 'exit':
-                    attemptExit();
-                    break;
-            }
-        }
-        
-        // ========== ИНТЕРФЕЙСЫ ПРОВЕРОК ==========
-        function showComputerCheck(taskId) {
-            const task = securityTasks.find(t => t.id === taskId);
-            let content = '';
-            
-            if (taskId === 'check_computer1') {
-                content = `
-                    <h2>💻 КОМПЬЮТЕР СОТРУДНИКА ИВАНОВА</h2>
-                    <p>Обнаружены проблемы:</p>
-                    
-                    <div style="margin: 20px 0;">
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Сессия Windows активна:</h4>
-                            <p>Пользователь не вышел из системы</p>
-                            <button class="button" onclick="showNotification('Сессия заблокирована')">🔒 Заблокировать</button>
-                            <button class="button tricky" onclick="showNotification('⚠️ Это тест! Не нужно нажимать')">📝 Отправить уведомление пользователю</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Обновления ОС:</h4>
-                            <p>Доступны 3 критических обновления</p>
-                            <button class="button" onclick="showNotification('Обновления установлены')">🔄 Установить сейчас</button>
-                            <button class="button tricky" onclick="triggerTrap('Отложил обновления на неделю')">⏰ Отложить на неделю</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>USB устройства:</h4>
-                            <p>Подключена флешка "Личные фото"</p>
-                            <button class="button" onclick="showNotification('USB безопасно извлечен')">📀 Извлечь</button>
-                            <button class="button danger" onclick="triggerTrap('Проверил личные файлы сотрудника')">👁️ Просмотреть содержимое</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Антивирус:</h4>
-                            <p>Определения устарели на 15 дней</p>
-                            <button class="button" onclick="showNotification('Базы антивируса обновлены')">🛡️ Обновить</button>
-                            <button class="button tricky trap-button" onclick="triggerTrap('Отключил антивирус "чтобы не тормозил"')">⚡ Отключить антивирус</button>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                        <button class="button" onclick="closeModal('computer')">❌ ВЫЙТИ</button>
-                    </div>
-                `;
-            } else {
-                content = `
-                    <h2>💻 КОМПЬЮТЕР В ПЕРЕГОВОРКЕ</h2>
-                    
-                    <div style="margin: 20px 0;">
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Сохраненные пароли в браузере:</h4>
-                            <p>Найдено 8 сохраненных паролей от рабочих систем</p>
-                            <button class="button" onclick="showNotification('Пароли удалены из браузера')">🧹 Очистить</button>
-                            <button class="button tricky" onclick="triggerTrap('Экспортировал пароли в файл "для безопасности"')">💾 Экспортировать пароли</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Авторизация в облачных сервисах:</h4>
-                            <p>Активны сессии в Google Drive, Dropbox, OneDrive</p>
-                            <button class="button" onclick="showNotification('Все сессии завершены')">🚪 Выйти из всех сервисов</button>
-                            <button class="button tricky" onclick="triggerTrap('Сделал резервную копию на личный облачный диск')">☁️ Создать резервную копию</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>История браузера:</h4>
-                            <p>Содержит посещение личных соцсетей в рабочее время</p>
-                            <button class="button" onclick="showNotification('История очищена')">🗑️ Очистить историю</button>
-                            <button class="button danger" onclick="triggerTrap('Сохранил историю для отчета руководству')">📋 Сохранить отчет</button>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                        <button class="button" onclick="closeModal('computer')">❌ ВЫЙТИ</button>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('computer-content').innerHTML = content;
-            document.getElementById('computer-modal').style.display = 'flex';
-        }
-        
-        function showPhoneCheck(taskId) {
-            let content = '';
-            
-            if (taskId === 'check_phone1') {
-                content = `
-                    <h2>📞 РАБОЧИЙ ТЕЛЕФОН КАБИНЕТА 101</h2>
-                    
-                    <div style="margin: 20px 0;">
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Сохраненные контакты:</h4>
-                            <p>Найдены личные контакты сотрудников (номера домов, семьи)</p>
-                            <button class="button" onclick="showNotification('Личные контакты удалены')">🗑️ Удалить личные контакты</button>
-                            <button class="button tricky" onclick="triggerTrap('Синхронизировал контакты с личным телефоном')">📱 Синхронизировать</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Голосовая почта:</h4>
-                            <p>Сообщение от "службы поддержки" с просьбой перезвонить на подозрительный номер</p>
-                            <button class="button danger" onclick="triggerTrap('Перезвонил на подозрительный номер')">📞 Перезвонить</button>
-                            <button class="button" onclick="showNotification('Сообщение помечено как спам')">🚫 Пометить как спам</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Настройки безопасности:</h4>
-                            <p>PIN-код не установлен</p>
-                            <button class="button" onclick="showNotification('PIN-код установлен')">🔢 Установить PIN</button>
-                            <button class="button tricky" onclick="triggerTrap('Оставил без пароля "для удобства"')">😊 Оставить как есть</button>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                        <button class="button" onclick="closeModal('phone')">❌ ВЫЙТИ</button>
-                    </div>
-                `;
-            } else {
-                content = `
-                    <h2>📞 ТЕЛЕФОН НА РЕСЕПШЕНЕ</h2>
-                    
-                    <div style="margin: 20px 0;">
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Автоответчик:</h4>
-                            <p>Сообщение: "Компания ООО 'Альфа', бухгалтерия: пароль к 1С - бухгалтер123"</p>
-                            <button class="button danger" onclick="triggerTrap('Оставил сообщение с паролем')">🎤 Оставить как есть</button>
-                            <button class="button" onclick="showNotification('Сообщение изменено на стандартное')">🔊 Изменить сообщение</button>
-                        </div>
-                        
-                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                            <h4>Журнал вызовов:</h4>
-                            <p>Много вызовов на международные номера в нерабочее время</p>
-                            <button class="button" onclick="showNotification('Вызовы залогированы для проверки')">📊 Записать в отчет</button>
-                            <button class="button tricky" onclick="triggerTrap('Позвонил по подозрительному номеру из журнала')">🔍 Проверить номер</button>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                        <button class="button" onclick="closeModal('phone')">❌ ВЫЙТИ</button>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('phone-content').innerHTML = content;
-            document.getElementById('phone-modal').style.display = 'flex';
-        }
-        
-        function showRouterCheck() {
-            const content = `
-                <h2>📶 КОРПОРАТИВНЫЙ МАРШРУТИЗАТОР</h2>
-                
-                <div style="margin: 20px 0;">
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Подключенные устройства (12):</h4>
-                        <p>3 неизвестных устройства с MAC-адресами из Китая</p>
-                        <button class="button" onclick="showNotification('Неизвестные устройства заблокированы')">🚫 Заблокировать неизвестные</button>
-                        <button class="button tricky" onclick="triggerTrap('Добавил устройства в белый список "на всякий случай"')">✅ Добавить в белый список</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Гостевой Wi-Fi:</h4>
-                        <p>Активен, пароль: guest123 (стандартный)</p>
-                        <button class="button" onclick="showNotification('Гостевой Wi-Fi отключен')">📴 Отключить</button>
-                        <button class="button tricky" onclick="triggerTrap('Усилил сигнал гостевой сети')">📡 Усилить сигнал</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Прошивка:</h4>
-                        <p>Версия 1.0.4 (актуальная 2.1.7)</p>
-                        <button class="button" onclick="showNotification('Прошивка обновлена до актуальной версии')">🔄 Обновить</button>
-                        <button class="button danger trap-button" onclick="triggerTrap('Скачал прошивку с непроверенного сайта')">💾 Скачать с сайта</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Портфорвардинг:</h4>
-                        <p>Открыты порты 22, 3389, 5900 для всех входящих подключений</p>
-                        <button class="button" onclick="showNotification('Лишние порты закрыты')">🔒 Закрыть лишние порты</button>
-                        <button class="button tricky" onclick="triggerTrap('Открыл дополнительные порты для "удаленной работы"')">🌐 Открыть еще порты</button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="button success" onclick="completeTask('check_router')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                    <button class="button" onclick="closeModal('router')">❌ ВЫЙТИ</button>
-                </div>
-            `;
-            
-            document.getElementById('router-content').innerHTML = content;
-            document.getElementById('router-modal').style.display = 'flex';
-        }
-        
-        function showServerCheck() {
-            const content = `
-                <h2>🗄️ СЕРВЕРНАЯ КОМПАНИИ</h2>
-                
-                <div style="margin: 20px 0;">
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Резервное копирование:</h4>
-                        <p>Последний бэкап: 2 недели назад</p>
-                        <button class="button" onclick="showNotification('Бэкап запущен, настроено ежедневное копирование')">💾 Настроить бэкап</button>
-                        <button class="button tricky" onclick="triggerTrap('Отключил бэкапы "чтобы экономить место"')">💸 Отключить бэкапы</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Доступы:</h4>
-                        <p>5 пользователей с правами администратора (включая уволенных)</p>
-                        <button class="button" onclick="showNotification('Права администратора пересмотрены')">👥 Проверить доступы</button>
-                        <button class="button danger" onclick="triggerTrap('Создал общий админ-аккаунт для всех IT')">👑 Создать общий аккаунт</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Логи безопасности:</h4>
-                        <p>Обнаружены множественные неудачные попытки входа</p>
-                        <button class="button" onclick="showNotification('Логи сохранены, настроены алерты')">📊 Проанализировать логи</button>
-                        <button class="button tricky" onclick="triggerTrap('Очистил логи "чтобы не занимали место"')">🧹 Очистить логи</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Физическая безопасность:</h4>
-                        <p>Дверь в серверную не закрывается на ключ</p>
-                        <button class="button" onclick="showNotification('Вызван сантехник для починки замка')">🔧 Сообщить о проблеме</button>
-                        <button class="button tricky trap-button" onclick="triggerTrap('Поставил записку "Не входить" вместо замка')">📝 Оставить записку</button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="button success" onclick="completeTask('check_server')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                    <button class="button" onclick="closeModal('server')">❌ ВЫЙТИ</button>
-                </div>
-            `;
-            
-            document.getElementById('server-content').innerHTML = content;
-            document.getElementById('server-modal').style.display = 'flex';
-        }
-        
-        function showPrinterCheck() {
-            const content = `
-                <h2>🖨️ СЕТЕВОЙ ПРИНТЕР КОРИДОРА</h2>
-                
-                <div style="margin: 20px 0;">
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Очередь печати:</h4>
-                        <p>43 документа ожидают печати, включая конфиденциальные</p>
-                        <button class="button" onclick="showNotification('Очередь очищена, конфиденциальные документы уничтожены')">🗑️ Очистить очередь</button>
-                        <button class="button tricky" onclick="triggerTrap('Распечатал все документы "для архива"')">📄 Распечатать все</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Настройки сети:</h4>
-                        <p>Принтер доступен из публичной сети</p>
-                        <button class="button" onclick="showNotification('Доступ ограничен корпоративной сетью')">🔒 Ограничить доступ</button>
-                        <button class="button danger" onclick="triggerTrap('Открыл доступ для удаленной печати')">🌍 Открыть удаленный доступ</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Журнал печати:</h4>
-                        <p>Сотрудник печатал резюме и личные документы</p>
-                        <button class="button" onclick="showNotification('Информация передана в HR')">📋 Сообщить руководству</button>
-                        <button class="button tricky" onclick="triggerTrap('Сделал копии документов "для контроля"')">👁️ Сохранить копии</button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="button success" onclick="completeTask('check_printer')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                    <button class="button" onclick="closeModal('printer')">❌ ВЫЙТИ</button>
-                </div>
-            `;
-            
-            document.getElementById('printer-content').innerHTML = content;
-            document.getElementById('printer-modal').style.display = 'flex';
-        }
-        
-        function showSafeCheck() {
-            const content = `
-                <h2>🔐 СЕЙФ С ДОКУМЕНТАЦИЕЙ</h2>
-                
-                <div style="margin: 20px 0;">
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Комбинация замка:</h4>
-                        <p>На стикере на сейфе написано: 00-00-00</p>
-                        <button class="button" onclick="showNotification('Стикер удален, комбинация изменена')">🏷️ Удалить стикер</button>
-                        <button class="button danger" onclick="triggerTrap('Оставил стикер "чтобы не забыть"')">🧠 Оставить для памяти</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Содержимое сейфа:</h4>
-                        <p>Договора с клиентами, печати компании, USB с бекапами</p>
-                        <button class="button" onclick="showNotification('Содержимое проверено, все на месте')">✅ Проверить наличие</button>
-                        <button class="button tricky" onclick="triggerTrap('Взял USB домой "для сохранности"')">🏠 Забрать домой</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Журнал доступа:</h4>
-                        <p>Последний доступ был в 20:45 (после окончания рабочего дня)</p>
-                        <button class="button" onclick="showNotification('Доступ залогирован, будет проведено расследование')">🔍 Изучить журнал</button>
-                        <button class="button tricky trap-button" onclick="triggerTrap('Очистил журнал "чтобы не было вопросов"')">🧹 Очистить журнал</button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="button success" onclick="completeTask('check_safe')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                    <button class="button" onclick="closeModal('safe')">❌ ВЫЙТИ</button>
-                </div>
-            `;
-            
-            document.getElementById('safe-content').innerHTML = content;
-            document.getElementById('safe-modal').style.display = 'flex';
-        }
-        
-        function showDocumentsCheck() {
-            const content = `
-                <h2>📄 КОНФИДЕНЦИАЛЬНЫЕ ДОКУМЕНТЫ</h2>
-                
-                <div style="margin: 20px 0;">
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Черновики на столе:</h4>
-                        <p>Рукописные заметки с паролями к системам</p>
-                        <button class="button" onclick="showNotification('Заметки уничтожены в шредере')">🗑️ Уничтожить</button>
-                        <button class="button tricky" onclick="triggerTrap('Сфотографировал заметки "на память"')">📸 Сфотографировать</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Незакрытые контракты:</h4>
-                        <p>Подписанные договоры лежат на виду</p>
-                        <button class="button" onclick="showNotification('Документы помещены в сейф')">🔒 Убрать в сейф</button>
-                        <button class="button danger" onclick="triggerTrap('Оставил на столе "для быстрого доступа"')">🏃 Оставить на виду</button>
-                    </div>
-                    
-                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
-                        <h4>Список сотрудников:</h4>
-                        <p>С телефонами, адресами, данными для входа</p>
-                        <button class="button" onclick="showNotification('Список зашифрован и сохранен в защищенное хранилище')">🔐 Зашифровать</button>
-                        <button class="button tricky" onclick="triggerTrap('Отправил список на личную почту')">📧 Отправить себе</button>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="button success" onclick="completeTask('check_documents')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
-                    <button class="button" onclick="closeModal('computer')">❌ ВЫЙТИ</button>
-                </div>
-            `;
-            
-            document.getElementById('computer-content').innerHTML = content;
-            document.getElementById('computer-modal').style.display = 'flex';
-        }
-        
-        function showUSBTrap() {
-            const content = `
-                <h2>⚠️ ОБНАРУЖЕН USB-НАКОПИТЕЛЬ</h2>
-                
-                <div style="border: 2px solid #ff9900; padding: 20px; margin: 20px 0;">
-                    <p style="color: #ff9900; font-size: 18px; text-align: center;">
-                        ⚠️ ВНИМАНИЕ: ТЕСТ НА БДИТЕЛЬНОСТЬ ⚠️
-                    </p>
-                    <p>Это учебная ловушка. Настоящий USB-накопитель может содержать:</p>
-                    <ul style="margin: 10px 0 10px 20px;">
-                        <li>Вредоносное ПО</li>
-                        <li>Кейлоггеры</li>
-                        <li>Шпионские программы</li>
-                    </ul>
-                    <p style="color: #00ff00; font-weight: bold;">
-                        Правильное действие: НЕ ВСТАВЛЯТЬ и сообщить в службу безопасности!
-                    </p>
-                </div>
-                
-                <div style="margin: 20px 0;">
-                    <button class="button success" onclick="showNotification('✅ Правильно! USB оставлен на месте, сообщено в службу безопасности')">🚫 НЕ ВСТАВЛЯТЬ</button>
-                    <button class="button danger trap-button" onclick="triggerTrap('❌ ОШИБКА: Вставил USB в компьютер')">💾 Вставить и проверить</button>
-                    <button class="button tricky" onclick="triggerTrap('❌ ОШИБКА: Унес USB домой "для проверки"')">🏠 Забрать домой</button>
-                </div>
-                
-                <div class="hint">
-                    Это задание не обязательно для завершения аудита, но проверяет вашу бдительность
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="button" onclick="closeModal('computer')">❌ ЗАКРЫТЬ</button>
-                </div>
-            `;
-            
-            document.getElementById('computer-content').innerHTML = content;
-            document.getElementById('computer-modal').style.display = 'flex';
-        }
-        
-        function showCoffeeTrap() {
-            const content = `
-                <h2>☕ КОФЕ-МАШИНА С ПОДКЛЮЧЕНИЕМ К Wi-Fi</h2>
-                
-                <div style="border: 2px solid #ff9900; padding: 20px; margin: 20px 0;">
-                    <p style="color: #ff9900; font-size: 18px; text-align: center;">
-                        ⚠️ ЭТО НЕ IT ОБОРУДОВАНИЕ! ⚠️
-                    </p>
-                    <p>Умные устройства (кофе-машины, чайники, лампы) часто:</p>
-                    <ul style="margin: 10px 0 10px 20px;">
-                        <li>Имеют уязвимости в прошивках</li>
-                        <li>Могут быть точкой входа в сеть</li>
-                        <li>Собирают данные о пользователях</li>
-                    </ul>
-                    <p style="color: #00ff00; font-weight: bold;">
-                        В рабочее время это - отвлекающий фактор и потенциальная угроза
-                    </p>
-                </div>
-                
-                <div style="margin: 20px 0;">
-                    <button class="button success" onclick="showNotification('✅ Правильно! Кофе-машина не относится к IT аудиту')">🚫 ПРОПУСТИТЬ</button>
-                    <button class="button danger trap-button" onclick="triggerTrap('❌ ОШИБКА: Начал настраивать кофе-машину вместо проверки безопасности')">⚙️ Настроить параметры</button>
-                    <button class="button tricky" onclick="triggerTrap('❌ ОШИБКА: Сварил кофе вместо работы')">☕ Сварить кофе</button>
-                </div>
-                
-                <div class="hint">
-                    Настоящий аудитор сосредоточен на безопасности, а не на бытовых устройствах
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="button" onclick="closeModal('computer')">❌ ЗАКРЫТЬ</button>
-                </div>
-            `;
-            
-            document.getElementById('computer-content').innerHTML = content;
-            document.getElementById('computer-modal').style.display = 'flex';
-        }
-        
-        // ========== ИГРОВЫЕ ФУНКЦИИ ==========
-        function triggerTrap(message) {
-            gameState.trapsTriggered++;
-            gameState.securityScore = Math.max(0, gameState.securityScore - 5);
-            updateStats();
-            showNotification(`❌ ${message} (-5%)`, true);
-            closeCurrentModal();
-        }
-        
-        function completeTask(taskId) {
-            const task = securityTasks.find(t => t.id === taskId);
-            if (task && !task.completed) {
-                task.completed = true;
-                gameState.completedTasks++;
-                
-                if (task.tricky && !task.isTrap) {
-                    gameState.trickyTasksCompleted++;
-                }
-                
-                gameState.securityScore = Math.min(100, gameState.securityScore + 3);
-                updateTaskList();
-                updateStats();
-                showNotification(`✅ Задача выполнена: ${task.name}`);
-                closeCurrentModal();
-                
-                checkAllTasksCompleted();
-            }
-        }
-        
-        function closeCurrentModal() {
-            const modals = ['computer', 'phone', 'router', 'server', 'printer', 'safe'];
-            for (const modal of modals) {
-                const modalElement = document.getElementById(`${modal}-modal`);
-                if (modalElement.style.display === 'flex') {
-                    modalElement.style.display = 'none';
-                    break;
-                }
-            }
-        }
-        
-        function closeModal(modalName) {
-            document.getElementById(`${modalName}-modal`).style.display = 'none';
-        }
-        
-        function updateTaskList() {
-            const tasksList = document.getElementById('tasks-list');
-            tasksList.innerHTML = '';
-            
-            // Основные задачи
-            securityTasks.forEach(task => {
-                if (!task.isTrap) {
-                    const taskElement = document.createElement('div');
-                    taskElement.className = `task ${task.completed ? 'completed' : ''} ${task.tricky ? 'tricky' : ''}`;
-                    taskElement.innerHTML = `
-                        <strong>${task.completed ? '✅' : '❌'} ${task.name}</strong>
-                        <p style="font-size: 11px; color: #888; margin-top: 3px;">${task.description}</p>
-                        <div style="font-size: 10px; color: #ff9900;">
-                            ${task.isExit ? 'ФИНАЛЬНОЕ ЗАДАНИЕ' : `Баллы: ${task.points}`}
-                        </div>
-                    `;
-                    
-                    if (!task.completed && !task.isExit) {
-                        taskElement.onclick = () => {
-                            showNotification(`Задание: ${task.name}. Найдите объект на карте.`);
-                        };
-                    }
-                    
-                    tasksList.appendChild(taskElement);
-                }
-            });
-            
-            // Ловушки (отдельно)
-            const trapTasks = securityTasks.filter(t => t.isTrap);
-            if (trapTasks.length > 0) {
-                const trapHeader = document.createElement('div');
-                trapHeader.innerHTML = '<h4 style="color: #ff9900; margin-top: 20px;">⚠️ ТЕСТОВЫЕ ЛОВУШКИ:</h4>';
-                tasksList.appendChild(trapHeader);
-                
-                trapTasks.forEach(task => {
-                    const taskElement = document.createElement('div');
-                    taskElement.className = `task tricky ${task.completed ? 'completed' : ''}`;
-                    taskElement.innerHTML = `
-                        <strong>${task.completed ? '🚫' : '⚠️'} ${task.name}</strong>
-                        <p style="font-size: 11px; color: #ff9900; margin-top: 3px;">${task.description}</p>
-                    `;
-                    
-                    if (!task.completed) {
-                        taskElement.onclick = () => {
-                            showNotification('Найдите этот объект в офисе (помечен оранжевым на карте)');
-                        };
-                    }
-                    
-                    tasksList.appendChild(taskElement);
-                });
-            }
-        }
-        
-        function updateStats() {
-            document.getElementById('security-score').textContent = `${gameState.securityScore}%`;
-            document.getElementById('tasks-completed').textContent = 
-                `${gameState.completedTasks}/${gameState.totalTasks}`;
-            document.getElementById('violations-count').textContent = gameState.violations.length;
-            
-            const progressFill = document.getElementById('security-progress');
-            progressFill.style.width = `${gameState.securityScore}%`;
-            
-            if (gameState.securityScore >= 80) {
-                progressFill.style.background = '#00ff00';
-            } else if (gameState.securityScore >= 60) {
-                progressFill.style.background = '#ff9900';
-            } else {
-                progressFill.style.background = '#ff0000';
-            }
-        }
-        
-        function checkAllTasksCompleted() {
-            const realTasks = securityTasks.filter(t => !t.isTrap && !t.isExit);
-            const allCompleted = realTasks.every(task => task.completed);
-            
-            if (allCompleted) {
-                const exitTask = securityTasks.find(t => t.isExit);
-                if (exitTask) {
-                    exitTask.description = '✅ ВСЕ ЗАДАНИЯ ВЫПОЛНЕНЫ! Можете выходить';
-                    updateTaskList();
-                    showNotification('🎉 Все основные задачи выполнены! Можете выходить через главную дверь.', false);
-                }
-            }
-        }
-        
-        function attemptExit() {
-            const realTasks = securityTasks.filter(t => !t.isTrap && !t.isExit);
-            const allCompleted = realTasks.every(task => task.completed);
-            
-            if (!allCompleted) {
-                showNotification('❌ Не все задачи выполнены! Проверьте список заданий.', true);
-                return;
-            }
-            
-            endGame();
-        }
-        
-        function startTimer() {
-            setInterval(() => {
-                if (gameState.isDayEnded) return;
-                
-                let minutes = Math.floor(gameState.time);
-                let seconds = Math.round((gameState.time - minutes) * 100);
-                
-                seconds += 1;
-                if (seconds >= 60) {
-                    minutes += 1;
-                    seconds = 0;
-                }
-                
-                gameState.time = minutes + seconds / 100;
-                document.getElementById('time-display').textContent = formatTime(gameState.time);
-                
-                // Автоматическое завершение в 20:00
-                if (minutes >= 20) {
-                    endGame();
-                    showNotification('⏰ Время аудита истекло!', true);
-                }
-            }, 1000);
-        }
-        
-        function formatTime(time) {
-            const minutes = Math.floor(time);
-            const seconds = Math.round((time - minutes) * 100);
-            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        function endGame() {
-            gameState.isDayEnded = true;
-            
-            // Расчет оценки
-            const realTasks = securityTasks.filter(t => !t.isTrap && !t.isExit);
-            const completedRealTasks = realTasks.filter(t => t.completed).length;
-            const completionRate = Math.round((completedRealTasks / realTasks.length) * 100);
-            
-            // Бонусы и штрафы
-            let finalScore = gameState.securityScore;
-            
-            // Бонус за сложные задания
-            if (gameState.trickyTasksCompleted >= 2) {
-                finalScore = Math.min(100, finalScore + 10);
-            }
-            
-            // Штраф за ловушки
-            finalScore = Math.max(0, finalScore - (gameState.trapsTriggered * 5));
-            
-            // Показать отчет
-            showFinalReport(finalScore, completedRealTasks, realTasks.length);
-        }
-        
-        function showFinalReport(score, completedTasks, totalTasks) {
-            const finalScoreElement = document.getElementById('final-score');
-            const reportDetails = document.getElementById('report-details');
-            const completedTasksList = document.getElementById('completed-tasks-list');
-            const finalViolations = document.getElementById('final-violations');
-            const cyberAssessment = document.getElementById('cyber-literacy-assessment');
-            const recommendationsList = document.getElementById('recommendations-list');
-            
-            // Оценка
-            let scoreClass = 'score-poor';
-            let assessment = '';
-            
-            if (score >= 90) {
-                scoreClass = 'score-excellent';
-                assessment = 'ОТЛИЧНО. Высокий уровень киберграмотности.';
-            } else if (score >= 75) {
-                scoreClass = 'score-good';
-                assessment = 'ХОРОШО. Стандартный уровень знаний по безопасности.';
-            } else if (score >= 60) {
-                scoreClass = 'score-good';
-                assessment = 'УДОВЛЕТВОРИТЕЛЬНО. Есть пробелы в знаниях.';
-            } else {
-                assessment = 'НЕУДОВЛЕТВОРИТЕЛЬНО. Требуется срочное обучение.';
-            }
-            
-            finalScoreElement.className = `score-badge ${scoreClass}`;
-            finalScoreElement.textContent = `${score}%`;
-            
-            // Детали
-            reportDetails.innerHTML = `
-                <p>✅ Выполнено задач: ${completedTasks} из ${totalTasks}</p>
-                <p>⚠️ Активировано ловушек: ${gameState.trapsTriggered}</p>
-                <p>🎯 Сложные задания: ${gameState.trickyTasksCompleted} из 3</p>
-                <p>⏱️ Время аудита: ${formatTime(gameState.time)}</p>
-            `;
-            
-            // Выполненные задачи
-            completedTasksList.innerHTML = '';
-            securityTasks.forEach(task => {
-                if (task.completed && !task.isTrap && !task.isExit) {
-                    const item = document.createElement('p');
-                    item.style.color = task.tricky ? '#ff9900' : '#00ff00';
-                    item.textContent = `${task.tricky ? '🎯' : '✅'} ${task.name}`;
-                    completedTasksList.appendChild(item);
-                }
-            });
-            
-            // Нарушения
-            finalViolations.innerHTML = '';
-            if (gameState.trapsTriggered === 0) {
-                finalViolations.innerHTML = '<p style="color: #00ff00;">✅ Ловушки не активированы</p>';
-            } else {
-                const trapCount = document.createElement('p');
-                trapCount.style.color = '#ff6666';
-                trapCount.textContent = `⚠️ Активировано ловушек: ${gameState.trapsTriggered} (потеряно ${gameState.trapsTriggered * 5}%)`;
-                finalViolations.appendChild(trapCount);
-            }
-            
-            // Оценка киберграмотности
-            cyberAssessment.innerHTML = `
-                <p style="color: ${scoreClass === 'score-excellent' ? '#00ff00' : scoreClass === 'score-good' ? '#ff9900' : '#ff0000'}; font-weight: bold;">
-                    ${assessment}
-                </p>
-                <p>${getDetailedAssessment(score)}</p>
-            `;
-            
-            // Рекомендации
-            const recommendations = getRecommendations(score, gameState.trapsTriggered, completedTasks, totalTasks);
-            recommendationsList.innerHTML = '';
-            recommendations.forEach(rec => {
-                const item = document.createElement('p');
-                item.textContent = `• ${rec}`;
-                recommendationsList.appendChild(item);
-            });
-            
-            // Показать отчет
-            document.getElementById('final-report').style.display = 'flex';
-        }
-        
-        function getDetailedAssessment(score) {
-            if (score >= 90) {
-                return 'Вы отлично разбираетесь в кибербезопасности, не поддаетесь на уловки и понимаете реальные угрозы.';
-            } else if (score >= 75) {
-                return 'Вы обладаете базовыми знаниями, но иногда отвлекаетесь на второстепенные задачи или уловки.';
-            } else if (score >= 60) {
-                return 'Требуется дополнительное обучение. Вы часто выбираете небезопасные варианты действий.';
-            } else {
-                return 'Критический уровень. Необходимо пройти полный курс по кибербезопасности.';
-            }
-        }
-        
-        function getRecommendations(score, traps, completed, total) {
-            const recs = [];
-            
-            if (score < 70) {
-                recs.push('Пройти обязательный курс "Основы кибербезопасности для сотрудников"');
-            }
-            
-            if (traps > 0) {
-                recs.push('Изучить материалы по социальной инженерии и фишингу');
-            }
-            
-            if (completed < total) {
-                recs.push('Повторить корпоративную политику безопасности');
-            }
-            
-            if (score >= 85) {
-                recs.push('Рассмотреть возможность повышения квалификации до уровня Security Specialist');
-            } else {
-                recs.push('Пройдите повторный аудит через 2 недели для проверки прогресса');
-            }
-            
-            recs.push('Всегда блокируйте компьютер при уходе с рабочего места');
-            recs.push('Никогда не вставляйте неизвестные USB-накопители');
-            recs.push('Проверяйте отправителей перед открытием вложений');
-            
-            return recs;
-        }
-        
-        function showInstruction() {
-            const content = `
-                <h2>🎮 КИБЕР-АУДИТ: 3D СИМУЛЯТОР</h2>
-                
-                <div style="margin: 20px 0;">
-                    <h3>🎯 ВАША ЦЕЛЬ:</h3>
-                    <p>Вы - аудитор кибербезопасности. Проверьте офис перед закрытием.</p>
-                    
-                    <h3>🕹️ УПРАВЛЕНИЕ:</h3>
-                    <ul style="margin: 10px 0 10px 20px;">
-                        <li><strong>WASD</strong> - движение по офису</li>
-                        <li><strong>Мышь</strong> - поворот камеры</li>
-                        <li><strong>ЛКМ</strong> - взаимодействие с объектами</li>
-                        <li>Нажмите на экран для захвата управления мышью</li>
-                    </ul>
-                    
-                    <h3>⚠️ ОСОБЕННОСТИ:</h3>
-                    <ul style="margin: 10px 0 10px 20px;">
-                        <li>Некоторые задания содержат <span style="color: #ff9900">ловушки</span></li>
-                        <li>Не все объекты требуют проверки</li>
-                        <li>Выход доступен только после всех реальных задач</li>
-                        <li>Каждая ошибка снижает итоговый балл</li>
-                    </ul>
-                    
-                    <h3>📊 ОЦЕНКА:</h3>
-                    <p>В конце вы получите оценку своей киберграмотности от 0 до 100%</p>
-                    
-                    <div style="border: 2px solid #00ff00; padding: 15px; margin: 20px 0;">
-                        <p style="color: #00ff00; text-align: center; font-weight: bold;">
-                            Помните: Настоящий специалист по безопасности должен быть БДИТЕЛЬНЫМ!
-                        </p>
-                    </div>
-                </div>
-                
-                <div style="text-align: center;">
-                    <button class="button success" onclick="closeCurrentModal()">🚀 НАЧАТЬ АУДИТ</button>
-                </div>
-            `;
-            
-            document.getElementById('computer-content').innerHTML = content;
-            document.getElementById('computer-modal').style.display = 'flex';
-        }
-        
-        function showNotification(message, isWarning = false) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${isWarning ? 'warning' : ''}`;
-            notification.style.display = 'block';
-            
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
-        }
-        
-        function restartGame() {
-            location.reload();
-        }
-        
-        // Запуск игры
-        window.addEventListener('load', initGame);
-    </script>
+      }
+      if(best){
+        this.hover = {id: best.id, label: best.label, zoneName: best.zoneName};
+        this.showPrompt(true, "E: взаимодействовать", best.label);
+      } else {
+        this.hover = null;
+        this.showPrompt(false);
+      }
+    },
+
+    tryInteract(){
+      if(!this.hover) return;
+      // open relevant task
+      openTaskUI(this.hover.id);
+      logEvent("Взаимодействие", `Открыт интерфейс: ${this.hover.label}.`);
+    }
+  };
+
+  // ---------- Main Loop ----------
+  function tick(){
+    const t = now();
+    const dt = clamp((t - game.lastTick) / 1000, 0, 0.05);
+    game.lastTick = t;
+
+    if(game.state === State.PLAYING){
+      game.timeLeftSec -= dt;
+      if(game.timeLeftSec <= 0){
+        game.timeLeftSec = 0;
+        logEvent("Время", "Смена закончилась. Ночь начинается принудительно.");
+        nightSimulation();
+      }
+
+      if(game.rendererMode === "three") three.tick(dt);
+      else fallback.tick(dt);
+    } else if(game.state === State.PAUSED){
+      // no simulation
+    } else if(game.state === State.MODAL){
+      // modal open; still allow timer to run (pressure)
+      game.timeLeftSec -= dt * 0.75; // slightly slower while reading
+      if(game.timeLeftSec <= 0){
+        game.timeLeftSec = 0;
+        nightSimulation();
+      }
+      // Keep prompt off while modal
+      interact.showPrompt(false);
+      // Still tick renderer softly for blink
+      if(game.rendererMode === "three" && three.enabled) {
+        three.tick(Math.min(dt, 0.016));
+      } else if(game.rendererMode === "fallback" && fallback.enabled){
+        fallback.tick(Math.min(dt, 0.016));
+      }
+    }
+
+    updateHUD();
+    requestAnimationFrame(tick);
+  }
+
+  // ---------- Start / Boot ----------
+  function resetGame(){
+    game.score = 100;
+    game.hintsLeft = 3;
+    game.hintsUsed = 0;
+    game.logs = [];
+    game.scenario = buildScenario();
+    for(const k of Object.keys(game.checks)){
+      if(typeof game.checks[k] === "boolean") game.checks[k] = false;
+      if(k === "phishingSafe") game.checks[k] = true;
+      if(k === "phishingReported") game.checks[k] = 0;
+      if(k === "phishingOpened") game.checks[k] = 0;
+    }
+    // Derived cloud flags depend on scenario; set to false initially and recompute when opening UI
+    game.timeLeftSec = game.dayLengthSec;
+    renderLogList();
+    updateHUD();
+  }
+
+  function startGame(){
+    resetGame();
+    el.overlay.classList.add("hidden");
+    el.report.style.display = "none";
+    setState(State.PLAYING);
+    game.lastTick = now();
+    game.startedAt = now();
+    logEvent("Старт", "Смена началась. Осмотрись по зонам и убери риски.");
+    requestAnimationFrame(tick);
+  }
+
+  el.btnStart.addEventListener("click", startGame);
+
+  // Click canvas to lock mouse in playing
+  el.threeCanvas.addEventListener("click", ()=>{
+    if(game.state === State.PLAYING && !game.input.pointerLocked) requestPointerLock();
+  });
+  el.fbCanvas.addEventListener("click", ()=>{
+    if(game.state === State.PLAYING && !game.input.pointerLocked) requestPointerLock();
+  });
+
+  // Close phone with button, also restore tabs if task was open
+  el.phone.addEventListener("click", (e)=>{
+    if(e.target === el.phone){
+      if($("#tab_task")) closeTaskUI();
+      closePhone();
+    }
+  });
+
+  // Report close handling: keep on screen until restart
+  el.report.addEventListener("click", (e)=>{
+    // no close by background; restart only
+  });
+
+  // Window resize
+  window.addEventListener("resize", ()=>{
+    if(game.rendererMode === "three" && three.enabled) three.resize();
+    if(game.rendererMode === "fallback" && fallback.enabled) fallback.resize();
+  });
+
+  // ---------- CDN load with offline fallback ----------
+  function loadThreeFromCDN(){
+    return new Promise((resolve, reject)=>{
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js";
+      s.async = true;
+      s.onload = ()=> resolve(window.THREE);
+      s.onerror = ()=> reject(new Error("Three.js CDN failed"));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function boot(){
+    setState(State.MENU);
+
+    // Try Three.js; if fails, fallback
+    try{
+      const THREE = await loadThreeFromCDN();
+      if(!THREE) throw new Error("Three undefined");
+      game.rendererMode = "three";
+      el.renderBadge.textContent = "Renderer: Three.js (pixel)";
+      el.renderBadge.className = "badge good";
+      three.init(THREE);
+      el.fbCanvas.style.display = "none";
+      el.threeCanvas.style.display = "block";
+    } catch (e){
+      game.rendererMode = "fallback";
+      el.renderBadge.textContent = "Renderer: Fallback (offline)";
+      el.renderBadge.className = "badge warn";
+      fallback.init();
+    }
+
+    render.setPixelScale(render.pixelScale);
+    updateHUD();
+  }
+
+  // ---------- Small UX: show zone-related ambient messages ----------
+  let ambientTimer = 0;
+  setInterval(()=>{
+    if(game.state !== State.PLAYING) return;
+    // Occasional ambient hints without checklist
+    ambientTimer++;
+    if(ambientTimer % 22 !== 0) return;
+
+    const z = game.currentZone;
+    const c = game.checks;
+
+    const pool = [];
+    if(z==="Рабочее место" && (!c.workstationLocked || !c.usbRemoved || !c.updatesOn)) pool.push(["Стикер", "На мониторе заметка про блокировку, носители и обновления."]);
+    if(z==="Учётки и пароли" && (!c.twoFAOn || !c.passwordChanged || !c.browserPwOff)) pool.push(["Чат коллеги", "«Проверь 2FA и что пароль не 'Welcome123'»"]);
+    if(z==="Почта" && c.phishingReported===0) pool.push(["Почта", "Некоторые письма выглядят «слишком срочно»."]);
+    if(z==="Корпоративная сеть" && (!c.firmwareUpdated || !c.unknownDeviceRemoved)) pool.push(["Индикатор сети", "Мигает лампочка «новое устройство»/«обновление доступно»."]);
+    if(z==="Облако" && (!c.cloudNoPublicLinks || !c.cloudNoEveryone || !c.cloudAlertsOn)) pool.push(["Облако", "Панель намекает на общие ссылки и широкие права."]);
+    if(z==="Соцсети" && (!c.socialFakeBlocked || !c.socialPrivacyTight)) pool.push(["Соцсети", "Видно подозрительное совпадение имени у аккаунта поддержки."]);
+    if(pool.length){
+      const [t,d] = choice(pool);
+      logEvent(t, d);
+    }
+  }, 1000);
+
+  // ---------- Start boot ----------
+  boot();
+
+})();
+</script>
+
+<!--
+Как запускать:
+- Просто открой index.html двойным кликом в браузере (интернет не обязателен: есть fallback).
+Клавиши:
+- WASD / стрелки — движение
+- Мышь — обзор (нажми кнопку/клик по сцене для Pointer Lock)
+- E — взаимодействовать
+- Tab — смартфон/панель (помощь/журнал/подсказка)
+- Esc — пауза/выход из pointer lock / закрытие панелей
+-->
 </body>
 </html>
