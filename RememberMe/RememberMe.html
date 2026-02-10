@@ -1,0 +1,1027 @@
+```html
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>REMEMBER ME — Cyber Literacy Mini-Game</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#101a33; --panel2:#0f1830; --text:#e7ecff; --muted:#a9b3da;
+      --good:#46d39a; --bad:#ff6b6b; --warn:#ffd166; --accent:#7aa2ff; --chip:#1b2b57;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:var(--sans);
+      background: radial-gradient(1200px 700px at 20% 0%, #16265a 0%, var(--bg) 55%, #070b16 100%);
+      color:var(--text);
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      padding:24px;
+    }
+    .app{width:min(980px, 100%); display:grid; grid-template-columns: 360px 1fr; gap:18px}
+    @media (max-width: 900px){ .app{grid-template-columns: 1fr;}}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .side{padding:18px}
+    .main{padding:18px}
+    h1{font-size:18px; margin:0 0 10px 0; letter-spacing:.2px}
+    .sub{color:var(--muted); font-size:13px; line-height:1.35}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .chip{
+      background: rgba(122,162,255,.12);
+      border: 1px solid rgba(122,162,255,.22);
+      color: #cfe0ff;
+      padding:6px 10px;
+      border-radius: 999px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .chip.mono{font-family:var(--mono)}
+    .kpi{
+      display:grid; grid-template-columns: 1fr 1fr; gap:10px;
+      margin-top:14px;
+    }
+    .kpi .box{
+      background: rgba(0,0,0,.15);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding:10px 12px;
+    }
+    .kpi .v{font-size:16px; font-weight:700}
+    .kpi .l{color:var(--muted); font-size:12px; margin-top:2px}
+    .progress{
+      height:10px; border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .bar{
+      height:100%;
+      background: linear-gradient(90deg, rgba(122,162,255,.95), rgba(70,211,154,.95));
+      width:0%;
+      transition: width .35s ease;
+    }
+    .btn{
+      cursor:pointer;
+      border:none;
+      color:var(--text);
+      background: rgba(122,162,255,.18);
+      border:1px solid rgba(122,162,255,.28);
+      border-radius: 14px;
+      padding:10px 12px;
+      font-size:14px;
+      transition: transform .04s ease, background .15s ease;
+      user-select:none;
+    }
+    .btn:hover{background: rgba(122,162,255,.24)}
+    .btn:active{transform: translateY(1px)}
+    .btn.secondary{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .btn.danger{
+      background: rgba(255,107,107,.14);
+      border:1px solid rgba(255,107,107,.26);
+    }
+    .btn.good{
+      background: rgba(70,211,154,.14);
+      border:1px solid rgba(70,211,154,.26);
+    }
+    .divider{height:1px; background:rgba(255,255,255,.10); margin:14px 0}
+    .scenario{
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding:14px 14px;
+      line-height:1.45;
+      font-size:15px;
+    }
+    .scenario .meta{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      margin-bottom:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .scenario .title{font-weight:700; color:#dbe6ff}
+    .field{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:10px;
+    }
+    input[type="text"]{
+      width:100%;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+      font-size:14px;
+    }
+    input[type="text"]:focus{
+      border-color: rgba(122,162,255,.45);
+      box-shadow: 0 0 0 4px rgba(122,162,255,.12);
+    }
+    .choices{display:flex; gap:10px; flex-wrap:wrap}
+    .choice{
+      cursor:pointer;
+      padding:10px 12px;
+      border-radius: 14px;
+      background: rgba(27,43,87,.55);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:13px;
+    }
+    .choice:hover{border-color: rgba(122,162,255,.35)}
+    .feedback{
+      margin-top:12px;
+      border-radius: 18px;
+      padding:12px 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      display:none;
+    }
+    .feedback.good{border-color: rgba(70,211,154,.35)}
+    .feedback.bad{border-color: rgba(255,107,107,.35)}
+    .feedback.warn{border-color: rgba(255,209,102,.35)}
+    .feedback .hdr{font-weight:700; margin-bottom:6px}
+    .hintBox{
+      margin-top:10px;
+      border-radius: 16px;
+      padding:10px 12px;
+      border:1px dashed rgba(255,209,102,.38);
+      background: rgba(255,209,102,.08);
+      color:#ffe9b3;
+      display:none;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .report{
+      font-size:13px;
+      color: var(--muted);
+      line-height:1.45;
+      white-space:pre-wrap;
+      font-family: var(--mono);
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding:12px 12px;
+      margin-top:12px;
+      display:none;
+    }
+    .small{font-size:12px; color:var(--muted)}
+    .tagline{margin-top:6px; color:var(--muted); font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card side">
+      <h1>REMEMBER ME</h1>
+      <div class="sub">Мини-игра в стиле “карточка → ответ → разбор”, с оценкой точности и времени реакции.</div>
+
+      <div class="divider"></div>
+
+      <div class="row" style="justify-content:space-between; align-items:flex-start">
+        <div>
+          <div class="chip">Роль: <span class="mono">SOC Trainee</span></div>
+          <div class="tagline" id="rankLine"></div>
+        </div>
+        <div class="row">
+          <button class="btn secondary" id="btnReset">Сброс</button>
+        </div>
+      </div>
+
+      <div class="kpi">
+        <div class="box">
+          <div class="v" id="kpiLevel">1</div>
+          <div class="l">Глава / уровень</div>
+        </div>
+        <div class="box">
+          <div class="v" id="kpiRating">0</div>
+          <div class="l">Рейтинг</div>
+        </div>
+        <div class="box">
+          <div class="v" id="kpiAcc">0%</div>
+          <div class="l">Точность</div>
+        </div>
+        <div class="box">
+          <div class="v" id="kpiTime">—</div>
+          <div class="l">Среднее время</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="row">
+        <div class="chip">Streak: <span class="mono" id="streakDays">0</span> дн.</div>
+        <div class="chip">Подсказки: <span class="mono" id="hintsLeft">3</span></div>
+        <div class="chip">Серия: <span class="mono" id="combo">0</span></div>
+      </div>
+
+      <div class="progress" title="Прогресс текущего уровня">
+        <div class="bar" id="progBar"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sub">
+        Оценивание:
+        <ul>
+          <li>100% — точное совпадение (синонимы RU/EN учитываются)</li>
+          <li>50–80% — близкий термин (fuzzy matching)</li>
+          <li>Подсказка снижает итоговый рейтинг уровня</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card main">
+      <div class="row" style="justify-content:space-between; align-items:center">
+        <div>
+          <div class="chip" id="chapterChip">Глава: Базовые атаки</div>
+          <div class="tagline" id="cardCountLine"></div>
+        </div>
+        <div class="row">
+          <button class="btn secondary" id="btnHint">Подсказка</button>
+          <button class="btn good" id="btnNext" style="display:none;">Дальше</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="scenario">
+        <div class="meta">
+          <span class="chip mono" id="difficultyChip">DIFF: 1</span>
+          <span class="chip mono" id="modeChip">MODE: input</span>
+        </div>
+        <div class="title" id="scenarioTitle">Сценарий</div>
+        <div id="scenarioText" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="hintBox" id="hintBox"></div>
+
+      <div class="field">
+        <div class="choices" id="choices" style="display:none;"></div>
+
+        <input type="text" id="answerInput" placeholder="Введите тип атаки (например: DDoS, phishing, SQL injection)..." autocomplete="off" />
+
+        <div class="row">
+          <button class="btn" id="btnSubmit">Ответить</button>
+          <button class="btn secondary" id="btnSkip">Пропустить</button>
+        </div>
+
+        <div class="feedback" id="feedback">
+          <div class="hdr" id="fbHdr"></div>
+          <div id="fbBody"></div>
+        </div>
+
+        <div class="report" id="reportBox"></div>
+
+        <div class="small">
+          Данные и прогресс сохраняются в <span class="mono">localStorage</span> (можно заменить на бэкенд позже).
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/**
+ * REMEMBER ME — single-file prototype (HTML+JS).
+ * - Chapters/levels with scenarios stored in JSON-like objects
+ * - Answer recognition: RU/EN synonyms + fuzzy matching (levenshtein)
+ * - Partial credit, hints, timing, streak, localStorage progress
+ */
+
+(function(){
+  // -----------------------------
+  // Content base (can be moved to JSON file)
+  // -----------------------------
+  const DB = {
+    chapters: [
+      {
+        id: "basics",
+        title: "Базовые атаки",
+        description: "DDoS, Phishing, Malware (ransomware).",
+        cards: [
+          {
+            id:"ddos_1",
+            title:"Определи атаку",
+            text:"На сервер внезапно обрушился поток запросов, сайт стал недоступен, нагрузка выросла в 10 раз.",
+            answers: ["ddos", "distributed denial of service"],
+            synonyms: ["ддос", "ддос-атака", "атака отказа в обслуживании", "распределённая атака отказа в обслуживании"],
+            explain:"DDoS — распределённая атака отказа в обслуживании: множество источников перегружают сервис запросами, снижая доступность.",
+            prevent:"WAF/CDN, rate limiting, Anycast, фильтрация на провайдере, капча на чувствительных эндпоинтах.",
+            diff: 1,
+            mode: "input",
+            tags: ["availability","network"]
+          },
+          {
+            id:"phish_1",
+            title:"Социальная инженерия",
+            text:"Сотруднику приходит письмо от “HR-отдела” с просьбой подтвердить учётные данные. Через 5 минут его аккаунт используется для отправки сотен писем.",
+            answers: ["phishing"],
+            synonyms: ["фишинг", "поддельное письмо", "кража учетных данных", "spear phishing", "спирфишинг"],
+            explain:"Phishing — обман с целью заставить пользователя раскрыть данные (логин/пароль/коды) или выполнить действие по вредоносной ссылке.",
+            prevent:"DMARC/SPF/DKIM, обучение, MFA, проверка доменов/URL, кнопка “report phishing”.",
+            diff: 1,
+            mode: "input",
+            tags: ["social-engineering","identity"]
+          },
+          {
+            id:"ransom_1",
+            title:"Вредоносное ПО",
+            text:"После установки “обновления драйвера” на ПК появился процесс, шифрующий файлы и требующий оплату.",
+            answers: ["ransomware"],
+            synonyms: ["шифровальщик", "вымогатель", "вирус-шифровальщик", "ransom ware"],
+            explain:"Ransomware — вредоносное ПО, которое шифрует данные и требует выкуп за восстановление доступа.",
+            prevent:"Резервные копии (offline/immutable), EDR, запрет запуска из temp, least privilege, обновления, сегментация.",
+            diff: 1,
+            mode: "choice",
+            choices: ["Spyware", "Ransomware", "Worm", "Adware"],
+            tags: ["malware","impact"]
+          }
+        ]
+      },
+      {
+        id: "network",
+        title: "Сетевые угрозы",
+        description: "MITM, Spoofing, Sniffing, DNS Exfiltration.",
+        cards: [
+          {
+            id:"mitm_1",
+            title:"Сеть: перехват",
+            text:"Пользователь подключился к публичному Wi-Fi. Веб-страницы открываются, но сертификаты странные, а часть запросов уходит через неизвестный прокси.",
+            answers:["man in the middle","mitm"],
+            synonyms:["человек посередине","атака посредника","перехват трафика","mitm-атака"],
+            explain:"MITM — злоумышленник становится посредником между клиентом и сервером, перехватывая/подменяя трафик.",
+            prevent:"HTTPS/HSTS, VPN, проверка сертификатов, WPA2/3, запрет открытых точек, certificate pinning (где уместно).",
+            diff: 2,
+            mode:"input",
+            tags:["network","integrity"]
+          },
+          {
+            id:"spoof_1",
+            title:"Сеть: подмена",
+            text:"В логах видно, что запросы якобы приходят с доверенного IP, но реальный маршрут и поведение не совпадают. ACL/фильтры обходятся.",
+            answers:["spoofing","ip spoofing"],
+            synonyms:["спуфинг","подмена ip","ip-спуфинг","подделка адреса отправителя"],
+            explain:"Spoofing — подмена идентификаторов (например IP/MAC/домена) для обхода доверия и фильтрации.",
+            prevent:"Ingress/egress filtering (BCP38), anti-spoofing на маршрутизаторах, uRPF, мониторинг аномалий.",
+            diff: 2,
+            mode:"input",
+            tags:["network","identity"]
+          },
+          {
+            id:"sniff_1",
+            title:"Сеть: пассивное прослушивание",
+            text:"В сегменте сети обнаружено устройство в режиме зеркалирования/прослушки. Появились дампы трафика и утечки незашифрованных учетных данных.",
+            answers:["sniffing","packet sniffing"],
+            synonyms:["сниффинг","прослушивание трафика","перехват пакетов","анализ пакетов"],
+            explain:"Sniffing — перехват и анализ сетевого трафика (пассивно/активно), особенно опасно при отсутствии шифрования.",
+            prevent:"Шифрование (TLS), защищённые свитчи, контроль портов (802.1X), сегментация, мониторинг зеркалирования.",
+            diff: 2,
+            mode:"choice",
+            choices:["Sniffing","Pharming","Brute force","XSS"],
+            tags:["network","confidentiality"]
+          },
+          {
+            id:"dns_exfil_1",
+            title:"Экфильтрация",
+            text:"На рабочей станции открыли вложение из письма. Вскоре выросло число DNS-запросов с длинными поддоменами, а затем пошла передача данных на внешний IP.",
+            answers:["dns exfiltration","data exfiltration","exfiltration over dns"],
+            synonyms:["экфильтрация dns","утечка через dns","dns-эксфильтрация","экфильтрация данных"],
+            explain:"DNS exfiltration — скрытая передача данных через DNS-запросы (часто длинные поддомены с закодированными фрагментами).",
+            prevent:"DNS monitoring/analytics, блокировка подозрительных доменов, egress filtering, DLP, изоляция рабочих станций.",
+            diff: 3,
+            mode:"input",
+            tags:["exfiltration","dns"]
+          }
+        ]
+      },
+      {
+        id: "appsec",
+        title: "Атаки на приложения",
+        description: "SQL Injection, XSS, File Inclusion.",
+        cards: [
+          {
+            id:"sqli_1",
+            title:"Веб: инъекция",
+            text:"В запросе к веб-приложению в параметре поиска появляются фрагменты вроде ' OR 1=1 --. В логах — ошибки SQL и неожиданные выборки данных.",
+            answers:["sql injection","sqli"],
+            synonyms:["sql-инъекция","инъекция sql","sqli-атака"],
+            explain:"SQL Injection — внедрение SQL-кода в параметры запроса для чтения/изменения данных или обхода авторизации.",
+            prevent:"Параметризованные запросы, ORM, валидация, least privilege для БД, WAF, логирование/алерты.",
+            diff: 2,
+            mode:"choice",
+            choices:["SQL Injection","XSS","CSRF","SSRF"],
+            tags:["web","injection"]
+          },
+          {
+            id:"xss_1",
+            title:"Веб: скрипты",
+            text:"Пользовательский комментарий отображается на странице и внезапно выполняет JavaScript в браузере других пользователей (кража cookie/редиректы).",
+            answers:["cross site scripting","xss"],
+            synonyms:["межсайтовый скриптинг","xss-атака","xss"],
+            explain:"XSS — внедрение скрипта на страницу так, что он выполняется в браузере жертвы с контекстом сайта.",
+            prevent:"Экранирование/кодирование вывода, CSP, sanitize HTML, HttpOnly/SameSite cookies, шаблонизаторы.",
+            diff: 2,
+            mode:"input",
+            tags:["web","browser"]
+          }
+        ]
+      }
+    ]
+  };
+
+  // -----------------------------
+  // Storage + state
+  // -----------------------------
+  const LS_KEY = "remember_me_state_v1";
+  const todayISO = () => new Date().toISOString().slice(0,10);
+
+  const defaultState = () => ({
+    chapterIndex: 0,
+    cardIndex: 0,
+    rating: 0,
+    hintsLeft: 3,
+    usedHintsThisLevel: 0,
+    combo: 0,
+    totalAnswered: 0,
+    totalCorrect: 0,
+    totalTimeMs: 0,
+    streakDays: 0,
+    lastPlayedDate: null,
+    // level session report
+    level: {
+      startedAt: Date.now(),
+      answers: [] // {cardId, user, scorePct, timeMs, matched, note}
+    }
+  });
+
+  let S = loadState();
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return initStreak(defaultState());
+      const parsed = JSON.parse(raw);
+      return initStreak(sanitizeState(parsed));
+    }catch(e){
+      return initStreak(defaultState());
+    }
+  }
+
+  function sanitizeState(x){
+    const d = defaultState();
+    if(!x || typeof x !== "object") return d;
+    return {
+      ...d,
+      ...x,
+      level: { ...d.level, ...(x.level || {}) }
+    };
+  }
+
+  function saveState(){
+    localStorage.setItem(LS_KEY, JSON.stringify(S));
+  }
+
+  function initStreak(state){
+    // Streak rule: if played today -> keep, if played yesterday -> continue, else reset to 0 then set to 1 when first answer happens today.
+    const last = state.lastPlayedDate;
+    const t = todayISO();
+    if(!last) return state;
+
+    const lastDate = new Date(last + "T00:00:00Z");
+    const nowDate = new Date(t + "T00:00:00Z");
+    const diffDays = Math.round((nowDate - lastDate) / (24*3600*1000));
+
+    if(diffDays <= 0) return state; // same day
+    if(diffDays === 1) return state; // will increment on first answer today
+    state.streakDays = 0;
+    return state;
+  }
+
+  function hardReset(){
+    S = defaultState();
+    saveState();
+    render();
+  }
+
+  // -----------------------------
+  // Fuzzy matching utilities
+  // -----------------------------
+  const norm = (s) => (s||"")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[ё]/g,"е")
+    .replace(/[^a-z0-9а-я\s\-\+]/gi," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  function levenshtein(a,b){
+    a = norm(a); b = norm(b);
+    const n=a.length, m=b.length;
+    if(n===0) return m;
+    if(m===0) return n;
+    const dp = Array.from({length:n+1}, ()=>new Array(m+1).fill(0));
+    for(let i=0;i<=n;i++) dp[i][0]=i;
+    for(let j=0;j<=m;j++) dp[0][j]=j;
+    for(let i=1;i<=n;i++){
+      for(let j=1;j<=m;j++){
+        const cost = a[i-1]===b[j-1] ? 0 : 1;
+        dp[i][j]=Math.min(
+          dp[i-1][j]+1,
+          dp[i][j-1]+1,
+          dp[i-1][j-1]+cost
+        );
+      }
+    }
+    return dp[n][m];
+  }
+
+  function similarity(a,b){
+    a = norm(a); b = norm(b);
+    if(!a || !b) return 0;
+    if(a === b) return 1;
+    const dist = levenshtein(a,b);
+    const maxLen = Math.max(a.length,b.length);
+    return Math.max(0, 1 - (dist / maxLen));
+  }
+
+  /**
+   * Score:
+   * - exact match to any canonical answer/synonym -> 1.0
+   * - fuzzy: max similarity across tokens -> 0.5..0.8 typical
+   * We clamp: <0.62 => 0 (wrong), 0.62..0.78 => 0.5..0.8, >=0.78 => 0.9
+   */
+  function evaluate(card, userAnswer){
+    const user = norm(userAnswer);
+    const candidates = []
+      .concat(card.answers || [])
+      .concat(card.synonyms || [])
+      .concat((card.choices || [])); // allow matching choice text too
+
+    // exact match
+    for(const c of candidates){
+      if(user && user === norm(c)){
+        return {score: 1.0, matched: c, mode:"exact"};
+      }
+    }
+
+    // fuzzy match
+    let best = {sim:0, matched:null};
+    for(const c of candidates){
+      const sim = similarity(user, c);
+      if(sim > best.sim){
+        best = {sim, matched:c};
+      }
+    }
+
+    if(best.sim < 0.62){
+      return {score: 0.0, matched: best.matched, mode:"none", sim: best.sim};
+    }
+    if(best.sim >= 0.78){
+      return {score: 0.9, matched: best.matched, mode:"close", sim: best.sim};
+    }
+    // map 0.62..0.78 to 0.5..0.8 linearly
+    const t = (best.sim - 0.62) / (0.78 - 0.62);
+    const score = 0.5 + t * (0.8 - 0.5);
+    return {score, matched: best.matched, mode:"fuzzy", sim: best.sim};
+  }
+
+  // -----------------------------
+  // Ranking / rating
+  // -----------------------------
+  function rankFromRating(r){
+    if(r < 200) return "Стажёр";
+    if(r < 500) return "Специалист";
+    if(r < 900) return "Аналитик SOC";
+    return "Эксперт";
+  }
+
+  function ratingDelta(card, scorePct, usedHint){
+    // base points depends on difficulty
+    const base = 10 + (card.diff||1) * 6; // diff1=16, diff2=22, diff3=28
+    const scoreFactor = scorePct / 100;   // 0..1
+    let pts = Math.round(base * (0.4 + 0.8*scoreFactor)); // 40%..120%
+    if(scorePct >= 95) pts += 6;
+    if(S.combo >= 4) pts += 4;
+    if(usedHint) pts = Math.max(0, Math.round(pts * 0.75));
+    return pts;
+  }
+
+  // -----------------------------
+  // UI bindings
+  // -----------------------------
+  const el = (id)=>document.getElementById(id);
+
+  const ui = {
+    rankLine: el("rankLine"),
+    kpiLevel: el("kpiLevel"),
+    kpiRating: el("kpiRating"),
+    kpiAcc: el("kpiAcc"),
+    kpiTime: el("kpiTime"),
+    streakDays: el("streakDays"),
+    hintsLeft: el("hintsLeft"),
+    combo: el("combo"),
+    progBar: el("progBar"),
+    chapterChip: el("chapterChip"),
+    cardCountLine: el("cardCountLine"),
+    difficultyChip: el("difficultyChip"),
+    modeChip: el("modeChip"),
+    scenarioTitle: el("scenarioTitle"),
+    scenarioText: el("scenarioText"),
+    hintBox: el("hintBox"),
+    choices: el("choices"),
+    answerInput: el("answerInput"),
+    feedback: el("feedback"),
+    fbHdr: el("fbHdr"),
+    fbBody: el("fbBody"),
+    btnNext: el("btnNext"),
+    btnHint: el("btnHint"),
+    btnSubmit: el("btnSubmit"),
+    btnSkip: el("btnSkip"),
+    btnReset: el("btnReset"),
+    reportBox: el("reportBox"),
+  };
+
+  ui.btnReset.addEventListener("click", hardReset);
+  ui.btnSubmit.addEventListener("click", ()=>submitAnswer());
+  ui.btnSkip.addEventListener("click", ()=>skipCard());
+  ui.btnNext.addEventListener("click", ()=>nextCard(true));
+  ui.btnHint.addEventListener("click", ()=>useHint());
+  ui.answerInput.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter") submitAnswer();
+  });
+
+  // -----------------------------
+  // Game flow
+  // -----------------------------
+  function currentChapter(){ return DB.chapters[S.chapterIndex]; }
+  function currentCard(){ return currentChapter().cards[S.cardIndex]; }
+
+  function startCardTimer(){
+    S.level.cardStartedAt = Date.now();
+    saveState();
+  }
+
+  function ensureTimer(){
+    if(!S.level.cardStartedAt) startCardTimer();
+  }
+
+  function render(){
+    const chap = currentChapter();
+    const card = currentCard();
+
+    ui.chapterChip.textContent = `Глава: ${chap.title}`;
+    ui.kpiLevel.textContent = `${S.chapterIndex+1}.${S.cardIndex+1}`;
+    ui.kpiRating.textContent = `${S.rating}`;
+    ui.rankLine.textContent = `Уровень: ${rankFromRating(S.rating)} · Глава: ${chap.title}`;
+
+    const acc = S.totalAnswered ? Math.round((S.totalCorrect / S.totalAnswered) * 100) : 0;
+    ui.kpiAcc.textContent = `${acc}%`;
+
+    const avgMs = S.totalAnswered ? Math.round(S.totalTimeMs / S.totalAnswered) : null;
+    ui.kpiTime.textContent = avgMs ? `${(avgMs/1000).toFixed(1)}с` : "—";
+
+    ui.streakDays.textContent = `${S.streakDays}`;
+    ui.hintsLeft.textContent = `${S.hintsLeft}`;
+    ui.combo.textContent = `${S.combo}`;
+
+    const prog = ((S.cardIndex) / chap.cards.length) * 100;
+    ui.progBar.style.width = `${prog}%`;
+
+    ui.difficultyChip.textContent = `DIFF: ${card.diff||1}`;
+    ui.modeChip.textContent = `MODE: ${card.mode||"input"}`;
+
+    ui.scenarioTitle.textContent = card.title || "Сценарий";
+    ui.scenarioText.textContent = card.text;
+
+    ui.cardCountLine.textContent = `Карточка ${S.cardIndex+1} из ${chap.cards.length}`;
+
+    // reset interaction area
+    ui.hintBox.style.display = "none";
+    ui.hintBox.textContent = "";
+    ui.feedback.style.display = "none";
+    ui.feedback.classList.remove("good","bad","warn");
+    ui.fbHdr.textContent = "";
+    ui.fbBody.innerHTML = "";
+
+    ui.reportBox.style.display = "none";
+    ui.btnNext.style.display = "none";
+
+    // mode: choice vs input
+    if(card.mode === "choice"){
+      ui.choices.style.display = "flex";
+      ui.answerInput.style.display = "none";
+      ui.choices.innerHTML = "";
+      (card.choices||[]).forEach(choice=>{
+        const b = document.createElement("div");
+        b.className = "choice";
+        b.textContent = choice;
+        b.addEventListener("click", ()=>{
+          submitAnswer(choice);
+        });
+        ui.choices.appendChild(b);
+      });
+    }else{
+      ui.choices.style.display = "none";
+      ui.answerInput.style.display = "block";
+      ui.answerInput.value = "";
+      setTimeout(()=>ui.answerInput.focus(), 0);
+    }
+
+    ensureTimer();
+  }
+
+  function showFeedback(kind, header, bodyHtml){
+    ui.feedback.style.display = "block";
+    ui.feedback.classList.remove("good","bad","warn");
+    ui.feedback.classList.add(kind);
+    ui.fbHdr.textContent = header;
+    ui.fbBody.innerHTML = bodyHtml;
+  }
+
+  function useHint(){
+    const card = currentCard();
+    if(S.hintsLeft <= 0){
+      showFeedback("warn", "Подсказки закончились", "Подсказки на сегодня/сессию исчерпаны.");
+      return;
+    }
+    // show hints: tags + first letter + technique family
+    const canonical = (card.answers && card.answers[0]) ? card.answers[0] : (card.choices ? "—" : "—");
+    const hint1 = (canonical && canonical !== "—") ? `Первая буква: <span class="chip mono">${norm(canonical)[0] || "?"}</span>` : "";
+    const tags = (card.tags||[]).slice(0,4).map(t=>`<span class="chip mono">${t}</span>`).join(" ");
+    const hint2 = tags ? `Теги: ${tags}` : "";
+    const hint3 = card.prevent ? `Подсказка по защите: ${escapeHtml(card.prevent).slice(0,120)}${card.prevent.length>120?"…":""}` : "";
+
+    ui.hintBox.innerHTML = [hint1, hint2, hint3].filter(Boolean).join("<br/>");
+    ui.hintBox.style.display = "block";
+
+    S.hintsLeft -= 1;
+    S.usedHintsThisLevel += 1;
+    saveState();
+    renderSideOnly();
+  }
+
+  function renderSideOnly(){
+    ui.hintsLeft.textContent = `${S.hintsLeft}`;
+    ui.combo.textContent = `${S.combo}`;
+    ui.kpiRating.textContent = `${S.rating}`;
+    ui.rankLine.textContent = `Уровень: ${rankFromRating(S.rating)} · Глава: ${currentChapter().title}`;
+  }
+
+  function submitAnswer(prefilled){
+    const chap = currentChapter();
+    const card = currentCard();
+    const user = (prefilled != null) ? prefilled : (card.mode === "choice" ? "" : ui.answerInput.value);
+
+    ensureTimer();
+    const timeMs = Math.max(0, Date.now() - (S.level.cardStartedAt || Date.now()));
+    const ev = evaluate(card, user);
+    const scorePct = Math.round(ev.score * 100);
+
+    const usedHint = S.usedHintsThisLevel > 0; // any hint used within level affects points; simplest rule
+    const pts = ratingDelta(card, scorePct, usedHint);
+
+    // Update streak date bookkeeping
+    const t = todayISO();
+    if(S.lastPlayedDate !== t){
+      // if played yesterday, increment; else start at 1
+      if(S.lastPlayedDate){
+        const lastDate = new Date(S.lastPlayedDate + "T00:00:00Z");
+        const nowDate = new Date(t + "T00:00:00Z");
+        const diffDays = Math.round((nowDate - lastDate) / (24*3600*1000));
+        if(diffDays === 1) S.streakDays = (S.streakDays || 0) + 1;
+        else S.streakDays = 1;
+      }else{
+        S.streakDays = 1;
+      }
+      S.lastPlayedDate = t;
+    }
+
+    // Global stats
+    S.totalAnswered += 1;
+    S.totalTimeMs += timeMs;
+
+    const correct = scorePct >= 90; // treat close/exact as correct
+    if(correct) S.totalCorrect += 1;
+
+    // Combo
+    if(correct && S.usedHintsThisLevel === 0){
+      S.combo += 1;
+    }else if(!correct){
+      S.combo = 0;
+    }else{
+      // correct but with hints: keep combo but weaker; simplest: reset
+      S.combo = 0;
+    }
+
+    // Rating
+    S.rating += pts;
+
+    // Save level report line
+    S.level.answers.push({
+      cardId: card.id,
+      user: user,
+      scorePct,
+      timeMs,
+      matched: ev.matched || null,
+      note: ev.mode
+    });
+
+    // Feedback content
+    const canonical = (card.answers && card.answers[0]) ? card.answers[0] : (card.choices ? card.choices[1] : "");
+    const explain = `<div><span class="chip mono">Решение:</span> <b>${escapeHtml(canonical)}</b></div>
+      <div style="margin-top:8px;color:var(--muted)">${escapeHtml(card.explain || "")}</div>
+      <div style="margin-top:8px"><span class="chip mono">Профилактика:</span> <span style="color:var(--muted)">${escapeHtml(card.prevent || "")}</span></div>`;
+
+    if(scorePct === 100){
+      showFeedback("good", `Верно · ${scorePct}% · +${pts} рейтинга`, explain);
+    }else if(scorePct >= 90){
+      showFeedback("warn", `Почти верно · ${scorePct}% · +${pts} рейтинга`, `<div style="color:var(--muted)">Засчитано как близкий термин: <span class="chip mono">${escapeHtml(ev.matched||"")}</span></div>${explain}`);
+    }else if(scorePct >= 50){
+      showFeedback("warn", `Частично · ${scorePct}% · +${pts} рейтинга`, `<div style="color:var(--muted)">Ближайшее совпадение: <span class="chip mono">${escapeHtml(ev.matched||"")}</span></div>${explain}`);
+    }else{
+      showFeedback("bad", `Неверно · ${scorePct}% · +${pts} рейтинга`, explain);
+    }
+
+    // Prepare next button + lock inputs for this card
+    ui.btnNext.style.display = "inline-block";
+    ui.btnSubmit.disabled = true;
+    ui.btnSkip.disabled = true;
+    ui.btnHint.disabled = true;
+    ui.answerInput.disabled = true;
+    Array.from(ui.choices.querySelectorAll(".choice")).forEach(x=>x.style.pointerEvents="none");
+
+    // Reset timer so next card starts fresh after moving
+    S.level.cardStartedAt = null;
+    saveState();
+
+    // If end of chapter, show report button block automatically on next
+    renderSideOnly();
+  }
+
+  function skipCard(){
+    // treat as incorrect with 0 score, but no explanation penalty other than time/rating minimal
+    const card = currentCard();
+    ensureTimer();
+    const timeMs = Math.max(0, Date.now() - (S.level.cardStartedAt || Date.now()));
+
+    S.totalAnswered += 1;
+    S.totalTimeMs += timeMs;
+    S.combo = 0;
+
+    S.level.answers.push({cardId: card.id, user: "(skip)", scorePct: 0, timeMs, matched: null, note: "skip"});
+    S.level.cardStartedAt = null;
+    saveState();
+
+    showFeedback("bad", "Пропуск", "Карточка пропущена. Рекомендуется вернуться позже и закрыть пробел по этой теме.");
+    ui.btnNext.style.display = "inline-block";
+    ui.btnSubmit.disabled = true;
+    ui.btnSkip.disabled = true;
+    ui.btnHint.disabled = true;
+    ui.answerInput.disabled = true;
+    Array.from(ui.choices.querySelectorAll(".choice")).forEach(x=>x.style.pointerEvents="none");
+
+    renderSideOnly();
+  }
+
+  function nextCard(showReportIfLevelEnded){
+    // unlock inputs
+    ui.btnSubmit.disabled = false;
+    ui.btnSkip.disabled = false;
+    ui.btnHint.disabled = false;
+    ui.answerInput.disabled = false;
+
+    const chap = currentChapter();
+    const isLast = (S.cardIndex >= chap.cards.length - 1);
+
+    if(!isLast){
+      S.cardIndex += 1;
+      saveState();
+      startCardTimer();
+      render();
+      return;
+    }
+
+    // Level ended => show report + move to next chapter
+    if(showReportIfLevelEnded){
+      showLevelReport();
+      ui.btnNext.textContent = "Следующая глава";
+      ui.btnNext.onclick = ()=>advanceChapter();
+      return;
+    }
+    advanceChapter();
+  }
+
+  function advanceChapter(){
+    // reset per-level counters
+    S.usedHintsThisLevel = 0;
+    S.level = { startedAt: Date.now(), answers: [] };
+
+    const isLastChapter = (S.chapterIndex >= DB.chapters.length - 1);
+    if(isLastChapter){
+      // wrap around to first chapter (or keep at last)
+      S.chapterIndex = 0;
+      S.cardIndex = 0;
+    }else{
+      S.chapterIndex += 1;
+      S.cardIndex = 0;
+    }
+
+    ui.btnNext.onclick = ()=>nextCard(true);
+    ui.btnNext.textContent = "Дальше";
+
+    saveState();
+    startCardTimer();
+    render();
+  }
+
+  function showLevelReport(){
+    const chap = currentChapter();
+    const lines = [];
+    const answers = S.level.answers || [];
+    const total = answers.length || chap.cards.length;
+
+    let sumScore = 0;
+    let sumTime = 0;
+    let wrong = [];
+
+    answers.forEach(a=>{
+      sumScore += a.scorePct || 0;
+      sumTime += a.timeMs || 0;
+      if((a.scorePct||0) < 90){
+        wrong.push(a);
+      }
+    });
+
+    const avgScore = total ? Math.round(sumScore / total) : 0;
+    const avgTime = total ? (sumTime / total / 1000).toFixed(1) : "0.0";
+
+    const hintPenalty = Math.min(25, S.usedHintsThisLevel * 6);
+    const finalScore = Math.max(0, avgScore - hintPenalty);
+
+    lines.push(`ОТЧЁТ УРОВНЯ: ${chap.title}`);
+    lines.push(`Оценка точности: ${avgScore}%`);
+    lines.push(`Подсказки: ${S.usedHintsThisLevel} (штраф: -${hintPenalty})`);
+    lines.push(`Итог: ${finalScore}%`);
+    lines.push(`Среднее время: ${avgTime}с`);
+
+    if(wrong.length){
+      lines.push(`\nОшибки/неточности:`);
+      wrong.slice(0,8).forEach(w=>{
+        const c = chap.cards.find(x=>x.id===w.cardId);
+        const label = c ? c.title : w.cardId;
+        const note = w.note ? `(${w.note})` : "";
+        lines.push(`- ${label}: ${w.scorePct}% ${note} | ответ: ${w.user}`);
+      });
+    }else{
+      lines.push(`\nОшибки: нет`);
+    }
+
+    lines.push(`\nРекомендации:`);
+    if(finalScore < 80){
+      lines.push(`- Повторить главу “${chap.title}”`);
+      lines.push(`- Разобрать определения и признаки атак из объяснений после карточек`);
+    }else{
+      lines.push(`- Закрепить материал: 1 контрольный прогон без подсказок`);
+      lines.push(`- Усложнение: перейти к следующей главе`);
+    }
+
+    ui.reportBox.textContent = lines.join("\n");
+    ui.reportBox.style.display = "block";
+  }
+
+  // -----------------------------
+  // Helpers
+  // -----------------------------
+  function escapeHtml(s){
+    return (s||"").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // Initialize
+  startCardTimer();
+  render();
+
+})();
+</script>
+</body>
+</html>
+```
