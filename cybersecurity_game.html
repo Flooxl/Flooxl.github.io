@@ -3,1601 +3,1739 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конец рабочего дня: Кибербезопасность</title>
+    <title>Кибер-Аудит: 3D Офисная Безопасность</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Courier New', monospace;
         }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .game-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
-            width: 95%;
+            background: #0a0a1a;
+            color: #00ff00;
             overflow: hidden;
         }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 1.8em;
-            margin-bottom: 10px;
-        }
-
-        .progress-bar {
-            background: rgba(255, 255, 255, 0.3);
-            height: 8px;
-            border-radius: 10px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            background: #4CAF50;
-            height: 100%;
-            transition: width 0.5s ease;
-        }
-
-        .stage-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 0.9em;
-        }
-
-        .content {
-            padding: 30px;
-        }
-
-        .intro-screen, .stage-screen, .report-screen {
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .intro-text {
-            font-size: 1.1em;
-            line-height: 1.8;
-            margin-bottom: 25px;
-            color: #555;
-        }
-
-        .stage-title {
-            font-size: 1.6em;
-            color: #667eea;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stage-description {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            border-left: 4px solid #667eea;
-        }
-
-        .task-list {
-            list-style: none;
-            margin-bottom: 25px;
-        }
-
-        .task-item {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .task-item:hover {
-            border-color: #667eea;
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .task-item.completed {
-            border-color: #4CAF50;
-            background: #f1f8f4;
-        }
-
-        .task-item.error {
-            border-color: #f44336;
-            background: #ffebee;
-        }
-
-        .task-checkbox {
-            width: 24px;
-            height: 24px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .task-item.completed .task-checkbox {
-            background: #4CAF50;
-            border-color: #4CAF50;
-            color: white;
-        }
-
-        .task-item.error .task-checkbox {
-            background: #f44336;
-            border-color: #f44336;
-            color: white;
-        }
-
-        .email-list {
-            margin-bottom: 25px;
-        }
-
-        .email-item {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .email-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .email-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .email-subject {
-            color: #333;
-            font-size: 1.1em;
-        }
-
-        .email-sender {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .email-body {
-            color: #555;
-            line-height: 1.6;
-            margin-top: 10px;
-        }
-
-        .email-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .btn {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-success {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .device-panel {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .device-item {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .device-info {
-            flex: 1;
-        }
-
-        .device-name {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .device-details {
-            font-size: 0.9em;
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .device-status {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .status-safe {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .status-suspicious {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-
-        .status-dangerous {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .cloud-files {
-            margin-bottom: 20px;
-        }
-
-        .file-item {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-
-        .file-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .file-name {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .file-sharing {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .sharing-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            margin-left: 5px;
-        }
-
-        .sharing-private {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .sharing-public {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .sharing-team {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .report-screen {
-            text-align: center;
-        }
-
-        .score-circle {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            margin: 30px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3em;
-            font-weight: bold;
-            color: white;
+        
+        #game-container {
             position: relative;
+            width: 100vw;
+            height: 100vh;
         }
-
-        .score-good {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+        
+        canvas {
+            display: block;
+            background: #000;
         }
-
-        .score-medium {
-            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
-        }
-
-        .score-bad {
-            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-        }
-
-        .report-title {
-            font-size: 2em;
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-
-        .errors-list {
-            text-align: left;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .error-item {
-            padding: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid #f44336;
-            background: white;
-        }
-
-        .recommendations {
-            text-align: left;
-            background: #e3f2fd;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .recommendation-item {
-            padding: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid #2196F3;
-            background: white;
-        }
-
-        .buttons-row {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 25px;
-        }
-
-        .password-input {
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            margin-bottom: 15px;
+            height: 100%;
+            pointer-events: none;
         }
-
-        .password-strength {
-            height: 8px;
-            border-radius: 4px;
-            margin-bottom: 10px;
+        
+        .ui-panel {
+            position: absolute;
+            background: rgba(10, 20, 30, 0.95);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            pointer-events: all;
+        }
+        
+        #task-panel {
+            top: 20px;
+            left: 20px;
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        #stats-panel {
+            top: 20px;
+            right: 20px;
+            width: 300px;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border: 1px solid #00ff00;
+            text-align: center;
+        }
+        
+        .task {
+            background: rgba(0, 50, 0, 0.3);
+            border: 1px solid #005500;
+            padding: 10px;
+            margin: 8px 0;
+            cursor: pointer;
             transition: all 0.3s;
+            font-size: 13px;
         }
-
-        .strength-weak {
-            background: #f44336;
-            width: 33%;
+        
+        .task:hover {
+            background: rgba(0, 100, 0, 0.3);
+            border-color: #00ff00;
         }
-
-        .strength-medium {
-            background: #FF9800;
-            width: 66%;
+        
+        .task.completed {
+            background: rgba(0, 100, 0, 0.5);
+            border-color: #00ff00;
         }
-
-        .strength-strong {
-            background: #4CAF50;
-            width: 100%;
+        
+        .task.failed {
+            background: rgba(100, 0, 0, 0.5);
+            border-color: #ff0000;
         }
-
-        .hint {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 15px 0;
-            font-size: 0.95em;
+        
+        .task.tricky {
+            border-color: #ff9900;
+            background: rgba(255, 100, 0, 0.1);
         }
-
-        .timer {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-
+        
         .modal {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
             z-index: 1000;
-            align-items: center;
-            justify-content: center;
         }
-
-        .modal.active {
-            display: flex;
-        }
-
+        
         .modal-content {
-            background: white;
-            border-radius: 15px;
+            background: #001a00;
+            border: 3px solid #00ff00;
             padding: 30px;
-            max-width: 500px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
             width: 90%;
-            animation: modalSlide 0.3s ease;
         }
-
-        @keyframes modalSlide {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        
+        .button {
+            background: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 20px;
+            margin: 8px 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
         }
-
-        .social-profile {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
+        
+        .button:hover {
+            background: #005500;
         }
-
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
+        
+        .button.danger {
+            background: #330000;
+            border-color: #ff0000;
         }
-
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
+        
+        .button.tricky {
+            background: #333300;
+            border-color: #ff9900;
+            color: #ff9900;
+        }
+        
+        .button.success {
+            background: #003300;
+            border-color: #00ff00;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 100, 0, 0.9);
             color: white;
+            padding: 15px;
+            border: 1px solid #ff6600;
+            display: none;
+            z-index: 1001;
+            max-width: 300px;
         }
-
-        .checkbox-group {
-            margin: 15px 0;
+        
+        .warning {
+            background: rgba(255, 50, 50, 0.9) !important;
+            border-color: #ff0000 !important;
         }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: white;
-            border-radius: 8px;
+        
+        .success-notification {
+            background: rgba(0, 150, 0, 0.9) !important;
+            border-color: #00ff00 !important;
         }
-
-        .checkbox-item input[type="checkbox"] {
+        
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: #003300;
+            border: 1px solid #00ff00;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #00ff00;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        #minimap {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #00ff00;
+        }
+        
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 20px;
             height: 20px;
+            pointer-events: none;
+        }
+        
+        .crosshair-dot {
+            width: 4px;
+            height: 4px;
+            background: #00ff00;
+            position: absolute;
+            top: 8px;
+            left: 8px;
+        }
+        
+        .crosshair-line {
+            position: absolute;
+            background: #00ff00;
+        }
+        
+        .crosshair-line.horizontal {
+            width: 20px;
+            height: 2px;
+            top: 9px;
+            left: 0;
+        }
+        
+        .crosshair-line.vertical {
+            width: 2px;
+            height: 20px;
+            top: 0;
+            left: 9px;
+        }
+        
+        #final-report {
+            display: none;
+        }
+        
+        .score-badge {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .score-excellent { color: #00ff00; }
+        .score-good { color: #ff9900; }
+        .score-poor { color: #ff0000; }
+        
+        .email {
+            border: 1px solid #444;
+            margin: 10px 0;
+            padding: 10px;
             cursor: pointer;
+        }
+        
+        .email.suspicious:hover {
+            border-color: #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+        }
+        
+        .email.legitimate:hover {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .hint {
+            color: #ff9900;
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        
+        .trap-button {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { background: #333300; }
+            50% { background: #666600; }
+            100% { background: #333300; }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="header">
-            <h1>🔒 Конец рабочего дня: Кибербезопасность</h1>
-            <div class="stage-info">
-                <span id="currentStage">Этап: Введение</span>
-                <span class="timer" id="timer">Время: 00:00</span>
-                <span id="scoreDisplay">Очки: 100</span>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="crosshair">
+                <div class="crosshair-dot"></div>
+                <div class="crosshair-line horizontal"></div>
+                <div class="crosshair-line vertical"></div>
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar"></div>
+            
+            <div class="ui-panel" id="task-panel">
+                <h3>🔒 ЗАДАНИЯ АУДИТА</h3>
+                <div id="tasks-list"></div>
             </div>
+            
+            <div class="ui-panel" id="stats-panel">
+                <h3>📊 СТАТИСТИКА</h3>
+                <div>Время: <span id="time-display">18:00</span></div>
+                <div>Безопасность: <span id="security-score">100%</span></div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="security-progress"></div>
+                </div>
+                <div>Заданий: <span id="tasks-completed">0/12</span></div>
+                <div>Нарушений: <span id="violations-count">0</span></div>
+            </div>
+            
+            <div id="controls">
+                <div>Управление: WASD - движение, мышь - поворот, ЛКМ - взаимодействие</div>
+                <div style="margin-top: 5px; font-size: 12px; color: #888;">
+                    Цель: Проверить все устройства и выйти через главную дверь
+                </div>
+            </div>
+            
+            <div id="minimap"></div>
         </div>
-
-        <div class="content" id="gameContent">
-            <!-- Контент будет генерироваться динамически -->
+        
+        <div id="computer-modal" class="modal">
+            <div class="modal-content" id="computer-content"></div>
         </div>
-    </div>
-
-    <div class="modal" id="feedbackModal">
-        <div class="modal-content">
-            <h2 id="modalTitle">Результат</h2>
-            <p id="modalText"></p>
-            <button class="btn btn-primary" onclick="closeFeedbackModal()">Понятно</button>
+        
+        <div id="phone-modal" class="modal">
+            <div class="modal-content" id="phone-content"></div>
+        </div>
+        
+        <div id="router-modal" class="modal">
+            <div class="modal-content" id="router-content"></div>
+        </div>
+        
+        <div id="server-modal" class="modal">
+            <div class="modal-content" id="server-content"></div>
+        </div>
+        
+        <div id="printer-modal" class="modal">
+            <div class="modal-content" id="printer-content"></div>
+        </div>
+        
+        <div id="safe-modal" class="modal">
+            <div class="modal-content" id="safe-content"></div>
+        </div>
+        
+        <div class="notification" id="notification"></div>
+        
+        <div id="final-report" class="modal">
+            <div class="modal-content">
+                <h2 style="text-align: center; color: #ff0000;">ОТЧЁТ КИБЕР-АУДИТА</h2>
+                <div id="final-score" class="score-badge">0%</div>
+                
+                <h3>📊 РЕЗУЛЬТАТЫ ПРОВЕРКИ:</h3>
+                <div id="report-details"></div>
+                
+                <h3>✅ ВЫПОЛНЕННЫЕ ЗАДАЧИ:</h3>
+                <div id="completed-tasks-list"></div>
+                
+                <h3>⚠️ НАРУШЕНИЯ БЕЗОПАСНОСТИ:</h3>
+                <div id="final-violations"></div>
+                
+                <h3>💡 ОЦЕНКА КИБЕРГРАМОТНОСТИ:</h3>
+                <div id="cyber-literacy-assessment"></div>
+                
+                <h3>🎯 РЕКОМЕНДАЦИИ:</h3>
+                <div id="recommendations-list"></div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="button" onclick="restartGame()">🔄 ПРОЙТИ АУДИТ СНОВА</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Игровое состояние
-        const gameState = {
-            currentStage: 0,
-            score: 100,
-            maxScore: 100,
-            errors: [],
-            startTime: Date.now(),
-            stageData: {},
-            completedTasks: [],
-            hintsUsed: 0
+        // ========== 3D ДВИЖОК ==========
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Размеры канваса
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Конфигурация мира
+        const world = {
+            width: 40,
+            height: 40,
+            grid: [],
+            objects: []
         };
-
-        // Данные этапов
-        const stages = [
-            {
-                id: 'workspace',
-                title: '💻 Рабочее место',
-                icon: '💻',
-                description: 'Перед уходом проверьте своё рабочее место и компьютер',
-                tasks: [
-                    {
-                        id: 'lock_pc',
-                        text: 'Заблокировать компьютер (Win+L)',
-                        correct: true,
-                        penalty: 15,
-                        hint: 'Незаблокированный компьютер = открытый доступ к данным'
-                    },
-                    {
-                        id: 'updates',
-                        text: 'Проверить установку обновлений безопасности',
-                        correct: true,
-                        penalty: 10,
-                        hint: 'Обновления закрывают уязвимости'
-                    },
-                    {
-                        id: 'usb_remove',
-                        text: 'Извлечь все USB-носители',
-                        correct: true,
-                        penalty: 12,
-                        hint: 'USB может быть вектором атаки'
-                    },
-                    {
-                        id: 'monitor_off',
-                        text: 'Оставить монитор включенным для обновлений',
-                        correct: false,
-                        penalty: 5,
-                        hint: 'Монитор лучше выключить для экономии энергии'
-                    },
-                    {
-                        id: 'antivirus',
-                        text: 'Убедиться, что антивирус активен',
-                        correct: true,
-                        penalty: 10,
-                        hint: 'Антивирус - первая линия защиты'
+        
+        // Игрок
+        const player = {
+            x: 5,
+            y: 5,
+            height: 1.7,
+            angle: 0,
+            speed: 0.1,
+            fov: Math.PI / 3,
+            moveSpeed: 0.15,
+            rotateSpeed: 0.04
+        };
+        
+        // Клавиши управления
+        const keys = {
+            w: false, a: false, s: false, d: false
+        };
+        
+        // Мышь
+        let mouse = { x: 0, y: 0 };
+        let mouseSensitivity = 0.002;
+        
+        // Инициализация мира
+        function initWorld() {
+            // Создаем сетку
+            for (let x = 0; x < world.width; x++) {
+                world.grid[x] = [];
+                for (let y = 0; y < world.height; y++) {
+                    // Границы - стены
+                    if (x === 0 || y === 0 || x === world.width-1 || y === world.height-1) {
+                        world.grid[x][y] = 1; // Стена
+                    } else {
+                        world.grid[x][y] = 0; // Пусто
                     }
-                ]
-            },
-            {
-                id: 'passwords',
-                title: '🔑 Пароли и учётные записи',
-                icon: '🔑',
-                description: 'Проверьте безопасность ваших учётных записей',
-                type: 'password',
-                requirements: {
-                    minLength: 12,
-                    hasUpperCase: true,
-                    hasLowerCase: true,
-                    hasNumbers: true,
-                    hasSpecial: true,
-                    notCommon: true
                 }
+            }
+            
+            // Добавляем внутренние стены для комнат
+            // Комната 1
+            for (let x = 3; x <= 12; x++) world.grid[x][12] = 1;
+            for (let y = 3; y <= 12; y++) world.grid[12][y] = 1;
+            world.grid[12][5] = 0; // Дверь
+            
+            // Комната 2
+            for (let x = 15; x <= 25; x++) world.grid[x][12] = 1;
+            for (let y = 3; y <= 12; y++) world.grid[25][y] = 1;
+            world.grid[25][8] = 0; // Дверь
+            
+            // Серверная
+            for (let x = 28; x <= 35; x++) world.grid[x][20] = 1;
+            for (let y = 15; y <= 20; y++) world.grid[28][y] = 1;
+            world.grid[35][15] = 0; // Дверь
+            
+            // Объекты офиса
+            world.objects = [
+                // Рабочие компьютеры
+                { type: 'computer', x: 5, y: 7, interactable: true, task: 'check_computer1' },
+                { type: 'computer', x: 8, y: 10, interactable: true, task: 'check_computer2' },
+                
+                // Телефоны
+                { type: 'phone', x: 6, y: 3, interactable: true, task: 'check_phone1' },
+                { type: 'phone', x: 10, y: 3, interactable: true, task: 'check_phone2' },
+                
+                // Роутер и сетевое оборудование
+                { type: 'router', x: 18, y: 5, interactable: true, task: 'check_router' },
+                { type: 'server', x: 20, y: 8, interactable: true, task: 'check_server' },
+                
+                // Принтеры и периферия
+                { type: 'printer', x: 17, y: 10, interactable: true, task: 'check_printer' },
+                { type: 'safe', x: 22, y: 3, interactable: true, task: 'check_safe' },
+                
+                // Документы
+                { type: 'documents', x: 4, y: 9, interactable: true, task: 'check_documents' },
+                { type: 'whiteboard', x: 9, y: 5, interactable: false },
+                
+                // Главный выход
+                { type: 'exit', x: 1, y: 20, interactable: true, task: 'exit_office' },
+                
+                // Различный офисный хлам (ловушки)
+                { type: 'usb_drive', x: 7, y: 8, interactable: true, task: 'trap_usb' },
+                { type: 'coffee_machine', x: 3, y: 4, interactable: true, task: 'trap_coffee' },
+                { type: 'plant', x: 11, y: 11, interactable: false },
+                { type: 'chair', x: 6, y: 6, interactable: false },
+                { type: 'chair', x: 9, y: 9, interactable: false },
+                { type: 'table', x: 8, y: 8, interactable: false }
+            ];
+        }
+        
+        // 3D рендерер
+        function render3D() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Очистка экрана
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Рендер пола и потолка
+            ctx.fillStyle = '#224422';
+            ctx.fillRect(0, height/2, width, height/2); // Пол
+            
+            ctx.fillStyle = '#111133';
+            ctx.fillRect(0, 0, width, height/2); // Потолок
+            
+            // Raycasting для стен
+            const rayCount = width;
+            for (let i = 0; i < rayCount; i++) {
+                const rayAngle = player.angle - player.fov/2 + (i / rayCount) * player.fov;
+                
+                let distance = 0;
+                let hitWall = false;
+                let hitObject = null;
+                
+                // Трассировка луча
+                while (!hitWall && distance < 20) {
+                    distance += 0.1;
+                    
+                    // Позиция луча
+                    const rayX = player.x + Math.sin(rayAngle) * distance;
+                    const rayY = player.y + Math.cos(rayAngle) * distance;
+                    
+                    // Проверка стены
+                    const gridX = Math.floor(rayX);
+                    const gridY = Math.floor(rayY);
+                    
+                    if (gridX < 0 || gridX >= world.width || gridY < 0 || gridY >= world.height) {
+                        hitWall = true;
+                    } else if (world.grid[gridX][gridY] === 1) {
+                        hitWall = true;
+                    }
+                    
+                    // Проверка объектов
+                    if (!hitWall) {
+                        for (const obj of world.objects) {
+                            const objDist = Math.sqrt(
+                                Math.pow(rayX - obj.x, 2) + 
+                                Math.pow(rayY - obj.y, 2)
+                            );
+                            if (objDist < 0.5 && obj.interactable) {
+                                hitObject = obj;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Коррекция искажения
+                distance *= Math.cos(player.angle - rayAngle);
+                
+                // Высота стены
+                const wallHeight = Math.min(height, height / (distance + 0.0001));
+                
+                // Цвет стены в зависимости от расстояния
+                const brightness = Math.max(50, 255 - distance * 30);
+                const wallColor = `rgb(${brightness}, ${brightness}, ${brightness})`;
+                
+                // Рисуем стену
+                ctx.fillStyle = wallColor;
+                const wallTop = (height - wallHeight) / 2;
+                ctx.fillRect(i, wallTop, 1, wallHeight);
+                
+                // Рисуем объекты
+                if (hitObject && distance < 5) {
+                    const objHeight = Math.min(height/3, height / (distance + 0.0001));
+                    const objTop = (height - objHeight) / 2;
+                    
+                    // Цвет объекта
+                    let objColor = '#00ff00';
+                    if (hitObject.type === 'exit') objColor = '#ff0000';
+                    else if (hitObject.type.includes('trap')) objColor = '#ff9900';
+                    
+                    ctx.fillStyle = objColor;
+                    ctx.fillRect(i - 2, objTop - objHeight/4, 5, objHeight * 1.5);
+                }
+            }
+            
+            // Рендер мини-карты
+            renderMinimap();
+        }
+        
+        function renderMinimap() {
+            const mapSize = 150;
+            const mapScale = mapSize / Math.max(world.width, world.height);
+            const mapX = canvas.width - mapSize - 20;
+            const mapY = 20;
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(mapX, mapY, mapSize, mapSize);
+            
+            // Сетка
+            ctx.strokeStyle = '#00ff00';
+            ctx.strokeRect(mapX, mapY, mapSize, mapSize);
+            
+            // Стены
+            ctx.fillStyle = '#666666';
+            for (let x = 0; x < world.width; x++) {
+                for (let y = 0; y < world.height; y++) {
+                    if (world.grid[x][y] === 1) {
+                        ctx.fillRect(
+                            mapX + x * mapScale,
+                            mapY + y * mapScale,
+                            mapScale, mapScale
+                        );
+                    }
+                }
+            }
+            
+            // Объекты
+            world.objects.forEach(obj => {
+                let color = '#00ff00';
+                if (obj.type === 'exit') color = '#ff0000';
+                else if (!obj.interactable) color = '#888888';
+                else if (obj.type.includes('trap')) color = '#ff9900';
+                
+                ctx.fillStyle = color;
+                ctx.fillRect(
+                    mapX + obj.x * mapScale - 2,
+                    mapY + obj.y * mapScale - 2,
+                    4, 4
+                );
+            });
+            
+            // Игрок
+            ctx.fillStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.arc(
+                mapX + player.x * mapScale,
+                mapY + player.y * mapScale,
+                3, 0, Math.PI * 2
+            );
+            ctx.fill();
+            
+            // Направление игрока
+            ctx.strokeStyle = '#ff0000';
+            ctx.beginPath();
+            ctx.moveTo(
+                mapX + player.x * mapScale,
+                mapY + player.y * mapScale
+            );
+            ctx.lineTo(
+                mapX + (player.x + Math.sin(player.angle) * 3) * mapScale,
+                mapY + (player.y + Math.cos(player.angle) * 3) * mapScale
+            );
+            ctx.stroke();
+        }
+        
+        // ========== ИГРОВАЯ ЛОГИКА ==========
+        const gameState = {
+            time: 18.00,
+            securityScore: 100,
+            completedTasks: 0,
+            totalTasks: 12,
+            violations: [],
+            trapsTriggered: 0,
+            isDayEnded: false,
+            trickyTasksCompleted: 0
+        };
+        
+        // Задания с подвохами
+        const securityTasks = [
+            // Основные задания
+            {
+                id: 'check_computer1',
+                name: 'Проверить компьютер сотрудника Иванова',
+                description: 'Заблокировать сессию, проверить обновления',
+                completed: false,
+                points: 10,
+                tricky: false
             },
             {
-                id: 'email',
-                title: '📧 Электронная почта',
-                icon: '📧',
-                description: 'Проверьте входящие письма и определите фишинг',
-                emails: [
-                    {
-                        id: 1,
-                        from: 'it-support@company-security.com',
-                        subject: 'СРОЧНО: Подтвердите пароль для обновления VPN',
-                        body: 'Уважаемый сотрудник! В связи с обновлением системы безопасности просим вас подтвердить пароль, перейдя по ссылке: http://company-vpn-update.tk/verify',
-                        isPhishing: true,
-                        penalty: 20,
-                        hints: ['Подозрительный домен .tk', 'Запрос пароля по email', 'Создание срочности']
-                    },
-                    {
-                        id: 2,
-                        from: 'hr@company.com',
-                        subject: 'Напоминание: Корпоративное мероприятие',
-                        body: 'Добрый день! Напоминаем, что в пятницу состоится корпоративное мероприятие. Просим подтвердить участие до среды.',
-                        isPhishing: false,
-                        penalty: 10,
-                        hints: ['Легитимный домен компании', 'Нормальный тон письма']
-                    },
-                    {
-                        id: 3,
-                        from: 'colleague@company.com',
-                        subject: 'Документ для проверки.exe',
-                        body: 'Привет! Скинул тебе документ для проверки. Открой вложение "report.exe" и дай фидбек.',
-                        isPhishing: true,
-                        penalty: 25,
-                        hints: ['Исполняемый файл .exe', 'Подозрительное вложение', 'Нетипичный запрос']
-                    },
-                    {
-                        id: 4,
-                        from: 'admin@company.com',
-                        subject: 'Обновление политики безопасности',
-                        body: 'Добавлены новые требования к паролям. Просим ознакомиться с документом во вложении (PDF).',
-                        isPhishing: false,
-                        penalty: 10,
-                        hints: ['Официальный адрес', 'PDF документ', 'Рабочая тема']
-                    }
-                ]
+                id: 'check_computer2',
+                name: 'Проверить компьютер в переговорке',
+                description: 'Удалить личные файлы, выйти из учетных записей',
+                completed: false,
+                points: 10,
+                tricky: false
             },
             {
-                id: 'network',
-                title: '🌐 Корпоративная сеть',
-                icon: '🌐',
-                description: 'Проверьте устройства, подключенные к корпоративной сети',
-                devices: [
-                    {
-                        id: 1,
-                        name: 'MacBook Pro - Иван Петров',
-                        mac: 'A4:5E:60:F2:3C:1A',
-                        status: 'safe',
-                        isLegit: true
-                    },
-                    {
-                        id: 2,
-                        name: 'iPhone 14 - Мария Сидорова',
-                        mac: 'B8:27:EB:7D:2E:4F',
-                        status: 'safe',
-                        isLegit: true
-                    },
-                    {
-                        id: 3,
-                        name: 'Unknown Device',
-                        mac: 'DC:A6:32:1F:8B:C2',
-                        status: 'suspicious',
-                        isLegit: false,
-                        penalty: 20
-                    },
-                    {
-                        id: 4,
-                        name: 'HP Printer Office-3',
-                        mac: '00:1B:44:11:3A:B7',
-                        status: 'safe',
-                        isLegit: true
-                    },
-                    {
-                        id: 5,
-                        name: 'Xiaomi-Redmi',
-                        mac: '5C:CF:7F:A2:B1:D3',
-                        status: 'suspicious',
-                        isLegit: false,
-                        penalty: 15
-                    }
-                ]
+                id: 'check_phone1',
+                name: 'Проверить рабочий телефон',
+                description: 'Убедиться, что нет сохраненных паролей',
+                completed: false,
+                points: 8,
+                tricky: false
             },
             {
-                id: 'cloud',
-                title: '☁️ Облачные сервисы',
-                icon: '☁️',
-                description: 'Проверьте настройки доступа к облачным файлам',
-                files: [
-                    {
-                        id: 1,
-                        name: 'Квартальный отчет Q4 2024.xlsx',
-                        sharing: 'team',
-                        needsChange: false
-                    },
-                    {
-                        id: 2,
-                        name: 'Пароли от серверов.txt',
-                        sharing: 'public',
-                        needsChange: true,
-                        penalty: 30
-                    },
-                    {
-                        id: 3,
-                        name: 'Презентация для клиента.pptx',
-                        sharing: 'private',
-                        needsChange: false
-                    },
-                    {
-                        id: 4,
-                        name: 'База данных клиентов.csv',
-                        sharing: 'public',
-                        needsChange: true,
-                        penalty: 35
-                    },
-                    {
-                        id: 5,
-                        name: 'Фото с корпоратива.zip',
-                        sharing: 'team',
-                        needsChange: false
-                    }
-                ]
+                id: 'check_phone2',
+                name: 'Проверить телефон на ресепшене',
+                description: 'Отключить автоответчик с конфиденциальной информацией',
+                completed: false,
+                points: 8,
+                tricky: false
             },
             {
-                id: 'social',
-                title: '👥 Социальные сети',
-                icon: '👥',
-                description: 'Проверьте настройки безопасности в корпоративных соцсетях',
-                tasks: [
-                    {
-                        id: 'profile_visibility',
-                        text: 'Ограничить видимость профиля только для коллег',
-                        correct: true,
-                        penalty: 8
-                    },
-                    {
-                        id: 'work_info',
-                        text: 'Удалить детальную информацию о текущих проектах',
-                        correct: true,
-                        penalty: 12
-                    },
-                    {
-                        id: 'fake_account',
-                        text: 'Принять запрос от "Отдел кадров ООО Компания"',
-                        correct: false,
-                        penalty: 15
-                    },
-                    {
-                        id: 'notifications',
-                        text: 'Включить уведомления о входе с новых устройств',
-                        correct: true,
-                        penalty: 10
-                    }
-                ]
+                id: 'check_router',
+                name: 'Проверить маршрутизатор',
+                description: 'Обновить прошивку, проверить подключенные устройства',
+                completed: false,
+                points: 12,
+                tricky: true
+            },
+            {
+                id: 'check_server',
+                name: 'Проверить серверную',
+                description: 'Настроить бэкапы, проверить доступы',
+                completed: false,
+                points: 15,
+                tricky: true
+            },
+            {
+                id: 'check_printer',
+                name: 'Проверить сетевой принтер',
+                description: 'Очистить очередь печати, проверить настройки',
+                completed: false,
+                points: 8,
+                tricky: false
+            },
+            {
+                id: 'check_safe',
+                name: 'Проверить сейф с документами',
+                description: 'Убедиться, что сейф закрыт, документы на месте',
+                completed: false,
+                points: 10,
+                tricky: true
+            },
+            {
+                id: 'check_documents',
+                name: 'Проверить конфиденциальные документы',
+                description: 'Уничтожить черновики с паролями',
+                completed: false,
+                points: 8,
+                tricky: false
+            },
+            // Ловушки (не нужно делать, но они привлекают внимание)
+            {
+                id: 'trap_usb',
+                name: 'НАЙДЕН USB-НАКОПИТЕЛЬ',
+                description: '⚠️ НЕ ВСТАВЛЯТЬ! Это тестовая ловушка',
+                completed: false,
+                points: 0,
+                tricky: true,
+                isTrap: true
+            },
+            {
+                id: 'trap_coffee',
+                name: 'КОФЕ-МАШИНА ТРЕБУЕТ НАСТРОЙКИ',
+                description: '⚠️ Это не IT оборудование! Не тратьте время',
+                completed: false,
+                points: 0,
+                tricky: true,
+                isTrap: true
+            },
+            {
+                id: 'exit_office',
+                name: 'ВЫЙТИ ИЗ ОФИСА',
+                description: 'Только после выполнения ВСЕХ реальных задач',
+                completed: false,
+                points: 20,
+                tricky: false,
+                isExit: true
             }
         ];
-
+        
         // Инициализация игры
         function initGame() {
-            showIntro();
-            startTimer();
-        }
-
-        // Показать введение
-        function showIntro() {
-            const content = document.getElementById('gameContent');
-            content.innerHTML = `
-                <div class="intro-screen">
-                    <h2 style="color: #667eea; font-size: 2em; margin-bottom: 20px;">
-                        Добро пожаловать в тренажёр по кибербезопасности!
-                    </h2>
-                    <div class="intro-text">
-                        <p style="margin-bottom: 15px;">
-                            📋 <strong>Ваша задача:</strong> правильно завершить рабочий день, обезопасив все корпоративные ресурсы.
-                        </p>
-                        <p style="margin-bottom: 15px;">
-                            🎯 <strong>Цель:</strong> пройти 6 этапов проверки безопасности с минимальным количеством ошибок.
-                        </p>
-                        <p style="margin-bottom: 15px;">
-                            ⚠️ <strong>Внимание:</strong> каждая ошибка снижает вашу оценку и может привести к инциденту безопасности!
-                        </p>
-                        <p style="margin-bottom: 25px;">
-                            📊 <strong>Оценка:</strong> в конце вы получите детальный отчёт о вашем уровне киберграмотности.
-                        </p>
-                        <div class="hint">
-                            💡 <strong>Подсказка:</strong> внимательно читайте описания и не торопитесь. В реальной жизни одна ошибка может стоить компании миллионы.
-                        </div>
-                    </div>
-                    <div class="buttons-row">
-                        <button class="btn btn-primary" onclick="startGame()">
-                            🚀 Начать рабочий день
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Начать игру
-        function startGame() {
-            gameState.currentStage = 0;
-            loadStage(0);
-        }
-
-        // Загрузить этап
-        function loadStage(stageIndex) {
-            if (stageIndex >= stages.length) {
-                showReport();
-                return;
-            }
-
-            const stage = stages[stageIndex];
-            gameState.currentStage = stageIndex;
+            initWorld();
+            updateTaskList();
+            updateStats();
             
-            updateProgress();
-            document.getElementById('currentStage').textContent = `Этап ${stageIndex + 1}/6: ${stage.title}`;
-
-            const content = document.getElementById('gameContent');
-            
-            if (stage.type === 'password') {
-                renderPasswordStage(stage);
-            } else if (stage.emails) {
-                renderEmailStage(stage);
-            } else if (stage.devices) {
-                renderNetworkStage(stage);
-            } else if (stage.files) {
-                renderCloudStage(stage);
-            } else {
-                renderTaskStage(stage);
-            }
-        }
-
-        // Рендер этапа с задачами
-        function renderTaskStage(stage) {
-            const content = document.getElementById('gameContent');
-            content.innerHTML = `
-                <div class="stage-screen">
-                    <div class="stage-title">
-                        <span>${stage.icon}</span>
-                        <span>${stage.title}</span>
-                    </div>
-                    <div class="stage-description">
-                        ${stage.description}
-                    </div>
-                    <ul class="task-list" id="taskList">
-                        ${stage.tasks.map(task => `
-                            <li class="task-item" data-task-id="${task.id}" onclick="toggleTask('${task.id}', ${task.correct})">
-                                <div class="task-checkbox">
-                                    <span class="check-mark"></span>
-                                </div>
-                                <div style="flex: 1;">
-                                    ${task.text}
-                                </div>
-                            </li>
-                        `).join('')}
-                    </ul>
-                    <div class="buttons-row">
-                        <button class="btn btn-secondary" onclick="showHint()">
-                            💡 Подсказка (-5 очков)
-                        </button>
-                        <button class="btn btn-primary" onclick="completeStage()">
-                            Завершить этап →
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Переключить задачу
-        function toggleTask(taskId, isCorrect) {
-            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
-            const stage = stages[gameState.currentStage];
-            const task = stage.tasks.find(t => t.id === taskId);
-            
-            if (taskElement.classList.contains('completed') || taskElement.classList.contains('error')) {
-                taskElement.classList.remove('completed', 'error');
-                taskElement.querySelector('.check-mark').textContent = '';
-                
-                const index = gameState.completedTasks.indexOf(taskId);
-                if (index > -1) {
-                    gameState.completedTasks.splice(index, 1);
+            // Управление клавишами
+            window.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase();
+                if (['w', 'a', 's', 'd', 'ц', 'ф', 'ы', 'в'].includes(key)) {
+                    keys[key] = true;
                 }
-            } else {
-                if (isCorrect) {
-                    taskElement.classList.add('completed');
-                    taskElement.querySelector('.check-mark').textContent = '✓';
+            });
+            
+            window.addEventListener('keyup', (e) => {
+                const key = e.key.toLowerCase();
+                if (['w', 'a', 's', 'd', 'ц', 'ф', 'ы', 'в'].includes(key)) {
+                    keys[key] = false;
+                }
+            });
+            
+            // Управление мышью
+            canvas.addEventListener('mousemove', (e) => {
+                if (document.pointerLockElement === canvas) {
+                    const movementX = e.movementX || 0;
+                    player.angle += movementX * mouseSensitivity;
+                }
+            });
+            
+            canvas.addEventListener('click', () => {
+                if (!document.pointerLockElement) {
+                    canvas.requestPointerLock();
                 } else {
-                    taskElement.classList.add('error');
-                    taskElement.querySelector('.check-mark').textContent = '✗';
+                    checkInteraction();
                 }
-                gameState.completedTasks.push(taskId);
-            }
-        }
-
-        // Рендер этапа паролей
-        function renderPasswordStage(stage) {
-            const content = document.getElementById('gameContent');
-            content.innerHTML = `
-                <div class="stage-screen">
-                    <div class="stage-title">
-                        <span>${stage.icon}</span>
-                        <span>${stage.title}</span>
-                    </div>
-                    <div class="stage-description">
-                        ${stage.description}
-                    </div>
-                    <div class="hint">
-                        📋 <strong>Требования к паролю:</strong>
-                        <ul style="margin-top: 10px; margin-left: 20px;">
-                            <li>Минимум 12 символов</li>
-                            <li>Заглавные и строчные буквы</li>
-                            <li>Цифры и спецсимволы (!@#$%^&*)</li>
-                            <li>Не использовать распространённые пароли</li>
-                        </ul>
-                    </div>
-                    <div style="margin: 25px 0;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: 600;">
-                            Создайте надёжный пароль:
-                        </label>
-                        <input type="text" 
-                               id="passwordInput" 
-                               class="password-input" 
-                               placeholder="Введите пароль..."
-                               oninput="checkPasswordStrength()">
-                        <div id="passwordStrength"></div>
-                        <div id="passwordFeedback" style="font-size: 0.9em; color: #666; margin-top: 10px;"></div>
-                    </div>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="enable2FA">
-                            <label for="enable2FA">Включить двухфакторную аутентификацию (2FA)</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="uniquePassword">
-                            <label for="uniquePassword">Подтверждаю, что пароль уникален и не используется на других сайтах</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="noSavePassword">
-                            <label for="noSavePassword">Не сохранять пароль в браузере</label>
-                        </div>
-                    </div>
-                    <div class="buttons-row">
-                        <button class="btn btn-primary" onclick="validatePassword()">
-                            Подтвердить настройки →
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Проверка силы пароля
-        function checkPasswordStrength() {
-            const password = document.getElementById('passwordInput').value;
-            const strengthDiv = document.getElementById('passwordStrength');
-            const feedbackDiv = document.getElementById('passwordFeedback');
+            });
             
-            let strength = 0;
-            let feedback = [];
-
-            if (password.length >= 12) strength++;
-            else feedback.push('Минимум 12 символов');
-
-            if (/[A-Z]/.test(password)) strength++;
-            else feedback.push('Добавьте заглавные буквы');
-
-            if (/[a-z]/.test(password)) strength++;
-            else feedback.push('Добавьте строчные буквы');
-
-            if (/[0-9]/.test(password)) strength++;
-            else feedback.push('Добавьте цифры');
-
-            if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++;
-            else feedback.push('Добавьте спецсимволы');
-
-            const commonPasswords = ['password', '123456', 'qwerty', 'admin', 'letmein'];
-            if (commonPasswords.some(cp => password.toLowerCase().includes(cp))) {
-                strength = 0;
-                feedback = ['Используется распространённый пароль!'];
-            }
-
-            strengthDiv.className = 'password-strength';
-            feedbackDiv.textContent = feedback.join(', ');
-
-            if (strength <= 2) {
-                strengthDiv.classList.add('strength-weak');
-                feedbackDiv.style.color = '#f44336';
-            } else if (strength <= 4) {
-                strengthDiv.classList.add('strength-medium');
-                feedbackDiv.style.color = '#FF9800';
-            } else {
-                strengthDiv.classList.add('strength-strong');
-                feedbackDiv.style.color = '#4CAF50';
-                feedbackDiv.textContent = '✓ Надёжный пароль';
-            }
-
-            gameState.stageData.passwordStrength = strength;
-        }
-
-        // Валидация пароля
-        function validatePassword() {
-            const password = document.getElementById('passwordInput').value;
-            const enable2FA = document.getElementById('enable2FA').checked;
-            const uniquePassword = document.getElementById('uniquePassword').checked;
-            const noSavePassword = document.getElementById('noSavePassword').checked;
-
-            let errors = 0;
-            let messages = [];
-
-            if (!password || gameState.stageData.passwordStrength < 5) {
-                errors++;
-                messages.push('Пароль недостаточно надёжный');
-                gameState.score -= 15;
-                gameState.errors.push({
-                    stage: 'Пароли и учётные записи',
-                    error: 'Использован слабый пароль',
-                    penalty: 15
-                });
-            }
-
-            if (!enable2FA) {
-                errors++;
-                messages.push('Не включена двухфакторная аутентификация');
-                gameState.score -= 10;
-                gameState.errors.push({
-                    stage: 'Пароли и учётные записи',
-                    error: 'Не активирована 2FA',
-                    penalty: 10
-                });
-            }
-
-            if (!uniquePassword) {
-                errors++;
-                messages.push('Необходимо использовать уникальный пароль');
-                gameState.score -= 8;
-                gameState.errors.push({
-                    stage: 'Пароли и учётные записи',
-                    error: 'Пароль может использоваться на других сайтах',
-                    penalty: 8
-                });
-            }
-
-            if (!noSavePassword) {
-                errors++;
-                messages.push('Рекомендуется не сохранять пароль в браузере');
-                gameState.score -= 5;
-                gameState.errors.push({
-                    stage: 'Пароли и учётные записи',
-                    error: 'Пароль сохранён в браузере',
-                    penalty: 5
-                });
-            }
-
-            if (errors > 0) {
-                showFeedback('⚠️ Обнаружены проблемы', messages.join('<br>'), false);
-            } else {
-                showFeedback('✓ Отлично!', 'Все настройки безопасности выполнены правильно', true);
-            }
-
-            updateScore();
+            // Запуск игрового цикла
+            gameLoop();
+            startTimer();
+            
+            // Начальное сообщение
             setTimeout(() => {
-                loadStage(gameState.currentStage + 1);
-            }, 2000);
-        }
-
-        // Рендер этапа email
-        function renderEmailStage(stage) {
-            const content = document.getElementById('gameContent');
-            content.innerHTML = `
-                <div class="stage-screen">
-                    <div class="stage-title">
-                        <span>${stage.icon}</span>
-                        <span>${stage.title}</span>
-                    </div>
-                    <div class="stage-description">
-                        ${stage.description}
-                    </div>
-                    <div class="hint">
-                        ⚠️ <strong>Признаки фишинга:</strong> подозрительный отправитель, срочность, запрос личных данных, 
-                        странные ссылки, исполняемые файлы (.exe), орфографические ошибки
-                    </div>
-                    <div class="email-list" id="emailList">
-                        ${stage.emails.map(email => `
-                            <div class="email-item" data-email-id="${email.id}">
-                                <div class="email-header">
-                                    <div>
-                                        <div class="email-subject">${email.subject}</div>
-                                        <div class="email-sender">От: ${email.from}</div>
-                                    </div>
-                                </div>
-                                <div class="email-body">${email.body}</div>
-                                <div class="email-actions">
-                                    <button class="btn btn-success" onclick="markEmail(${email.id}, false)">
-                                        ✓ Легитимное
-                                    </button>
-                                    <button class="btn btn-danger" onclick="markEmail(${email.id}, true)">
-                                        ⚠️ Фишинг
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Отметить email
-        let emailsChecked = 0;
-        function markEmail(emailId, markedAsPhishing) {
-            const stage = stages[gameState.currentStage];
-            const email = stage.emails.find(e => e.id === emailId);
-            const emailElement = document.querySelector(`[data-email-id="${emailId}"]`);
-            
-            emailElement.style.opacity = '0.6';
-            emailElement.style.pointerEvents = 'none';
-            
-            const isCorrect = email.isPhishing === markedAsPhishing;
-            
-            if (!isCorrect) {
-                gameState.score -= email.penalty;
-                const errorMsg = email.isPhishing 
-                    ? `Пропущено фишинговое письмо: "${email.subject}"`
-                    : `Ошибочно помечено как фишинг: "${email.subject}"`;
-                
-                gameState.errors.push({
-                    stage: stage.title,
-                    error: errorMsg,
-                    penalty: email.penalty
-                });
-                
-                emailElement.style.borderColor = '#f44336';
-                showFeedback('❌ Ошибка', 
-                    isCorrect ? 'Правильно!' : 
-                    `Неверно! ${email.isPhishing ? 'Это был фишинг' : 'Это легитимное письмо'}. ${email.hints ? 'Признаки: ' + email.hints.join(', ') : ''}`,
-                    false
-                );
-            } else {
-                emailElement.style.borderColor = '#4CAF50';
-                showFeedback('✓ Правильно', 'Вы правильно определили письмо!', true);
-            }
-            
-            updateScore();
-            emailsChecked++;
-            
-            if (emailsChecked >= stage.emails.length) {
-                setTimeout(() => {
-                    emailsChecked = 0;
-                    loadStage(gameState.currentStage + 1);
-                }, 2000);
-            }
-        }
-
-        // Рендер этапа сети
-        function renderNetworkStage(stage) {
-            const content = document.getElementById('gameContent');
-            content.innerHTML = `
-                <div class="stage-screen">
-                    <div class="stage-title">
-                        <span>${stage.icon}</span>
-                        <span>${stage.title}</span>
-                    </div>
-                    <div class="stage-description">
-                        ${stage.description}
-                    </div>
-                    <div class="hint">
-                        🔍 <strong>Проверьте:</strong> все ли устройства в сети принадлежат сотрудникам? 
-                        Неизвестные устройства могут быть точками несанкционированного доступа.
-                    </div>
-                    <div class="device-panel">
-                        <h3 style="margin-bottom: 15px;">Подключенные устройства:</h3>
-                        ${stage.devices.map(device => `
-                            <div class="device-item">
-                                <div class="device-info">
-                                    <div class="device-name">${device.name}</div>
-                                    <div class="device-details">MAC: ${device.mac}</div>
-                                </div>
-                                <div>
-                                    ${device.status === 'safe' ? 
-                                        '<span class="device-status status-safe">Безопасно</span>' : 
-                                        '<span class="device-status status-suspicious">Проверить</span>'}
-                                    ${device.status === 'suspicious' ? 
-                                        `<button class="btn btn-danger" style="margin-left: 10px;" onclick="blockDevice(${device.id})">
-                                            🚫 Заблокировать
-                                        </button>` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="buttons-row">
-                        <button class="btn btn-primary" onclick="completeNetworkStage()">
-                            Завершить проверку →
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        const blockedDevices = [];
-        function blockDevice(deviceId) {
-            blockedDevices.push(deviceId);
-            const deviceElement = event.target.closest('.device-item');
-            deviceElement.style.opacity = '0.5';
-            deviceElement.querySelector('.device-status').textContent = 'Заблокировано';
-            deviceElement.querySelector('.device-status').className = 'device-status status-dangerous';
-            event.target.remove();
-            
-            showFeedback('✓ Устройство заблокировано', 'Неизвестное устройство успешно отключено от сети', true);
-        }
-
-        function completeNetworkStage() {
-            const stage = stages[gameState.currentStage];
-            const suspiciousDevices = stage.devices.filter(d => !d.isLegit);
-            
-            suspiciousDevices.forEach(device => {
-                if (!blockedDevices.includes(device.id)) {
-                    gameState.score -= device.penalty;
-                    gameState.errors.push({
-                        stage: stage.title,
-                        error: `Не заблокировано подозрительное устройство: ${device.name}`,
-                        penalty: device.penalty
-                    });
-                }
-            });
-            
-            updateScore();
-            loadStage(gameState.currentStage + 1);
-        }
-
-        // Рендер этапа облака
-        function renderCloudStage(stage) {
-            const content = document.getElementById('gameContent');
-            content.innerHTML = `
-                <div class="stage-screen">
-                    <div class="stage-title">
-                        <span>${stage.icon}</span>
-                        <span>${stage.title}</span>
-                    </div>
-                    <div class="stage-description">
-                        ${stage.description}
-                    </div>
-                    <div class="hint">
-                        ⚠️ <strong>Внимание:</strong> конфиденциальные файлы не должны быть доступны публично! 
-                        Проверьте права доступа к каждому файлу.
-                    </div>
-                    <div class="cloud-files">
-                        ${stage.files.map(file => `
-                            <div class="file-item" data-file-id="${file.id}">
-                                <div class="file-header">
-                                    <div class="file-name">📄 ${file.name}</div>
-                                    <div class="file-sharing">
-                                        Доступ: 
-                                        <span class="sharing-badge sharing-${file.sharing}">
-                                            ${file.sharing === 'public' ? '🌐 Публичный' : 
-                                              file.sharing === 'team' ? '👥 Команда' : 
-                                              '🔒 Приватный'}
-                                        </span>
-                                    </div>
-                                </div>
-                                ${file.sharing === 'public' ? `
-                                    <button class="btn btn-danger" onclick="changeFileAccess(${file.id})">
-                                        🔒 Ограничить доступ
-                                    </button>
-                                ` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="buttons-row">
-                        <button class="btn btn-primary" onclick="completeCloudStage()">
-                            Завершить проверку →
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        const fixedFiles = [];
-        function changeFileAccess(fileId) {
-            fixedFiles.push(fileId);
-            const fileElement = document.querySelector(`[data-file-id="${fileId}"]`);
-            const badge = fileElement.querySelector('.sharing-badge');
-            badge.className = 'sharing-badge sharing-private';
-            badge.textContent = '🔒 Приватный';
-            event.target.remove();
-            
-            showFeedback('✓ Доступ изменён', 'Файл теперь доступен только вам', true);
-        }
-
-        function completeCloudStage() {
-            const stage = stages[gameState.currentStage];
-            const publicFiles = stage.files.filter(f => f.needsChange);
-            
-            publicFiles.forEach(file => {
-                if (!fixedFiles.includes(file.id)) {
-                    gameState.score -= file.penalty;
-                    gameState.errors.push({
-                        stage: stage.title,
-                        error: `Конфиденциальный файл остался публичным: ${file.name}`,
-                        penalty: file.penalty
-                    });
-                }
-            });
-            
-            updateScore();
-            loadStage(gameState.currentStage + 1);
-        }
-
-        // Завершить этап с задачами
-        function completeStage() {
-            const stage = stages[gameState.currentStage];
-            
-            stage.tasks.forEach(task => {
-                const isCompleted = gameState.completedTasks.includes(task.id);
-                
-                // Если задача должна быть выполнена, но не выполнена
-                if (task.correct && !isCompleted) {
-                    gameState.score -= task.penalty;
-                    gameState.errors.push({
-                        stage: stage.title,
-                        error: `Не выполнено: ${task.text}`,
-                        penalty: task.penalty
-                    });
-                }
-                
-                // Если задача не должна быть выполнена, но выполнена
-                if (!task.correct && isCompleted) {
-                    gameState.score -= task.penalty;
-                    gameState.errors.push({
-                        stage: stage.title,
-                        error: `Ошибочно выполнено: ${task.text}`,
-                        penalty: task.penalty
-                    });
-                }
-            });
-            
-            gameState.completedTasks = [];
-            updateScore();
-            loadStage(gameState.currentStage + 1);
-        }
-
-        // Показать подсказку
-        function showHint() {
-            const stage = stages[gameState.currentStage];
-            if (!stage.tasks) return;
-            
-            gameState.score -= 5;
-            gameState.hintsUsed++;
-            updateScore();
-            
-            const hints = stage.tasks
-                .filter(task => task.hint)
-                .map(task => `• ${task.text}: ${task.hint}`)
-                .join('<br>');
-            
-            showFeedback('💡 Подсказка', hints, true);
-        }
-
-        // Показать отчёт
-        function showReport() {
-            const elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
-            const minutes = Math.floor(elapsedTime / 60);
-            const seconds = elapsedTime % 60;
-            
-            const scorePercent = Math.max(0, gameState.score);
-            let scoreClass = 'score-good';
-            let scoreText = 'Отлично!';
-            
-            if (scorePercent < 60) {
-                scoreClass = 'score-bad';
-                scoreText = 'Требуется улучшение';
-            } else if (scorePercent < 80) {
-                scoreClass = 'score-medium';
-                scoreText = 'Хорошо';
-            }
-            
-            const content = document.getElementById('gameContent');
-            content.innerHTML = `
-                <div class="report-screen">
-                    <div class="report-title">📊 Отчёт о кибербезопасности</div>
-                    
-                    <div class="score-circle ${scoreClass}">
-                        ${scorePercent}%
-                    </div>
-                    
-                    <h3 style="color: #667eea; margin-bottom: 20px;">${scoreText}</h3>
-                    
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin: 20px 0;">
-                        <strong>Время прохождения:</strong> ${minutes}:${seconds.toString().padStart(2, '0')}<br>
-                        <strong>Использовано подсказок:</strong> ${gameState.hintsUsed}<br>
-                        <strong>Всего ошибок:</strong> ${gameState.errors.length}
-                    </div>
-                    
-                    ${gameState.errors.length > 0 ? `
-                        <div class="errors-list">
-                            <h3 style="color: #f44336; margin-bottom: 15px;">❌ Обнаруженные ошибки:</h3>
-                            ${gameState.errors.map(error => `
-                                <div class="error-item">
-                                    <strong>${error.stage}</strong><br>
-                                    ${error.error} <span style="color: #f44336;">(-${error.penalty} очков)</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : '<div style="color: #4CAF50; font-size: 1.2em;">✓ Ошибок не обнаружено!</div>'}
-                    
-                    <div class="recommendations">
-                        <h3 style="color: #2196F3; margin-bottom: 15px;">💡 Рекомендации:</h3>
-                        ${generateRecommendations()}
-                    </div>
-                    
-                    <div class="buttons-row">
-                        <button class="btn btn-primary" onclick="location.reload()">
-                            🔄 Пройти снова
-                        </button>
-                        <button class="btn btn-success" onclick="downloadReport()">
-                            📥 Скачать отчёт
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('currentStage').textContent = 'Завершено';
-            updateProgress();
-        }
-
-        // Генерация рекомендаций
-        function generateRecommendations() {
-            const recommendations = [];
-            const errorStages = [...new Set(gameState.errors.map(e => e.stage))];
-            
-            if (errorStages.includes('💻 Рабочее место')) {
-                recommendations.push('Всегда блокируйте рабочую станцию перед уходом (Win+L)');
-                recommendations.push('Регулярно проверяйте установку обновлений безопасности');
-            }
-            
-            if (errorStages.includes('🔑 Пароли и учётные записи')) {
-                recommendations.push('Используйте менеджер паролей для генерации надёжных паролей');
-                recommendations.push('Обязательно активируйте двухфакторную аутентификацию');
-            }
-            
-            if (errorStages.includes('📧 Электронная почта')) {
-                recommendations.push('Будьте внимательны к письмам с запросами личных данных');
-                recommendations.push('Проверяйте адрес отправителя перед открытием вложений');
-            }
-            
-            if (errorStages.includes('🌐 Корпоративная сеть')) {
-                recommendations.push('Регулярно проверяйте список подключенных устройств');
-                recommendations.push('Блокируйте неизвестные устройства немедленно');
-            }
-            
-            if (errorStages.includes('☁️ Облачные сервисы')) {
-                recommendations.push('Никогда не делайте конфиденциальные файлы публичными');
-                recommendations.push('Регулярно проверяйте права доступа к облачным ресурсам');
-            }
-            
-            if (errorStages.includes('👥 Социальные сети')) {
-                recommendations.push('Ограничьте видимость рабочего профиля');
-                recommendations.push('Не принимайте запросы от неизвестных аккаунтов');
-            }
-            
-            if (recommendations.length === 0) {
-                recommendations.push('Отличная работа! Продолжайте соблюдать правила кибербезопасности');
-                recommendations.push('Регулярно повторяйте тренинги по безопасности');
-            }
-            
-            return recommendations.map(r => `
-                <div class="recommendation-item">
-                    ${r}
-                </div>
-            `).join('');
-        }
-
-        // Скачать отчёт
-        function downloadReport() {
-            const scorePercent = Math.max(0, gameState.score);
-            const elapsedTime = Math.floor((Date.now() - gameState.startTime) / 1000);
-            const minutes = Math.floor(elapsedTime / 60);
-            const seconds = elapsedTime % 60;
-            
-            let report = `ОТЧЁТ О КИБЕРБЕЗОПАСНОСТИ
-================================
-
-Оценка киберграмотности: ${scorePercent}%
-Время прохождения: ${minutes}:${seconds.toString().padStart(2, '0')}
-Использовано подсказок: ${gameState.hintsUsed}
-Всего ошибок: ${gameState.errors.length}
-
-ОБНАРУЖЕННЫЕ ОШИБКИ:
-`;
-            
-            gameState.errors.forEach(error => {
-                report += `\n[${error.stage}]\n${error.error} (-${error.penalty} очков)\n`;
-            });
-            
-            report += `\nРЕКОМЕНДАЦИИ:\n`;
-            const recs = generateRecommendations().match(/<div class="recommendation-item">\s*(.*?)\s*<\/div>/g);
-            if (recs) {
-                recs.forEach(rec => {
-                    const text = rec.replace(/<[^>]*>/g, '').trim();
-                    report += `\n• ${text}`;
-                });
-            }
-            
-            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'cybersecurity_report.txt';
-            link.click();
-        }
-
-        // Обновить прогресс
-        function updateProgress() {
-            const progress = ((gameState.currentStage + 1) / stages.length) * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
-        }
-
-        // Обновить счёт
-        function updateScore() {
-            document.getElementById('scoreDisplay').textContent = `Очки: ${Math.max(0, gameState.score)}`;
-        }
-
-        // Таймер
-        function startTimer() {
-            setInterval(() => {
-                const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
-                const minutes = Math.floor(elapsed / 60);
-                const seconds = elapsed % 60;
-                document.getElementById('timer').textContent = 
-                    `Время: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                showNotification('🔒 Вы - аудитор кибербезопасности. Проверьте офис перед закрытием!');
+                showInstruction();
             }, 1000);
         }
-
-        // Показать обратную связь
-        function showFeedback(title, text, isPositive) {
-            const modal = document.getElementById('feedbackModal');
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalText').innerHTML = text;
-            modal.classList.add('active');
+        
+        function gameLoop() {
+            if (!gameState.isDayEnded) {
+                updatePlayer();
+                render3D();
+            }
+            requestAnimationFrame(gameLoop);
         }
-
-        function closeFeedbackModal() {
-            document.getElementById('feedbackModal').classList.remove('active');
+        
+        function updatePlayer() {
+            // Движение вперед/назад
+            if (keys.w || keys.ц) {
+                const newX = player.x + Math.sin(player.angle) * player.moveSpeed;
+                const newY = player.y + Math.cos(player.angle) * player.moveSpeed;
+                
+                if (!isCollision(newX, newY)) {
+                    player.x = newX;
+                    player.y = newY;
+                }
+            }
+            
+            if (keys.s || keys.ы) {
+                const newX = player.x - Math.sin(player.angle) * player.moveSpeed;
+                const newY = player.y - Math.cos(player.angle) * player.moveSpeed;
+                
+                if (!isCollision(newX, newY)) {
+                    player.x = newX;
+                    player.y = newY;
+                }
+            }
+            
+            // Стороннее движение
+            if (keys.a || keys.ф) {
+                const newX = player.x - Math.cos(player.angle) * player.moveSpeed;
+                const newY = player.y + Math.sin(player.angle) * player.moveSpeed;
+                
+                if (!isCollision(newX, newY)) {
+                    player.x = newX;
+                    player.y = newY;
+                }
+            }
+            
+            if (keys.d || keys.в) {
+                const newX = player.x + Math.cos(player.angle) * player.moveSpeed;
+                const newY = player.y - Math.sin(player.angle) * player.moveSpeed;
+                
+                if (!isCollision(newX, newY)) {
+                    player.x = newX;
+                    player.y = newY;
+                }
+            }
         }
-
+        
+        function isCollision(x, y) {
+            const gridX = Math.floor(x);
+            const gridY = Math.floor(y);
+            
+            if (gridX < 0 || gridX >= world.width || gridY < 0 || gridY >= world.height) {
+                return true;
+            }
+            
+            return world.grid[gridX][gridY] === 1;
+        }
+        
+        function checkInteraction() {
+            // Бросаем луч вперед для проверки взаимодействия
+            const checkDistance = 2;
+            const checkX = player.x + Math.sin(player.angle) * checkDistance;
+            const checkY = player.y + Math.cos(player.angle) * checkDistance;
+            
+            // Ищем ближайший объект
+            let closestObj = null;
+            let closestDist = Infinity;
+            
+            for (const obj of world.objects) {
+                if (obj.interactable) {
+                    const dist = Math.sqrt(
+                        Math.pow(checkX - obj.x, 2) + 
+                        Math.pow(checkY - obj.y, 2)
+                    );
+                    
+                    if (dist < 1.5 && dist < closestDist) {
+                        closestDist = dist;
+                        closestObj = obj;
+                    }
+                }
+            }
+            
+            if (closestObj) {
+                interactWithObject(closestObj);
+            }
+        }
+        
+        function interactWithObject(obj) {
+            switch(obj.type) {
+                case 'computer':
+                    showComputerCheck(obj.task);
+                    break;
+                case 'phone':
+                    showPhoneCheck(obj.task);
+                    break;
+                case 'router':
+                    showRouterCheck();
+                    break;
+                case 'server':
+                    showServerCheck();
+                    break;
+                case 'printer':
+                    showPrinterCheck();
+                    break;
+                case 'safe':
+                    showSafeCheck();
+                    break;
+                case 'documents':
+                    showDocumentsCheck();
+                    break;
+                case 'usb_drive':
+                    showUSBTrap();
+                    break;
+                case 'coffee_machine':
+                    showCoffeeTrap();
+                    break;
+                case 'exit':
+                    attemptExit();
+                    break;
+            }
+        }
+        
+        // ========== ИНТЕРФЕЙСЫ ПРОВЕРОК ==========
+        function showComputerCheck(taskId) {
+            const task = securityTasks.find(t => t.id === taskId);
+            let content = '';
+            
+            if (taskId === 'check_computer1') {
+                content = `
+                    <h2>💻 КОМПЬЮТЕР СОТРУДНИКА ИВАНОВА</h2>
+                    <p>Обнаружены проблемы:</p>
+                    
+                    <div style="margin: 20px 0;">
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Сессия Windows активна:</h4>
+                            <p>Пользователь не вышел из системы</p>
+                            <button class="button" onclick="showNotification('Сессия заблокирована')">🔒 Заблокировать</button>
+                            <button class="button tricky" onclick="showNotification('⚠️ Это тест! Не нужно нажимать')">📝 Отправить уведомление пользователю</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Обновления ОС:</h4>
+                            <p>Доступны 3 критических обновления</p>
+                            <button class="button" onclick="showNotification('Обновления установлены')">🔄 Установить сейчас</button>
+                            <button class="button tricky" onclick="triggerTrap('Отложил обновления на неделю')">⏰ Отложить на неделю</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>USB устройства:</h4>
+                            <p>Подключена флешка "Личные фото"</p>
+                            <button class="button" onclick="showNotification('USB безопасно извлечен')">📀 Извлечь</button>
+                            <button class="button danger" onclick="triggerTrap('Проверил личные файлы сотрудника')">👁️ Просмотреть содержимое</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Антивирус:</h4>
+                            <p>Определения устарели на 15 дней</p>
+                            <button class="button" onclick="showNotification('Базы антивируса обновлены')">🛡️ Обновить</button>
+                            <button class="button tricky trap-button" onclick="triggerTrap('Отключил антивирус "чтобы не тормозил"')">⚡ Отключить антивирус</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                        <button class="button" onclick="closeModal('computer')">❌ ВЫЙТИ</button>
+                    </div>
+                `;
+            } else {
+                content = `
+                    <h2>💻 КОМПЬЮТЕР В ПЕРЕГОВОРКЕ</h2>
+                    
+                    <div style="margin: 20px 0;">
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Сохраненные пароли в браузере:</h4>
+                            <p>Найдено 8 сохраненных паролей от рабочих систем</p>
+                            <button class="button" onclick="showNotification('Пароли удалены из браузера')">🧹 Очистить</button>
+                            <button class="button tricky" onclick="triggerTrap('Экспортировал пароли в файл "для безопасности"')">💾 Экспортировать пароли</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Авторизация в облачных сервисах:</h4>
+                            <p>Активны сессии в Google Drive, Dropbox, OneDrive</p>
+                            <button class="button" onclick="showNotification('Все сессии завершены')">🚪 Выйти из всех сервисов</button>
+                            <button class="button tricky" onclick="triggerTrap('Сделал резервную копию на личный облачный диск')">☁️ Создать резервную копию</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>История браузера:</h4>
+                            <p>Содержит посещение личных соцсетей в рабочее время</p>
+                            <button class="button" onclick="showNotification('История очищена')">🗑️ Очистить историю</button>
+                            <button class="button danger" onclick="triggerTrap('Сохранил историю для отчета руководству')">📋 Сохранить отчет</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                        <button class="button" onclick="closeModal('computer')">❌ ВЫЙТИ</button>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('computer-content').innerHTML = content;
+            document.getElementById('computer-modal').style.display = 'flex';
+        }
+        
+        function showPhoneCheck(taskId) {
+            let content = '';
+            
+            if (taskId === 'check_phone1') {
+                content = `
+                    <h2>📞 РАБОЧИЙ ТЕЛЕФОН КАБИНЕТА 101</h2>
+                    
+                    <div style="margin: 20px 0;">
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Сохраненные контакты:</h4>
+                            <p>Найдены личные контакты сотрудников (номера домов, семьи)</p>
+                            <button class="button" onclick="showNotification('Личные контакты удалены')">🗑️ Удалить личные контакты</button>
+                            <button class="button tricky" onclick="triggerTrap('Синхронизировал контакты с личным телефоном')">📱 Синхронизировать</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Голосовая почта:</h4>
+                            <p>Сообщение от "службы поддержки" с просьбой перезвонить на подозрительный номер</p>
+                            <button class="button danger" onclick="triggerTrap('Перезвонил на подозрительный номер')">📞 Перезвонить</button>
+                            <button class="button" onclick="showNotification('Сообщение помечено как спам')">🚫 Пометить как спам</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Настройки безопасности:</h4>
+                            <p>PIN-код не установлен</p>
+                            <button class="button" onclick="showNotification('PIN-код установлен')">🔢 Установить PIN</button>
+                            <button class="button tricky" onclick="triggerTrap('Оставил без пароля "для удобства"')">😊 Оставить как есть</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                        <button class="button" onclick="closeModal('phone')">❌ ВЫЙТИ</button>
+                    </div>
+                `;
+            } else {
+                content = `
+                    <h2>📞 ТЕЛЕФОН НА РЕСЕПШЕНЕ</h2>
+                    
+                    <div style="margin: 20px 0;">
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Автоответчик:</h4>
+                            <p>Сообщение: "Компания ООО 'Альфа', бухгалтерия: пароль к 1С - бухгалтер123"</p>
+                            <button class="button danger" onclick="triggerTrap('Оставил сообщение с паролем')">🎤 Оставить как есть</button>
+                            <button class="button" onclick="showNotification('Сообщение изменено на стандартное')">🔊 Изменить сообщение</button>
+                        </div>
+                        
+                        <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                            <h4>Журнал вызовов:</h4>
+                            <p>Много вызовов на международные номера в нерабочее время</p>
+                            <button class="button" onclick="showNotification('Вызовы залогированы для проверки')">📊 Записать в отчет</button>
+                            <button class="button tricky" onclick="triggerTrap('Позвонил по подозрительному номеру из журнала')">🔍 Проверить номер</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="button success" onclick="completeTask('${taskId}')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                        <button class="button" onclick="closeModal('phone')">❌ ВЫЙТИ</button>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('phone-content').innerHTML = content;
+            document.getElementById('phone-modal').style.display = 'flex';
+        }
+        
+        function showRouterCheck() {
+            const content = `
+                <h2>📶 КОРПОРАТИВНЫЙ МАРШРУТИЗАТОР</h2>
+                
+                <div style="margin: 20px 0;">
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Подключенные устройства (12):</h4>
+                        <p>3 неизвестных устройства с MAC-адресами из Китая</p>
+                        <button class="button" onclick="showNotification('Неизвестные устройства заблокированы')">🚫 Заблокировать неизвестные</button>
+                        <button class="button tricky" onclick="triggerTrap('Добавил устройства в белый список "на всякий случай"')">✅ Добавить в белый список</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Гостевой Wi-Fi:</h4>
+                        <p>Активен, пароль: guest123 (стандартный)</p>
+                        <button class="button" onclick="showNotification('Гостевой Wi-Fi отключен')">📴 Отключить</button>
+                        <button class="button tricky" onclick="triggerTrap('Усилил сигнал гостевой сети')">📡 Усилить сигнал</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Прошивка:</h4>
+                        <p>Версия 1.0.4 (актуальная 2.1.7)</p>
+                        <button class="button" onclick="showNotification('Прошивка обновлена до актуальной версии')">🔄 Обновить</button>
+                        <button class="button danger trap-button" onclick="triggerTrap('Скачал прошивку с непроверенного сайта')">💾 Скачать с сайта</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Портфорвардинг:</h4>
+                        <p>Открыты порты 22, 3389, 5900 для всех входящих подключений</p>
+                        <button class="button" onclick="showNotification('Лишние порты закрыты')">🔒 Закрыть лишние порты</button>
+                        <button class="button tricky" onclick="triggerTrap('Открыл дополнительные порты для "удаленной работы"')">🌐 Открыть еще порты</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="button success" onclick="completeTask('check_router')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                    <button class="button" onclick="closeModal('router')">❌ ВЫЙТИ</button>
+                </div>
+            `;
+            
+            document.getElementById('router-content').innerHTML = content;
+            document.getElementById('router-modal').style.display = 'flex';
+        }
+        
+        function showServerCheck() {
+            const content = `
+                <h2>🗄️ СЕРВЕРНАЯ КОМПАНИИ</h2>
+                
+                <div style="margin: 20px 0;">
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Резервное копирование:</h4>
+                        <p>Последний бэкап: 2 недели назад</p>
+                        <button class="button" onclick="showNotification('Бэкап запущен, настроено ежедневное копирование')">💾 Настроить бэкап</button>
+                        <button class="button tricky" onclick="triggerTrap('Отключил бэкапы "чтобы экономить место"')">💸 Отключить бэкапы</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Доступы:</h4>
+                        <p>5 пользователей с правами администратора (включая уволенных)</p>
+                        <button class="button" onclick="showNotification('Права администратора пересмотрены')">👥 Проверить доступы</button>
+                        <button class="button danger" onclick="triggerTrap('Создал общий админ-аккаунт для всех IT')">👑 Создать общий аккаунт</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Логи безопасности:</h4>
+                        <p>Обнаружены множественные неудачные попытки входа</p>
+                        <button class="button" onclick="showNotification('Логи сохранены, настроены алерты')">📊 Проанализировать логи</button>
+                        <button class="button tricky" onclick="triggerTrap('Очистил логи "чтобы не занимали место"')">🧹 Очистить логи</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Физическая безопасность:</h4>
+                        <p>Дверь в серверную не закрывается на ключ</p>
+                        <button class="button" onclick="showNotification('Вызван сантехник для починки замка')">🔧 Сообщить о проблеме</button>
+                        <button class="button tricky trap-button" onclick="triggerTrap('Поставил записку "Не входить" вместо замка')">📝 Оставить записку</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="button success" onclick="completeTask('check_server')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                    <button class="button" onclick="closeModal('server')">❌ ВЫЙТИ</button>
+                </div>
+            `;
+            
+            document.getElementById('server-content').innerHTML = content;
+            document.getElementById('server-modal').style.display = 'flex';
+        }
+        
+        function showPrinterCheck() {
+            const content = `
+                <h2>🖨️ СЕТЕВОЙ ПРИНТЕР КОРИДОРА</h2>
+                
+                <div style="margin: 20px 0;">
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Очередь печати:</h4>
+                        <p>43 документа ожидают печати, включая конфиденциальные</p>
+                        <button class="button" onclick="showNotification('Очередь очищена, конфиденциальные документы уничтожены')">🗑️ Очистить очередь</button>
+                        <button class="button tricky" onclick="triggerTrap('Распечатал все документы "для архива"')">📄 Распечатать все</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Настройки сети:</h4>
+                        <p>Принтер доступен из публичной сети</p>
+                        <button class="button" onclick="showNotification('Доступ ограничен корпоративной сетью')">🔒 Ограничить доступ</button>
+                        <button class="button danger" onclick="triggerTrap('Открыл доступ для удаленной печати')">🌍 Открыть удаленный доступ</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Журнал печати:</h4>
+                        <p>Сотрудник печатал резюме и личные документы</p>
+                        <button class="button" onclick="showNotification('Информация передана в HR')">📋 Сообщить руководству</button>
+                        <button class="button tricky" onclick="triggerTrap('Сделал копии документов "для контроля"')">👁️ Сохранить копии</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="button success" onclick="completeTask('check_printer')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                    <button class="button" onclick="closeModal('printer')">❌ ВЫЙТИ</button>
+                </div>
+            `;
+            
+            document.getElementById('printer-content').innerHTML = content;
+            document.getElementById('printer-modal').style.display = 'flex';
+        }
+        
+        function showSafeCheck() {
+            const content = `
+                <h2>🔐 СЕЙФ С ДОКУМЕНТАЦИЕЙ</h2>
+                
+                <div style="margin: 20px 0;">
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Комбинация замка:</h4>
+                        <p>На стикере на сейфе написано: 00-00-00</p>
+                        <button class="button" onclick="showNotification('Стикер удален, комбинация изменена')">🏷️ Удалить стикер</button>
+                        <button class="button danger" onclick="triggerTrap('Оставил стикер "чтобы не забыть"')">🧠 Оставить для памяти</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Содержимое сейфа:</h4>
+                        <p>Договора с клиентами, печати компании, USB с бекапами</p>
+                        <button class="button" onclick="showNotification('Содержимое проверено, все на месте')">✅ Проверить наличие</button>
+                        <button class="button tricky" onclick="triggerTrap('Взял USB домой "для сохранности"')">🏠 Забрать домой</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Журнал доступа:</h4>
+                        <p>Последний доступ был в 20:45 (после окончания рабочего дня)</p>
+                        <button class="button" onclick="showNotification('Доступ залогирован, будет проведено расследование')">🔍 Изучить журнал</button>
+                        <button class="button tricky trap-button" onclick="triggerTrap('Очистил журнал "чтобы не было вопросов"')">🧹 Очистить журнал</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="button success" onclick="completeTask('check_safe')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                    <button class="button" onclick="closeModal('safe')">❌ ВЫЙТИ</button>
+                </div>
+            `;
+            
+            document.getElementById('safe-content').innerHTML = content;
+            document.getElementById('safe-modal').style.display = 'flex';
+        }
+        
+        function showDocumentsCheck() {
+            const content = `
+                <h2>📄 КОНФИДЕНЦИАЛЬНЫЕ ДОКУМЕНТЫ</h2>
+                
+                <div style="margin: 20px 0;">
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Черновики на столе:</h4>
+                        <p>Рукописные заметки с паролями к системам</p>
+                        <button class="button" onclick="showNotification('Заметки уничтожены в шредере')">🗑️ Уничтожить</button>
+                        <button class="button tricky" onclick="triggerTrap('Сфотографировал заметки "на память"')">📸 Сфотографировать</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Незакрытые контракты:</h4>
+                        <p>Подписанные договоры лежат на виду</p>
+                        <button class="button" onclick="showNotification('Документы помещены в сейф')">🔒 Убрать в сейф</button>
+                        <button class="button danger" onclick="triggerTrap('Оставил на столе "для быстрого доступа"')">🏃 Оставить на виду</button>
+                    </div>
+                    
+                    <div style="border: 1px solid #444; padding: 10px; margin: 10px 0;">
+                        <h4>Список сотрудников:</h4>
+                        <p>С телефонами, адресами, данными для входа</p>
+                        <button class="button" onclick="showNotification('Список зашифрован и сохранен в защищенное хранилище')">🔐 Зашифровать</button>
+                        <button class="button tricky" onclick="triggerTrap('Отправил список на личную почту')">📧 Отправить себе</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="button success" onclick="completeTask('check_documents')">✅ ЗАВЕРШИТЬ ПРОВЕРКУ</button>
+                    <button class="button" onclick="closeModal('computer')">❌ ВЫЙТИ</button>
+                </div>
+            `;
+            
+            document.getElementById('computer-content').innerHTML = content;
+            document.getElementById('computer-modal').style.display = 'flex';
+        }
+        
+        function showUSBTrap() {
+            const content = `
+                <h2>⚠️ ОБНАРУЖЕН USB-НАКОПИТЕЛЬ</h2>
+                
+                <div style="border: 2px solid #ff9900; padding: 20px; margin: 20px 0;">
+                    <p style="color: #ff9900; font-size: 18px; text-align: center;">
+                        ⚠️ ВНИМАНИЕ: ТЕСТ НА БДИТЕЛЬНОСТЬ ⚠️
+                    </p>
+                    <p>Это учебная ловушка. Настоящий USB-накопитель может содержать:</p>
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li>Вредоносное ПО</li>
+                        <li>Кейлоггеры</li>
+                        <li>Шпионские программы</li>
+                    </ul>
+                    <p style="color: #00ff00; font-weight: bold;">
+                        Правильное действие: НЕ ВСТАВЛЯТЬ и сообщить в службу безопасности!
+                    </p>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <button class="button success" onclick="showNotification('✅ Правильно! USB оставлен на месте, сообщено в службу безопасности')">🚫 НЕ ВСТАВЛЯТЬ</button>
+                    <button class="button danger trap-button" onclick="triggerTrap('❌ ОШИБКА: Вставил USB в компьютер')">💾 Вставить и проверить</button>
+                    <button class="button tricky" onclick="triggerTrap('❌ ОШИБКА: Унес USB домой "для проверки"')">🏠 Забрать домой</button>
+                </div>
+                
+                <div class="hint">
+                    Это задание не обязательно для завершения аудита, но проверяет вашу бдительность
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="button" onclick="closeModal('computer')">❌ ЗАКРЫТЬ</button>
+                </div>
+            `;
+            
+            document.getElementById('computer-content').innerHTML = content;
+            document.getElementById('computer-modal').style.display = 'flex';
+        }
+        
+        function showCoffeeTrap() {
+            const content = `
+                <h2>☕ КОФЕ-МАШИНА С ПОДКЛЮЧЕНИЕМ К Wi-Fi</h2>
+                
+                <div style="border: 2px solid #ff9900; padding: 20px; margin: 20px 0;">
+                    <p style="color: #ff9900; font-size: 18px; text-align: center;">
+                        ⚠️ ЭТО НЕ IT ОБОРУДОВАНИЕ! ⚠️
+                    </p>
+                    <p>Умные устройства (кофе-машины, чайники, лампы) часто:</p>
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li>Имеют уязвимости в прошивках</li>
+                        <li>Могут быть точкой входа в сеть</li>
+                        <li>Собирают данные о пользователях</li>
+                    </ul>
+                    <p style="color: #00ff00; font-weight: bold;">
+                        В рабочее время это - отвлекающий фактор и потенциальная угроза
+                    </p>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <button class="button success" onclick="showNotification('✅ Правильно! Кофе-машина не относится к IT аудиту')">🚫 ПРОПУСТИТЬ</button>
+                    <button class="button danger trap-button" onclick="triggerTrap('❌ ОШИБКА: Начал настраивать кофе-машину вместо проверки безопасности')">⚙️ Настроить параметры</button>
+                    <button class="button tricky" onclick="triggerTrap('❌ ОШИБКА: Сварил кофе вместо работы')">☕ Сварить кофе</button>
+                </div>
+                
+                <div class="hint">
+                    Настоящий аудитор сосредоточен на безопасности, а не на бытовых устройствах
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="button" onclick="closeModal('computer')">❌ ЗАКРЫТЬ</button>
+                </div>
+            `;
+            
+            document.getElementById('computer-content').innerHTML = content;
+            document.getElementById('computer-modal').style.display = 'flex';
+        }
+        
+        // ========== ИГРОВЫЕ ФУНКЦИИ ==========
+        function triggerTrap(message) {
+            gameState.trapsTriggered++;
+            gameState.securityScore = Math.max(0, gameState.securityScore - 5);
+            updateStats();
+            showNotification(`❌ ${message} (-5%)`, true);
+            closeCurrentModal();
+        }
+        
+        function completeTask(taskId) {
+            const task = securityTasks.find(t => t.id === taskId);
+            if (task && !task.completed) {
+                task.completed = true;
+                gameState.completedTasks++;
+                
+                if (task.tricky && !task.isTrap) {
+                    gameState.trickyTasksCompleted++;
+                }
+                
+                gameState.securityScore = Math.min(100, gameState.securityScore + 3);
+                updateTaskList();
+                updateStats();
+                showNotification(`✅ Задача выполнена: ${task.name}`);
+                closeCurrentModal();
+                
+                checkAllTasksCompleted();
+            }
+        }
+        
+        function closeCurrentModal() {
+            const modals = ['computer', 'phone', 'router', 'server', 'printer', 'safe'];
+            for (const modal of modals) {
+                const modalElement = document.getElementById(`${modal}-modal`);
+                if (modalElement.style.display === 'flex') {
+                    modalElement.style.display = 'none';
+                    break;
+                }
+            }
+        }
+        
+        function closeModal(modalName) {
+            document.getElementById(`${modalName}-modal`).style.display = 'none';
+        }
+        
+        function updateTaskList() {
+            const tasksList = document.getElementById('tasks-list');
+            tasksList.innerHTML = '';
+            
+            // Основные задачи
+            securityTasks.forEach(task => {
+                if (!task.isTrap) {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = `task ${task.completed ? 'completed' : ''} ${task.tricky ? 'tricky' : ''}`;
+                    taskElement.innerHTML = `
+                        <strong>${task.completed ? '✅' : '❌'} ${task.name}</strong>
+                        <p style="font-size: 11px; color: #888; margin-top: 3px;">${task.description}</p>
+                        <div style="font-size: 10px; color: #ff9900;">
+                            ${task.isExit ? 'ФИНАЛЬНОЕ ЗАДАНИЕ' : `Баллы: ${task.points}`}
+                        </div>
+                    `;
+                    
+                    if (!task.completed && !task.isExit) {
+                        taskElement.onclick = () => {
+                            showNotification(`Задание: ${task.name}. Найдите объект на карте.`);
+                        };
+                    }
+                    
+                    tasksList.appendChild(taskElement);
+                }
+            });
+            
+            // Ловушки (отдельно)
+            const trapTasks = securityTasks.filter(t => t.isTrap);
+            if (trapTasks.length > 0) {
+                const trapHeader = document.createElement('div');
+                trapHeader.innerHTML = '<h4 style="color: #ff9900; margin-top: 20px;">⚠️ ТЕСТОВЫЕ ЛОВУШКИ:</h4>';
+                tasksList.appendChild(trapHeader);
+                
+                trapTasks.forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = `task tricky ${task.completed ? 'completed' : ''}`;
+                    taskElement.innerHTML = `
+                        <strong>${task.completed ? '🚫' : '⚠️'} ${task.name}</strong>
+                        <p style="font-size: 11px; color: #ff9900; margin-top: 3px;">${task.description}</p>
+                    `;
+                    
+                    if (!task.completed) {
+                        taskElement.onclick = () => {
+                            showNotification('Найдите этот объект в офисе (помечен оранжевым на карте)');
+                        };
+                    }
+                    
+                    tasksList.appendChild(taskElement);
+                });
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('security-score').textContent = `${gameState.securityScore}%`;
+            document.getElementById('tasks-completed').textContent = 
+                `${gameState.completedTasks}/${gameState.totalTasks}`;
+            document.getElementById('violations-count').textContent = gameState.violations.length;
+            
+            const progressFill = document.getElementById('security-progress');
+            progressFill.style.width = `${gameState.securityScore}%`;
+            
+            if (gameState.securityScore >= 80) {
+                progressFill.style.background = '#00ff00';
+            } else if (gameState.securityScore >= 60) {
+                progressFill.style.background = '#ff9900';
+            } else {
+                progressFill.style.background = '#ff0000';
+            }
+        }
+        
+        function checkAllTasksCompleted() {
+            const realTasks = securityTasks.filter(t => !t.isTrap && !t.isExit);
+            const allCompleted = realTasks.every(task => task.completed);
+            
+            if (allCompleted) {
+                const exitTask = securityTasks.find(t => t.isExit);
+                if (exitTask) {
+                    exitTask.description = '✅ ВСЕ ЗАДАНИЯ ВЫПОЛНЕНЫ! Можете выходить';
+                    updateTaskList();
+                    showNotification('🎉 Все основные задачи выполнены! Можете выходить через главную дверь.', false);
+                }
+            }
+        }
+        
+        function attemptExit() {
+            const realTasks = securityTasks.filter(t => !t.isTrap && !t.isExit);
+            const allCompleted = realTasks.every(task => task.completed);
+            
+            if (!allCompleted) {
+                showNotification('❌ Не все задачи выполнены! Проверьте список заданий.', true);
+                return;
+            }
+            
+            endGame();
+        }
+        
+        function startTimer() {
+            setInterval(() => {
+                if (gameState.isDayEnded) return;
+                
+                let minutes = Math.floor(gameState.time);
+                let seconds = Math.round((gameState.time - minutes) * 100);
+                
+                seconds += 1;
+                if (seconds >= 60) {
+                    minutes += 1;
+                    seconds = 0;
+                }
+                
+                gameState.time = minutes + seconds / 100;
+                document.getElementById('time-display').textContent = formatTime(gameState.time);
+                
+                // Автоматическое завершение в 20:00
+                if (minutes >= 20) {
+                    endGame();
+                    showNotification('⏰ Время аудита истекло!', true);
+                }
+            }, 1000);
+        }
+        
+        function formatTime(time) {
+            const minutes = Math.floor(time);
+            const seconds = Math.round((time - minutes) * 100);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function endGame() {
+            gameState.isDayEnded = true;
+            
+            // Расчет оценки
+            const realTasks = securityTasks.filter(t => !t.isTrap && !t.isExit);
+            const completedRealTasks = realTasks.filter(t => t.completed).length;
+            const completionRate = Math.round((completedRealTasks / realTasks.length) * 100);
+            
+            // Бонусы и штрафы
+            let finalScore = gameState.securityScore;
+            
+            // Бонус за сложные задания
+            if (gameState.trickyTasksCompleted >= 2) {
+                finalScore = Math.min(100, finalScore + 10);
+            }
+            
+            // Штраф за ловушки
+            finalScore = Math.max(0, finalScore - (gameState.trapsTriggered * 5));
+            
+            // Показать отчет
+            showFinalReport(finalScore, completedRealTasks, realTasks.length);
+        }
+        
+        function showFinalReport(score, completedTasks, totalTasks) {
+            const finalScoreElement = document.getElementById('final-score');
+            const reportDetails = document.getElementById('report-details');
+            const completedTasksList = document.getElementById('completed-tasks-list');
+            const finalViolations = document.getElementById('final-violations');
+            const cyberAssessment = document.getElementById('cyber-literacy-assessment');
+            const recommendationsList = document.getElementById('recommendations-list');
+            
+            // Оценка
+            let scoreClass = 'score-poor';
+            let assessment = '';
+            
+            if (score >= 90) {
+                scoreClass = 'score-excellent';
+                assessment = 'ОТЛИЧНО. Высокий уровень киберграмотности.';
+            } else if (score >= 75) {
+                scoreClass = 'score-good';
+                assessment = 'ХОРОШО. Стандартный уровень знаний по безопасности.';
+            } else if (score >= 60) {
+                scoreClass = 'score-good';
+                assessment = 'УДОВЛЕТВОРИТЕЛЬНО. Есть пробелы в знаниях.';
+            } else {
+                assessment = 'НЕУДОВЛЕТВОРИТЕЛЬНО. Требуется срочное обучение.';
+            }
+            
+            finalScoreElement.className = `score-badge ${scoreClass}`;
+            finalScoreElement.textContent = `${score}%`;
+            
+            // Детали
+            reportDetails.innerHTML = `
+                <p>✅ Выполнено задач: ${completedTasks} из ${totalTasks}</p>
+                <p>⚠️ Активировано ловушек: ${gameState.trapsTriggered}</p>
+                <p>🎯 Сложные задания: ${gameState.trickyTasksCompleted} из 3</p>
+                <p>⏱️ Время аудита: ${formatTime(gameState.time)}</p>
+            `;
+            
+            // Выполненные задачи
+            completedTasksList.innerHTML = '';
+            securityTasks.forEach(task => {
+                if (task.completed && !task.isTrap && !task.isExit) {
+                    const item = document.createElement('p');
+                    item.style.color = task.tricky ? '#ff9900' : '#00ff00';
+                    item.textContent = `${task.tricky ? '🎯' : '✅'} ${task.name}`;
+                    completedTasksList.appendChild(item);
+                }
+            });
+            
+            // Нарушения
+            finalViolations.innerHTML = '';
+            if (gameState.trapsTriggered === 0) {
+                finalViolations.innerHTML = '<p style="color: #00ff00;">✅ Ловушки не активированы</p>';
+            } else {
+                const trapCount = document.createElement('p');
+                trapCount.style.color = '#ff6666';
+                trapCount.textContent = `⚠️ Активировано ловушек: ${gameState.trapsTriggered} (потеряно ${gameState.trapsTriggered * 5}%)`;
+                finalViolations.appendChild(trapCount);
+            }
+            
+            // Оценка киберграмотности
+            cyberAssessment.innerHTML = `
+                <p style="color: ${scoreClass === 'score-excellent' ? '#00ff00' : scoreClass === 'score-good' ? '#ff9900' : '#ff0000'}; font-weight: bold;">
+                    ${assessment}
+                </p>
+                <p>${getDetailedAssessment(score)}</p>
+            `;
+            
+            // Рекомендации
+            const recommendations = getRecommendations(score, gameState.trapsTriggered, completedTasks, totalTasks);
+            recommendationsList.innerHTML = '';
+            recommendations.forEach(rec => {
+                const item = document.createElement('p');
+                item.textContent = `• ${rec}`;
+                recommendationsList.appendChild(item);
+            });
+            
+            // Показать отчет
+            document.getElementById('final-report').style.display = 'flex';
+        }
+        
+        function getDetailedAssessment(score) {
+            if (score >= 90) {
+                return 'Вы отлично разбираетесь в кибербезопасности, не поддаетесь на уловки и понимаете реальные угрозы.';
+            } else if (score >= 75) {
+                return 'Вы обладаете базовыми знаниями, но иногда отвлекаетесь на второстепенные задачи или уловки.';
+            } else if (score >= 60) {
+                return 'Требуется дополнительное обучение. Вы часто выбираете небезопасные варианты действий.';
+            } else {
+                return 'Критический уровень. Необходимо пройти полный курс по кибербезопасности.';
+            }
+        }
+        
+        function getRecommendations(score, traps, completed, total) {
+            const recs = [];
+            
+            if (score < 70) {
+                recs.push('Пройти обязательный курс "Основы кибербезопасности для сотрудников"');
+            }
+            
+            if (traps > 0) {
+                recs.push('Изучить материалы по социальной инженерии и фишингу');
+            }
+            
+            if (completed < total) {
+                recs.push('Повторить корпоративную политику безопасности');
+            }
+            
+            if (score >= 85) {
+                recs.push('Рассмотреть возможность повышения квалификации до уровня Security Specialist');
+            } else {
+                recs.push('Пройдите повторный аудит через 2 недели для проверки прогресса');
+            }
+            
+            recs.push('Всегда блокируйте компьютер при уходе с рабочего места');
+            recs.push('Никогда не вставляйте неизвестные USB-накопители');
+            recs.push('Проверяйте отправителей перед открытием вложений');
+            
+            return recs;
+        }
+        
+        function showInstruction() {
+            const content = `
+                <h2>🎮 КИБЕР-АУДИТ: 3D СИМУЛЯТОР</h2>
+                
+                <div style="margin: 20px 0;">
+                    <h3>🎯 ВАША ЦЕЛЬ:</h3>
+                    <p>Вы - аудитор кибербезопасности. Проверьте офис перед закрытием.</p>
+                    
+                    <h3>🕹️ УПРАВЛЕНИЕ:</h3>
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li><strong>WASD</strong> - движение по офису</li>
+                        <li><strong>Мышь</strong> - поворот камеры</li>
+                        <li><strong>ЛКМ</strong> - взаимодействие с объектами</li>
+                        <li>Нажмите на экран для захвата управления мышью</li>
+                    </ul>
+                    
+                    <h3>⚠️ ОСОБЕННОСТИ:</h3>
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li>Некоторые задания содержат <span style="color: #ff9900">ловушки</span></li>
+                        <li>Не все объекты требуют проверки</li>
+                        <li>Выход доступен только после всех реальных задач</li>
+                        <li>Каждая ошибка снижает итоговый балл</li>
+                    </ul>
+                    
+                    <h3>📊 ОЦЕНКА:</h3>
+                    <p>В конце вы получите оценку своей киберграмотности от 0 до 100%</p>
+                    
+                    <div style="border: 2px solid #00ff00; padding: 15px; margin: 20px 0;">
+                        <p style="color: #00ff00; text-align: center; font-weight: bold;">
+                            Помните: Настоящий специалист по безопасности должен быть БДИТЕЛЬНЫМ!
+                        </p>
+                    </div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="button success" onclick="closeCurrentModal()">🚀 НАЧАТЬ АУДИТ</button>
+                </div>
+            `;
+            
+            document.getElementById('computer-content').innerHTML = content;
+            document.getElementById('computer-modal').style.display = 'flex';
+        }
+        
+        function showNotification(message, isWarning = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${isWarning ? 'warning' : ''}`;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        function restartGame() {
+            location.reload();
+        }
+        
         // Запуск игры
-        window.onload = initGame;
+        window.addEventListener('load', initGame);
     </script>
 </body>
 </html>
