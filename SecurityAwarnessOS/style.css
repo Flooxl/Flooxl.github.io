@@ -30,6 +30,20 @@ body {
     background: var(--panel);
 }
 
+.exit-btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-family: var(--font);
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+}
+.exit-btn:hover {
+    opacity: 0.8;
+}
+
 .team-name {
     color: var(--accent);
     font-weight: bold;
@@ -230,4 +244,5 @@ textarea:focus { outline: none; border-color: var(--accent); }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
