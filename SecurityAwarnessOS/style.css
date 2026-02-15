@@ -1,0 +1,233 @@
+:root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --green: #238636;
+    --red: #da3633;
+    --accent: #58a6ff;
+    --font: 'JetBrains Mono', monospace;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    height: 100vh;
+    overflow: hidden; /* Чтобы не было скролла страницы */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Верхняя панель */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 30px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+}
+
+.team-name {
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.game-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+}
+
+/* Меню режимов */
+.mode-selector {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.mode-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 25px;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: 0.3s;
+    text-transform: uppercase;
+}
+
+.mode-btn:hover { border-color: var(--accent); }
+.mode-btn.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(88, 166, 255, 0.4);
+}
+
+/* Контейнеры игр */
+.game-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* === СТИЛИ АБСУРД === */
+.absurd-wrapper {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    gap: 40px;
+    height: 100%;
+}
+
+.input-area { flex: 1; display: flex; flex-direction: column; }
+.rules-area { flex: 1; overflow-y: auto; padding-right: 10px; }
+
+.input-box-wrapper {
+    position: relative;
+    height: 200px;
+}
+
+textarea {
+    width: 100%;
+    height: 100%;
+    background: var(--panel);
+    border: 2px solid var(--border);
+    color: #fff;
+    font-family: var(--font);
+    font-size: 1.5rem;
+    padding: 20px;
+    resize: none;
+    box-sizing: border-box;
+    border-radius: 8px;
+}
+
+textarea:focus { outline: none; border-color: var(--accent); }
+
+.char-counter {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Правила */
+.rule-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    animation: slideIn 0.5s ease;
+    border-left: 5px solid var(--red);
+}
+
+@keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+.rule-card.passed {
+    border-left-color: var(--green);
+    background: rgba(35, 134, 54, 0.1);
+}
+
+.rule-card.failed {
+    border-left-color: var(--red);
+    background: rgba(218, 54, 51, 0.1);
+}
+
+.rule-header { font-weight: bold; display: flex; justify-content: space-between; margin-bottom: 5px; }
+
+/* === СТИЛИ ОПАСНЫЕ СВЯЗИ === */
+.chat-wrapper {
+    width: 100%;
+    max-width: 600px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    border-radius: 12px;
+}
+
+.chat-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+.chat-window {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message {
+    max-width: 80%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.message.bot {
+    background: #21262d;
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
+}
+
+.message.user {
+    background: var(--accent);
+    color: #000;
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
+}
+
+.choice-area {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column; /* Кнопки друг под другом */
+    gap: 10px;
+}
+
+.choice-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: left;
+}
+
+.choice-btn:hover { background: #21262d; border-color: var(--accent); }
+
+/* Скроллбар */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }

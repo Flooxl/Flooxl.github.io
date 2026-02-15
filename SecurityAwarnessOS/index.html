@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Security Training</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="team-name">TEAM_NAME: [CyberGuard Ops]</div>
+        <div class="game-title">SECURITY_AWARENESS_OS</div>
+    </div>
+
+    <div class="mode-selector">
+        <button class="mode-btn active" onclick="switchMode('absurd')">ПРОТОКОЛ: АБСУРД</button>
+        <button class="mode-btn" onclick="switchMode('danger')">ОПАСНЫЕ СВЯЗИ</button>
+    </div>
+
+    <div id="game-absurd" class="game-container active-game">
+        <div class="absurd-wrapper">
+            <div class="input-area">
+                <label for="passwordInput">ВВЕДИТЕ ПАРОЛЬ</label>
+                <div class="input-box-wrapper">
+                    <textarea id="passwordInput" placeholder="Начните печатать..." spellcheck="false"></textarea>
+                    <div class="char-counter"><span id="charCount">0</span> симв.</div>
+                </div>
+            </div>
+
+            <div class="rules-area">
+                <h3>ТРЕБОВАНИЯ СИСТЕМЫ:</h3>
+                <div id="rulesList">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-danger" class="game-container hidden">
+        <div class="chat-wrapper">
+            <div class="chat-header">
+                <div class="avatar">👤</div>
+                <div class="contact-info">
+                    <span id="chatContactName">Неизвестный</span>
+                    <span class="status">печатает...</span>
+                </div>
+            </div>
+            
+            <div id="chatWindow" class="chat-window">
+                </div>
+
+            <div id="choiceArea" class="choice-area">
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
