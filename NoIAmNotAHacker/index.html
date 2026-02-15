@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDEK: IP MODERATION SIMULATOR v2.5 (Full Features)</title>
+    <style>
+        :root {
+            --bg-primary: #050505;
+            --bg-secondary: #0f0f0f;
+            --bg-tertiary: #1a1a1a;
+            --border: #333;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888888;
+            --accent-blue: #00bcd4;
+            --accent-green: #00e676;
+            --accent-red: #ff1744;
+            --accent-orange: #ff9100;
+            --accent-purple: #d500f9;
+            --accent-amber: #ffc107;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', 'JetBrains Mono', monospace;
+            user-select: none;
+        }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* 3D Container */
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* UI Overlay */
+        .ui-layer {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        /* Crosshair */
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+        }
+        
+        .interaction-hint {
+            position: absolute;
+            top: 53%;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--text-primary);
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 4px 10px;
+            border: 1px solid var(--accent-blue);
+            opacity: 0;
+            transition: opacity 0.2s;
+            text-align: center;
+        }
+        .interaction-hint.visible { opacity: 1; }
+
+        /* HUD COMMON STYLES */
+        /* --- UPDATED: HUD SIZE TO 65% WIDTH / 70% HEIGHT --- */
+        .computer-hud {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 65vw;
+            height: 70vh;
+            background: rgba(10, 12, 16, 0.95);
+            border: 2px solid var(--accent-blue);
+            box-shadow: 0 0 30px rgba(0, 188, 212, 0.15);
+            display: none; 
+            pointer-events: auto;
+            flex-direction: column;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            font-size: 1.1em; /* Increased readability */
+        }
+        
+        .computer-hud.active {
+            display: flex;
+            animation: hudOpen 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        /* DATABASE HUD VARIATION */
+        #database-hud {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 30px rgba(213, 0, 249, 0.15);
+        }
+        
+        /* MANUAL HUD VARIATION */
+        #manual-hud {
+            border-color: var(--accent-amber);
+            box-shadow: 0 0 30px rgba(255, 193, 7, 0.15);
+        }
+
+        @keyframes hudOpen {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(0.95); opacity: 1; }
+        }
+
+        /* HUD Header */
+        .hud-header {
+            height: 50px;
+            background: rgba(0, 188, 212, 0.1);
+            border-bottom: 1px solid var(--accent-blue);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            flex-shrink: 0;
+        }
+        
+        #database-hud .hud-header {
+            background: rgba(213, 0, 249, 0.1);
+            border-bottom: 1px solid var(--accent-purple);
+        }
+        #manual-hud .hud-header {
+            background: rgba(255, 193, 7, 0.1);
+            border-bottom: 1px solid var(--accent-amber);
+        }
+        
+        #database-hud .hud-title { color: var(--accent-purple); }
+        #manual-hud .hud-title { color: var(--accent-amber); }
+        
+        .hud-title {
+            color: var(--accent-blue);
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-right: auto;
+        }
+
+        /* --- NEW BUTTONS IN HEADER --- */
+        .header-btn {
+            background: transparent;
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 5px 15px;
+            margin-right: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        .header-btn:hover, .header-btn.active {
+            background: var(--accent-blue);
+            color: #000;
+        }
+
+        .btn-close {
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-close:hover { background: var(--accent-red); color: #000; }
+
+        /* HUD Content */
+        .hud-content {
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        /* Override layout for single column HUDs */
+        #database-hud .hud-content,
+        #manual-hud .hud-content {
+            display: flex;
+            flex-direction: column;
+            grid-template-columns: none;
+        }
+        
+        /* Manual Layout Override */
+        #manual-hud .hud-content {
+            flex-direction: row; 
+            gap: 0;
+            padding: 0;
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+
+        /* IP Resolution Interface */
+        .ip-card {
+            background: rgba(0,0,0,0.3);
+            border-left: 3px solid var(--accent-orange);
+            padding: 20px;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            align-items: center;
+        }
+        .data-label { color: var(--text-secondary); }
+        .data-value { color: var(--text-primary); font-weight: bold; }
+
+        /* --- NEW STYLES: DESCRIPTION & BADGES --- */
+        .desc-text {
+            color: var(--accent-blue);
+            font-style: italic;
+            font-size: 0.9em;
+            border: 1px dashed #333;
+            padding: 8px;
+            margin-top: 5px;
+            display: block;
+            background: rgba(0, 20, 30, 0.3);
+            width: 100%;
+        }
+
+        .type-badge {
+            background: #222;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin-left: 10px;
+            border: 1px solid #444;
+            display: inline-block;
+        }
+        
+        /* Hide Threat Row (Spoiler prevention) */
+        #row-threat {
+            display: none !important; 
+        }
+
+        /* --- NEW STYLES: PING GUIDE TABLE --- */
+        #ping-view {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            height: 100%;
+            animation: fadeIn 0.3s;
+        }
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .ref-table th {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            position: sticky;
+            top: 0;
+            background: #111;
+        }
+        .ref-table td {
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            color: #ccc;
+        }
+        .ref-range { color: var(--accent-green); font-weight: bold; }
+        .ref-ip { color: #666; font-family: monospace; font-size: 11px; }
+
+        .terminal-log {
+            height: 200px;
+            background: #000;
+            border: 1px solid var(--border);
+            padding: 10px;
+            font-size: 12px;
+            color: var(--accent-green);
+            overflow-y: auto;
+            font-family: monospace;
+            flex: 1;
+        }
+
+        .log-entry { margin-bottom: 5px; }
+        .log-error { color: var(--accent-red); }
+        .log-warn { color: var(--accent-orange); }
+
+        .controls-area {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .btn-allow {
+            background: rgba(0, 230, 118, 0.1);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+        .btn-allow:hover { background: var(--accent-green); color: #000; }
+
+        .btn-block {
+            background: rgba(255, 23, 68, 0.1);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+        .btn-block:hover { background: var(--accent-red); color: #000; }
+
+        /* Stats Panel */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #222;
+        }
+        .stat-val { font-size: 20px; color: var(--accent-blue); }
+
+        /* DATABASE TABLE */
+        .db-table-container {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            margin-top: 20px;
+        }
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .db-table th {
+            text-align: left;
+            padding: 10px;
+            background: rgba(213, 0, 249, 0.1);
+            color: var(--accent-purple);
+            position: sticky;
+            top: 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .db-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #222;
+            color: #ccc;
+        }
+        .db-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .db-threat-HIGH { color: var(--accent-red) !important; }
+        .db-threat-MOD { color: var(--accent-orange) !important; }
+        .db-threat-LOW { color: var(--accent-green) !important; }
+
+        /* MANUAL STYLES */
+        .manual-sidebar {
+            width: 250px;
+            background: rgba(0,0,0,0.3);
+            border-right: 1px solid var(--accent-amber);
+            display: flex;
+            flex-direction: column;
+        }
+        .manual-tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 1px solid #222;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .manual-tab:hover {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--accent-amber);
+        }
+        .manual-tab.active {
+            background: var(--accent-amber);
+            color: #000;
+            font-weight: bold;
+        }
+        .manual-body {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            color: var(--text-primary);
+        }
+        .manual-topic {
+            display: none;
+        }
+        .manual-topic.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .topic-header {
+            font-size: 24px;
+            color: var(--accent-amber);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent-amber);
+            padding-bottom: 10px;
+        }
+        .topic-content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .topic-content ul {
+            margin-left: 25px;
+            margin-bottom: 20px;
+        }
+        .topic-content li {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        .highlight {
+            color: var(--accent-amber);
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* GAME OVER SCREEN */
+        .game-over-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+        }
+        .game-over-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .glitch-text {
+            font-size: 60px;
+            font-weight: bold;
+            color: var(--accent-red);
+            text-shadow: 2px 0 #fff, -2px 0 #000;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+        }
+        .restart-btn {
+            padding: 15px 40px;
+            background: var(--accent-red);
+            color: #000;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        .restart-btn:hover {
+            background: #fff;
+            transform: scale(1.1);
+        }
+
+        /* Boot Screen */
+        .boot-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 999;
+            transition: opacity 1s ease-out;
+        }
+        .boot-screen.hidden { opacity: 0; pointer-events: none; }
+        
+        .loader {
+            width: 300px; height: 2px;
+            background: #222;
+            margin-top: 20px;
+            position: relative;
+        }
+        .progress {
+            position: absolute; left: 0; top: 0; height: 100%;
+            background: var(--accent-blue);
+            width: 0%;
+            transition: width 0.1s;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="boot-screen" id="boot-screen">
+        <div style="color: var(--accent-blue); font-size: 24px; letter-spacing: 5px; margin-bottom: 10px;">SYSTEM INITIALIZATION</div>
+        <div style="color: #444; font-size: 12px;">LOADING ASSETS / BUILDING GEOMETRY / CONNECTING NETWORKS</div>
+        <div class="loader"><div class="progress" id="boot-progress"></div></div>
+    </div>
+
+    <div class="game-over-screen" id="game-over-screen">
+        <div class="glitch-text">CRITICAL FAILURE</div>
+        <div style="color: #aaa; margin-bottom: 40px;">SECURITY PROTOCOLS COMPROMISED. TOO MANY ERRORS.</div>
+        <button class="restart-btn" onclick="location.reload()">REBOOT SYSTEM</button>
+    </div>
+
+    <div id="game-container"></div>
+
+    <div class="ui-layer">
+        <div class="crosshair"></div>
+        <div class="interaction-hint" id="interaction-hint">НАЖМИТЕ [E]</div>
+        
+        <div style="position: absolute; bottom: 20px; left: 20px; color: #555; font-size: 11px; line-height: 1.5;">
+            [WASD] Перемещение<br>
+            [E] Взаимодействие<br>
+            [ESC] Отменить/Выйти
+        </div>
+
+        <div style="position: absolute; top: 20px; right: 20px; text-align: right;">
+            <div style="color: var(--accent-blue); font-size: 12px;">INTEGRITY STATUS</div>
+            <div id="integrity-bar" style="color: var(--accent-green); font-size: 20px; font-weight: bold;">100%</div>
+        </div>
+    </div>
+
+    <div class="computer-hud" id="computer-hud">
+        <div class="hud-header">
+            <div class="hud-title">◆ IP RESOLUTION PROTOCOL v2.5</div>
+            <button class="header-btn" onclick="togglePingGuide(this)">PING REFERENCE</button>
+            <button class="btn-close" onclick="closeComputer()">DISCONNECT</button>
+        </div>
+        
+        <div class="hud-content">
+            <div class="panel">
+                <div class="panel-title">Входящий запрос #<span id="task-id">----</span></div>
+                
+                <div class="ip-card" id="task-card">
+                    <div class="data-row">
+                        <span class="data-label">SOURCE IP:</span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="data-value" id="ip-address">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <span class="data-label">PROTOCOL:</span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="data-value" id="ip-proto">HTTPS / TLS 1.3</span>
+                            <span id="ip-type-badge" class="type-badge">Unknown</span> 
+                        </div>
+                    </div>
+
+                    <div class="data-row">
+                        <span class="data-label">GEO-LOCATION:</span>
+                        <span class="data-value" id="ip-geo">Unknown</span>
+                    </div>
+                    
+                    <div class="data-row">
+                        <span class="data-label">LATENCY:</span>
+                        <span class="data-value" id="ip-ping">-- ms</span>
+                    </div>
+
+                    <div class="data-row" style="flex-direction: column; align-items: flex-start; margin-top: 10px;">
+                        <span class="data-label">CONTENT ANALYSIS:</span>
+                        <span class="data-value desc-text" id="ip-desc">Waiting for data...</span>
+                    </div>
+
+                    <div class="data-row" id="row-threat">
+                        <span class="data-label">THREAT SCORE:</span>
+                        <span class="data-value" id="ip-threat" style="color: var(--accent-orange)">ANALYZING...</span>
+                    </div>
+                </div>
+
+                <div id="ping-view">
+                    <div class="panel-title">GEOLOCATION REFERENCE DATABASE</div>
+                    <div style="overflow-y: auto; flex: 1; padding-right: 5px;">
+                        <table class="ref-table">
+                            <thead>
+                                <tr>
+                                    <th>REGION</th>
+                                    <th>LATENCY (ms)</th>
+                                    <th>EXAMPLE IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ping-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 11px; color: #555;">
+                        * NOTE: Values outside range indicate potential VPN/Proxy usage.
+                    </div>
+                </div>
+
+                <div class="controls-area">
+                    <button class="action-btn btn-allow" onclick="processTask(true)">РАЗРЕШИТЬ [ALLOW]</button>
+                    <button class="action-btn btn-block" onclick="processTask(false)">БЛОКИРОВАТЬ [BAN]</button>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="panel">
+                    <div class="panel-title">СТАТИСТИКА СЕССИИ</div>
+                    <div class="stat-row">
+                        <span class="data-label">Обработано:</span>
+                        <span class="stat-val" id="stat-total">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="data-label">Ошибки:</span>
+                        <span class="stat-val" style="color: var(--accent-red)" id="stat-errors">0</span>
+                    </div>
+                </div>
+
+                <div class="panel" style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="panel-title">SYSTEM LOG</div>
+                    <div class="terminal-log" id="sys-log">
+                        <div class="log-entry">> Connected to Secure Node 14</div>
+                        <div class="log-entry">> Waiting for incoming packets...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="computer-hud" id="database-hud">
+        <div class="hud-header">
+            <div class="hud-title">◆ APPROVED TRAFFIC LOG</div>
+            <button class="btn-close" onclick="closeComputer()">CLOSE DB</button>
+        </div>
+        <div class="hud-content">
+            <div style="color: #666; font-size: 12px;">
+                ARCHIVED SESSIONS: VALIDATED TRAFFIC
+            </div>
+            <div class="db-table-container">
+                <table class="db-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>IP ADDRESS</th>
+                            <th>GEO</th>
+                            <th>THREAT</th>
+                            <th>TIMESTAMP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="computer-hud" id="manual-hud">
+        <div class="hud-header">
+            <div class="hud-title">◆ SECURITY FIELD MANUAL</div>
+            <button class="btn-close" onclick="closeComputer()">CLOSE MANUAL</button>
+        </div>
+        <div class="hud-content">
+            <div class="manual-sidebar">
+                <div class="manual-tab active" onclick="switchTab(this, 'topic-phishing')">ФИШИНГ</div>
+                <div class="manual-tab" onclick="switchTab(this, 'topic-malware')">ВРЕДОНОСНЫЕ САЙТЫ</div>
+                <div class="manual-tab" onclick="switchTab(this, 'topic-verification')">ПРОВЕРКА IP/ДОМЕНОВ</div>
+                <div class="manual-tab" onclick="switchTab(this, 'topic-general')">ОБЩИЕ СОВЕТЫ</div>
+            </div>
+            
+            <div class="manual-body">
+                
+                <div id="topic-phishing" class="manual-topic active">
+                    <div class="topic-header">Распознавание Фишинга</div>
+                    <div class="topic-content">
+                        <p>Фишинг — это попытка мошенников получить конфиденциальную информацию (пароли, данные карт), маскируясь под надежный источник.</p>
+                        <p class="highlight">КЛЮЧЕВЫЕ ПРИЗНАКИ:</p>
+                        <ul>
+                            <li><span class="highlight">Подозрительный URL:</span> Адрес похож на настоящий, но содержит ошибки (напр., g00gle.com вместо google.com) или использует странный домен верхнего уровня (.xyz, .top вместо .com, .org).</li>
+                            <li><span class="highlight">Срочность и угрозы:</span> Сообщения требуют немедленных действий ("Ваш аккаунт будет заблокирован!", "Срочно подтвердите данные").</li>
+                            <li><span class="highlight">Неожиданные вложения:</span> Письма с архивами (ZIP, RAR) или исполняемыми файлами (EXE, SCR) от неизвестных отправителей.</li>
+                            <li><span class="highlight">Отсутствие персонализации:</span> Обращения вроде "Уважаемый клиент" вместо вашего имени.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="topic-malware" class="manual-topic">
+                    <div class="topic-header">Признаки Вредоносных Сайтов</div>
+                    <div class="topic-content">
+                        <p>Сайты, распространяющие вредоносное ПО (malware) или эксплойты, часто имеют общие черты. Будьте бдительны при анализе трафика с таких ресурсов.</p>
+                        <ul>
+                            <li><span class="highlight">Обилие рекламы:</span> Всплывающие окна (pop-ups/pop-unders), агрессивная баннерная реклама, перенаправления на другие страницы.</li>
+                            <li><span class="highlight">Ложные предупреждения системы:</span> Сообщения на странице, имитирующие интерфейс ОС: "Ваш компьютер заражен! Нажмите здесь для сканирования".</li>
+                            <li><span class="highlight">Предложения "бесплатного" ПО:</span> Сайты, предлагающие скачать платные программы, "кряки", генераторы ключей бесплатно. Часто это трояны.</li>
+                            <li><span class="highlight">Проблемы с SSL:</span> Отсутствие HTTPS (значок замка) на сайтах, где требуется ввод данных, или предупреждения браузера о небезопасном соединении.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                 <div id="topic-verification" class="manual-topic">
+                    <div class="topic-header">Советы по проверке доменов и IP</div>
+                    <div class="topic-content">
+                        <p>При анализе входящих запросов используйте следующие критерии для принятия решения:</p>
+                        <p><span class="highlight">1. ГЕОГРАФИЯ (GEO-LOCATION):</span></p>
+                        <ul>
+                            <li>Сравните заявленный регион с IP. Несоответствия часто указывают на использование VPN/Прокси.</li>
+                            <li>Трафик из регионов с высоким уровнем киберпреступности требует повышенного внимания.</li>
+                        </ul>
+                        <p><span class="highlight">2. ЗАДЕРЖКА (LATENCY / PING):</span></p>
+                        <ul>
+                            <li>Аномально высокий пинг может указывать на многоступенчатую маршрутизацию через цепочку прокси-серверов для сокрытия источника. Используйте <b>Ping Reference</b> в терминале.</li>
+                        </ul>
+                        <p><span class="highlight">3. ОПИСАНИЕ КОНТЕНТА:</span></p>
+                        <ul>
+                            <li>Ищите несоответствия. "Личный блог" с IP дата-центра? "Банковская система" на незащищенном протоколе HTTP? Это признаки обмана.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="topic-general" class="manual-topic">
+                    <div class="topic-header">Общие рекомендации по безопасности</div>
+                    <div class="topic-content">
+                        <ul>
+                            <li><span class="highlight">Принцип нулевого доверия (Zero Trust):</span> По умолчанию любой входящий запрос считается потенциально опасным, пока не доказано обратное.</li>
+                            <li><span class="highlight">Не спешите:</span> Мошенники рассчитывают на вашу поспешность. Внимательно изучайте все параметры запроса перед принятием решения.</li>
+                            <li><span class="highlight">Если сомневаетесь — блокируйте:</span> Лучше отклонить легитимный запрос (ложноположительное срабатывание), чем пропустить вредоносный (ложноотрицательное). Безопасность системы в приоритете.</li>
+                            <li><span class="highlight">Изучайте историю:</span> Используйте "Approved Traffic Log" для анализа ранее принятых решений и выявления паттернов нормального трафика.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.min.js"></script>
+
+    <script>
+        // --- GAME CONFIG & STATE ---
+        let isGameReady = false;
+        let isComputerOpen = false;
+        let activeHudId = null; // 'computer-hud', 'database-hud', or 'manual-hud'
+        
+        // Game Over Settings
+        const MAX_ERRORS = 3;
+        let isGameOver = false;
+
+        // --- THREE.JS VARIABLES ---
+        let scene, camera, renderer, controls;
+        let raycaster;
+        
+        // Movement
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let prevTime = performance.now();
+        
+        // Head Bob
+        let headBobTimer = 0;
+        const headBobSpeed = 10;
+        const headBobHeight = 0.05;
+        const defaultCamHeight = 1.6;
+
+        // Interaction
+        let interactiveObjects = [];
+        let currentTarget = null;
+
+        // --- DATA EXTENSIONS ---
+        const siteDescriptions = [
+            "Personal Blog / Lifestyle", 
+            "Encrypted Crypto Exchange", 
+            "Charity Foundation Portal", 
+            "Offshore Betting Service", 
+            "Darknet Marketplace Mirror", 
+            "Corporate Intranet Login",
+            "Government Public Service",
+            "Unlicensed Pharmacy Shop",
+            "P2P File Sharing Node",
+            "News Aggregator / Media"
+        ];
+        const connectionTypes = ["HTTP/1.1", "HTTP/2", "QUIC", "FTP", "WS"];
+        const pingReferenceData = [
+            { region: "North America (USA/CA)", range: "20 - 90", ip: "192.158.1.38" },
+            { region: "Europe (DE/FR/UK)", range: "30 - 80", ip: "185.204.1.10" },
+            { region: "Russia (West)", range: "10 - 50", ip: "176.59.33.2" },
+            { region: "Russia (East/Siberia)", range: "60 - 120", ip: "109.123.1.5" },
+            { region: "Asia (JP/KR)", range: "140 - 200", ip: "203.0.113.42" },
+            { region: "China (CN)", range: "180 - 250", ip: "123.125.114.144" },
+            { region: "South America (BR/AR)", range: "180 - 240", ip: "177.12.55.90" },
+            { region: "Australia (AU)", range: "250 - 320", ip: "1.1.1.1" }
+        ];
+
+        // --- BOOT SEQUENCE ---
+        window.onload = function() {
+            let progress = 0;
+            const bar = document.getElementById('boot-progress');
+            const interval = setInterval(() => {
+                progress += Math.random() * 5;
+                if(progress > 100) progress = 100;
+                bar.style.width = progress + '%';
+                
+                if(progress === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('boot-screen').classList.add('hidden');
+                        initThreeJS();
+                        initPingGuide(); // Initialize UI Table
+                    }, 500);
+                }
+            }, 50);
+        };
+
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x050505, 0.03);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.y = defaultCamHeight;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0x404040, 1);
+            scene.add(ambient);
+            const ceilingLight = new THREE.PointLight(0xffffff, 0.8, 15);
+            ceilingLight.position.set(0, 4, 0);
+            ceilingLight.castShadow = true;
+            scene.add(ceilingLight);
+            const rackLight = new THREE.PointLight(0x00bcd4, 0.5, 10);
+            rackLight.position.set(-3, 2, -3);
+            scene.add(rackLight);
+
+            // Environment
+            createRoom();
+            createFurniture();
+
+            // Controls
+            controls = new THREE.PointerLockControls(camera, document.body);
+            
+            document.addEventListener('click', () => {
+                if(!isComputerOpen && !isGameOver && !controls.isLocked) controls.lock();
+            });
+            
+            scene.add(controls.getObject());
+
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            window.addEventListener('resize', onResize);
+
+            raycaster = new THREE.Raycaster();
+
+            isGameReady = true;
+            animate();
+            
+            generateNextTask();
+
+            // --- IMMEDIATE TEXTURE LOADING ---
+            initEnvironmentTextures(); 
+        }
+
+        function createRoom() {
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.8 });
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f0f0f, roughness: 0.5 });
+            
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), wallMat);
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = 5;
+            scene.add(ceiling);
+
+            const createWall = (w, h, x, y, z, ry) => {
+                const geom = new THREE.BoxGeometry(w, h, 0.5);
+                const mesh = new THREE.Mesh(geom, wallMat);
+                mesh.position.set(x, y, z);
+                mesh.rotation.y = ry;
+                mesh.receiveShadow = true;
+                scene.add(mesh);
+            };
+
+            createWall(20, 5, 0, 2.5, -10, 0);
+            createWall(20, 5, 0, 2.5, 10, 0);
+            createWall(20, 5, -10, 2.5, 0, Math.PI/2);
+            createWall(20, 5, 10, 2.5, 0, Math.PI/2);
+            
+            const door = new THREE.Mesh(new THREE.BoxGeometry(2, 4, 0.6), new THREE.MeshStandardMaterial({ color: 0x333 }));
+            door.position.set(0, 2, 9.9);
+            scene.add(door);
+        }
+
+  function createFurniture() {
+    // 1. РАБОЧИЙ СТОЛ
+    const deskGeo = new THREE.BoxGeometry(6, 0.1, 2);
+    const deskMat = new THREE.MeshStandardMaterial({ color: 0x111 });
+    const desk = new THREE.Mesh(deskGeo, deskMat);
+    desk.position.set(0.5, 1.2, -8);
+    desk.castShadow = true;
+    scene.add(desk);
+
+    // НОЖКИ СТОЛА
+    const legGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.2);
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, metalness: 0.8, roughness: 0.2 });
+    const legPositions = [[-2.3, 0.6, -7.2], [3.3, 0.6, -7.2], [-2.3, 0.6, -8.8], [3.3, 0.6, -8.8]];
+    legPositions.forEach(pos => {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(...pos);
+        scene.add(leg);
+    });
+
+    // 2. ГЛАВНЫЙ ТЕРМИНАЛ (Монитор)
+    const monitorGroup = new THREE.Group();
+    const monitorStand = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.2), new THREE.MeshStandardMaterial({color: 0x111}));
+    monitorStand.position.set(0, 1.3, -8.5);
+    const monitorScreen = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 0.1), new THREE.MeshStandardMaterial({color: 0x222}));
+    monitorScreen.position.set(0, 1.8, -8.5);
+    
+    // Default Material (Green glow) - will be replaced by CanvasTexture later
+    const displayGeo = new THREE.PlaneGeometry(1.8, 1);
+    const displayMat = new THREE.MeshBasicMaterial({ color: 0x00e676, emissive: 0x00e676, emissiveIntensity: 0.5 });
+    const display = new THREE.Mesh(displayGeo, displayMat);
+    display.position.set(0, 1.8, -8.44);
+    display.userData = { type: 'computer', label: 'MAIN TERMINAL' };
+    interactiveObjects.push(display);
+    scene.add(monitorStand, monitorScreen, display);
+
+    // 3. СИСТЕМНЫЙ БЛОК (ПК-БАШНЯ) - Вместо лампы
+    const pcGroup = new THREE.Group();
+    const pcCase = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 1.0, 0.9),
+        new THREE.MeshStandardMaterial({ color: 0x080808, metalness: 0.5, roughness: 0.4 })
+    );
+    pcCase.position.set(2.0, 1.75, -8.2); // Справа от монитора
+    
+    // Кнопка питания (светящаяся)
+    const pcButton = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 0.1, 0.02),
+        new THREE.MeshBasicMaterial({ color: 0x00bcd4 })
+    );
+    pcButton.position.set(2.0, 2.1, -7.74);
+    
+    // КАБЕЛИ
+    // Кабель от ПК к монитору
+    const cableVideoGeo = new THREE.CylinderGeometry(0.015, 0.015, 2.2);
+    const cableMat = new THREE.MeshStandardMaterial({ color: 0x050505 });
+    const cableVideo = new THREE.Mesh(cableVideoGeo, cableMat);
+    cableVideo.rotation.z = Math.PI / 2;
+    cableVideo.position.set(1.0, 1.4, -8.4);
+    
+    // Кабель питания (уходит вниз)
+    const cablePower = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.5), cableMat);
+    cablePower.position.set(2.2, 0.5, -8.6);
+
+    scene.add(pcCase, pcButton, cableVideo, cablePower);
+
+    // 4. УВЕЛИЧЕННАЯ СИСТЕМНАЯ ДОСКА (Справа)
+    const boardWidth = 2.8;
+    const boardHeight = 4.2;
+    const logPanelBase = new THREE.Mesh(new THREE.BoxGeometry(boardWidth + 0.2, boardHeight + 0.2, 0.1), new THREE.MeshStandardMaterial({color: 0x0d0d0d}));
+    logPanelBase.position.set(7.5, 2.2, -4); 
+    logPanelBase.rotation.y = -Math.PI / 3.5;
+    
+    const logDisplay = new THREE.Mesh(new THREE.PlaneGeometry(boardWidth, boardHeight), new THREE.MeshBasicMaterial({ color: 0xd500f9, emissive: 0xd500f9, emissiveIntensity: 0.25 }));
+    logDisplay.position.set(7.45, 2.2, -3.95);
+    logDisplay.rotation.y = -Math.PI / 3.5;
+    logDisplay.userData = { type: 'database', label: 'SYSTEM MONITORING PANEL' };
+    interactiveObjects.push(logDisplay);
+    scene.add(logPanelBase, logDisplay);
+
+    // 5. КНИГИ (Слева)
+    const bookMat = new THREE.MeshStandardMaterial({ color: 0xffc107, emissive: 0xffc107, emissiveIntensity: 0.2 });
+    const b1 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.15, 1.1), bookMat);
+    b1.position.set(-2, 1.325, -8.2);
+    const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.15, 1.15), bookMat);
+    b2.position.set(-2, 1.475, -8.2); b2.rotation.y = 0.1;
+    const bookHitbox = new THREE.Mesh(new THREE.BoxGeometry(1, 0.5, 1.3), new THREE.MeshBasicMaterial({ visible: false }));
+    bookHitbox.position.set(-2, 1.5, -8.2);
+    bookHitbox.userData = { type: 'manuals', label: 'SECURITY MANUALS' };
+    interactiveObjects.push(bookHitbox);
+    scene.add(b1, b2, bookHitbox);
+
+    // Стеллажи
+    const rackGeo = new THREE.BoxGeometry(1.5, 4, 1.5);
+    for(let i=0; i<3; i++) {
+        const rack = new THREE.Mesh(rackGeo, new THREE.MeshStandardMaterial({ color: 0x111 }));
+        rack.position.set(-8, 2, -8 + (i*2.5));
+        scene.add(rack);
+    }
+}
+        // --- INPUT ---
+        function onKeyDown(e) {
+            if (isGameOver) return;
+            switch(e.code) {
+                case 'KeyW': moveForward = true; break;
+                case 'KeyA': moveLeft = true; break;
+                case 'KeyS': moveBackward = true; break;
+                case 'KeyD': moveRight = true; break;
+                case 'KeyE': interact(); break;
+                case 'Escape': 
+                    if(isComputerOpen) closeComputer(); 
+                    break;
+            }
+        }
+
+        function onKeyUp(e) {
+            switch(e.code) {
+                case 'KeyW': moveForward = false; break;
+                case 'KeyA': moveLeft = false; break;
+                case 'KeyS': moveBackward = false; break;
+                case 'KeyD': moveRight = false; break;
+            }
+        }
+
+        function onResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- INTERACTION ---
+        function interact() {
+            if(currentTarget) {
+                const type = currentTarget.userData.type;
+                if(type === 'computer') {
+                    openHUD('computer-hud');
+                } else if (type === 'database') {
+                    openHUD('database-hud');
+                } else if (type === 'manuals') {
+                    openHUD('manual-hud');
+                }
+            }
+        }
+
+        function openHUD(hudId) {
+            if(isComputerOpen) return;
+            isComputerOpen = true;
+            activeHudId = hudId;
+            controls.unlock();
+            document.getElementById(hudId).classList.add('active');
+
+            // --- VISUAL FEEDBACK ON ACTION ---
+            if(hudId === 'manual-hud') {
+                addLog("[SYS] ACCESSED SECURITY PROTOCOLS.", "var(--accent-amber)");
+            }
+        }
+
+        window.closeComputer = function() {
+            isComputerOpen = false;
+            if(activeHudId) {
+                document.getElementById(activeHudId).classList.remove('active');
+                activeHudId = null;
+            }
+            if(!isGameOver) controls.lock();
+        }
+
+        // UI Tab Switching for Manual
+        window.switchTab = function(tabElement, targetId) {
+            const tabs = document.querySelectorAll('.manual-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            const topics = document.querySelectorAll('.manual-topic');
+            topics.forEach(t => t.classList.remove('active'));
+            tabElement.classList.add('active');
+            document.getElementById(targetId).classList.add('active');
+        }
+
+
+        function triggerGameOver() {
+            isGameOver = true;
+            closeComputer();
+            controls.unlock();
+            document.getElementById('game-over-screen').classList.add('active');
+        }
+
+        // --- LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!isGameReady || isGameOver) return;
+
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000;
+
+            if (controls.isLocked === true) {
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize();
+
+                const speed = 60.0; 
+                if (moveForward || moveBackward) velocity.z -= direction.z * speed * delta;
+                if (moveLeft || moveRight) velocity.x -= direction.x * speed * delta;
+
+                controls.moveRight(-velocity.x * delta);
+                controls.moveForward(-velocity.z * delta);
+
+                if (moveForward || moveBackward || moveLeft || moveRight) {
+                    headBobTimer += delta * headBobSpeed;
+                    camera.position.y = defaultCamHeight + Math.sin(headBobTimer) * headBobHeight;
+                } else {
+                    camera.position.y += (defaultCamHeight - camera.position.y) * 0.1;
+                    headBobTimer = 0;
+                }
+
+                raycaster.setFromCamera(new THREE.Vector2(), camera);
+                const intersects = raycaster.intersectObjects(interactiveObjects);
+                
+                const hint = document.getElementById('interaction-hint');
+                if(intersects.length > 0 && intersects[0].distance < 4) {
+                    currentTarget = intersects[0].object;
+                    hint.classList.add('visible');
+                    hint.innerHTML = `[E] ${currentTarget.userData.label}`;
+                } else {
+                    currentTarget = null;
+                    hint.classList.remove('visible');
+                }
+            }
+
+            prevTime = time;
+            renderer.render(scene, camera);
+        }
+
+        // --- GAME LOGIC ---
+        let currentTask = {};
+        let stats = { processed: 0, errors: 0 };
+        let acceptedHistory = []; 
+
+        const geoData = ["USA", "Germany", "China", "Russia", "Brazil", "Unknown Proxy", "France", "Japan"];
+        const threatLevels = ["LOW", "MODERATE", "CRITICAL", "SUSPICIOUS"];
+
+        function generateNextTask() {
+            const id = Math.floor(Math.random() * 9000) + 1000;
+            const ip = `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+            const geo = geoData[Math.floor(Math.random() * geoData.length)];
+            const ping = Math.floor(Math.random() * 200) + 10;
+            const threat = threatLevels[Math.floor(Math.random() * threatLevels.length)];
+            
+            // --- EXTENSION: Generate new fields ---
+            const desc = siteDescriptions[Math.floor(Math.random() * siteDescriptions.length)];
+            const connType = connectionTypes[Math.floor(Math.random() * connectionTypes.length)];
+
+            // Logic rules
+            const isMalicious = (threat === "CRITICAL" || threat === "SUSPICIOUS" || (geo === "Unknown Proxy" && ping > 150));
+
+            currentTask = { id, ip, geo, ping, threat, isMalicious, desc, connType };
+            
+            // UI Update
+            document.getElementById('task-id').innerText = id;
+            document.getElementById('ip-address').innerText = ip;
+            document.getElementById('ip-geo').innerText = geo;
+            document.getElementById('ip-ping').innerText = ping + " ms";
+            
+            // --- EXTENSION: UPDATE NEW UI ELEMENTS ---
+            document.getElementById('ip-desc').innerText = `"${desc}"`;
+            document.getElementById('ip-type-badge').innerText = connType;
+            document.getElementById('ip-proto').innerText = (connType.includes('HTTP') || connType.includes('QUIC')) ? "HTTPS / TLS 1.3" : "UNENCRYPTED";
+
+            const threatEl = document.getElementById('ip-threat');
+            threatEl.innerText = threat;
+            threatEl.style.color = threat === "LOW" ? "var(--accent-green)" : (threat === "MODERATE" ? "var(--accent-orange)" : "var(--accent-red)");
+
+            // --- EXTENSION: UPDATE 3D MONITOR ---
+            updateMonitorTexture(ip, geo, "AWAITING INPUT");
+        }
+
+        window.processTask = function(allowed) {
+            if(isGameOver) return;
+
+            stats.processed++;
+            document.getElementById('stat-total').innerText = stats.processed;
+
+            const shouldHaveBanned = currentTask.isMalicious;
+            const didBan = !allowed;
+            
+            // IF ALLOWED: Add to history database
+            if (allowed) {
+                addToHistory(currentTask);
+            }
+
+            if (shouldHaveBanned === didBan) {
+                addLog(`[SUCCESS] Task #${currentTask.id} verified.`, "var(--accent-green)");
+                updateMonitorTexture(currentTask.ip, currentTask.geo, "PROCESSED: OK");
+            } else {
+                stats.errors++;
+                document.getElementById('stat-errors').innerText = stats.errors;
+                updateIntegrity();
+                addLog(`[WARN] JUDGMENT ERROR on Task #${currentTask.id}!`, "var(--accent-red)");
+                updateMonitorTexture(currentTask.ip, currentTask.geo, "ERROR DETECTED");
+                
+                if (stats.errors >= MAX_ERRORS) {
+                    setTimeout(triggerGameOver, 500);
+                    return;
+                }
+            }
+
+            // Animation for transition
+            const card = document.getElementById('task-card');
+            card.style.opacity = 0;
+            setTimeout(() => {
+                generateNextTask();
+                card.style.opacity = 1;
+            }, 300);
+        }
+
+        function updateIntegrity() {
+            const percentage = Math.max(0, 100 - (stats.errors * (100/MAX_ERRORS)));
+            const bar = document.getElementById('integrity-bar');
+            bar.innerText = Math.floor(percentage) + '%';
+            if(percentage < 40) bar.style.color = "var(--accent-red)";
+            else if(percentage < 70) bar.style.color = "var(--accent-orange)";
+        }
+
+        function addToHistory(task) {
+            acceptedHistory.unshift(task); // Add to beginning
+            const table = document.getElementById('history-list');
+            const row = document.createElement('tr');
+            
+            let threatClass = "db-threat-LOW";
+            if(task.threat === 'CRITICAL' || task.threat === 'SUSPICIOUS') threatClass = "db-threat-HIGH";
+            else if(task.threat === 'MODERATE') threatClass = "db-threat-MOD";
+
+            const time = new Date().toLocaleTimeString('en-US', {hour12: false});
+
+            row.innerHTML = `
+                <td>#${task.id}</td>
+                <td>${task.ip}</td>
+                <td>${task.geo}</td>
+                <td class="${threatClass}">${task.threat}</td>
+                <td>${time}</td>
+            `;
+            
+            if(table.children.length > 50) table.removeChild(table.lastChild);
+            table.prepend(row);
+        }
+
+        function addLog(msg, color) {
+            const logBox = document.getElementById('sys-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerText = `> ${msg}`;
+            if(color) entry.style.color = color;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        /* =========================================
+           EXTENSION: PING GUIDE LOGIC
+           ========================================= */
+        function initPingGuide() {
+            const tbody = document.getElementById('ping-table-body');
+            if(!tbody) return;
+            
+            pingReferenceData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="color: #fff">${item.region}</td>
+                    <td class="ref-range">${item.range}</td>
+                    <td class="ref-ip">${item.ip}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        window.togglePingGuide = function(btn) {
+            const taskCard = document.getElementById('task-card');
+            const controls = document.querySelector('.controls-area');
+            const pingView = document.getElementById('ping-view');
+            
+            if (pingView.style.display === 'flex') {
+                // Show Task
+                pingView.style.display = 'none';
+                taskCard.style.display = 'block';
+                controls.style.display = 'flex';
+                btn.classList.remove('active');
+                btn.innerText = "PING REFERENCE";
+            } else {
+                // Show Guide
+                pingView.style.display = 'flex';
+                taskCard.style.display = 'none';
+                controls.style.display = 'none'; // Скрываем кнопки решений
+                btn.classList.add('active');
+                btn.innerText = "BACK TO TERMINAL";
+            }
+        };
+
+        /* =========================================
+           EXTENSION: VISUAL TEXTURES (CANVAS)
+           ========================================= */
+        
+        function createSystemTexture(width, height, content) {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            // BG
+            ctx.fillStyle = '#020202';
+            ctx.fillRect(0, 0, width, height);
+
+            // Scanlines
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.03)';
+            for(let i=0; i<height; i+=4) {
+                ctx.fillRect(0, i, width, 2);
+            }
+
+            // Header UI
+            ctx.fillStyle = content.color || '#00bcd4';
+            ctx.fillRect(0, 0, width, 40);
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 20px Courier New';
+            ctx.fillText(content.header || "SYSTEM", 10, 28);
+
+            // Body
+            ctx.fillStyle = content.color || '#00bcd4';
+            ctx.font = '24px monospace';
+            let y = 80;
+            if (content.lines) {
+                content.lines.forEach(line => {
+                    ctx.fillText(line, 20, y);
+                    y += 35;
+                });
+            }
+
+            // Graph
+            if (content.graph) {
+                ctx.strokeStyle = content.color;
+                ctx.beginPath();
+                ctx.moveTo(20, y + 20);
+                for(let i=20; i<width-20; i+=20) {
+                    ctx.lineTo(i, (y+20) - Math.random() * 30);
+                }
+                ctx.stroke();
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.anisotropy = 8;
+            return texture;
+        }
+
+        // Initialize textures immediately upon startup
+        function initEnvironmentTextures() {
+            // 1. MONITOR
+            const monitor = interactiveObjects.find(obj => obj.userData.label === 'MAIN TERMINAL');
+            if(monitor) {
+                const tex = createSystemTexture(512, 256, {
+                    header: "SDEK TERM_01 [ONLINE]",
+                    color: "#00e676",
+                    lines: [
+                        "> SYSTEM READY...",
+                        "> CONNECTING TO NODE 14",
+                        "> WAITING FOR INPUT",
+                        "> -----------------",
+                        "> PRESS [E] TO ACCESS"
+                    ]
+                });
+                monitor.material = new THREE.MeshBasicMaterial({ map: tex });
+                monitor.material.needsUpdate = true;
+            }
+
+            // 2. BIG BOARD
+            const board = interactiveObjects.find(obj => obj.userData.label === 'SYSTEM MONITORING PANEL');
+            if(board) {
+                const tex = createSystemTexture(512, 1024, {
+                    header: "GLOBAL TRAFFIC MONITOR",
+                    color: "#d500f9",
+                    lines: [
+                        "SERVER LOAD: 12%",
+                        "THREAT LEVEL: LOW",
+                        "",
+                        "ACTIVE NODES:",
+                        "[+] US-WEST   [OK]",
+                        "[+] EU-CENTRAL[OK]",
+                        "[+] ASIA-MAIN [OK]",
+                        "",
+                        "LOG STREAMING..."
+                    ],
+                    graph: true
+                });
+                board.material = new THREE.MeshBasicMaterial({ map: tex });
+                board.material.needsUpdate = true;
+            }
+
+            // 3. MANUALS (Create cover texture)
+            const manualHitbox = interactiveObjects.find(obj => obj.userData.label === 'SECURITY MANUALS');
+            if(manualHitbox) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 256; canvas.height = 350;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffc107'; 
+                ctx.fillRect(0,0,256,350);
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 30px Arial';
+                ctx.fillText("SECURITY", 30, 100);
+                ctx.fillText("PROTOCOL", 30, 140);
+                ctx.fillText("v2.5", 30, 180);
+                ctx.lineWidth = 5;
+                ctx.strokeRect(10,10,236,330);
+                
+                const tex = new THREE.CanvasTexture(canvas);
+                
+                // Make visible with texture
+                manualHitbox.material = new THREE.MeshStandardMaterial({ 
+                    map: tex, 
+                    transparent: true, 
+                    opacity: 0.9 
+                });
+                manualHitbox.visible = true; 
+            }
+        }
+
+        // Dynamic update for monitor when working
+        function updateMonitorTexture(ip, geo, status) {
+            const monitor = interactiveObjects.find(obj => obj.userData.label === 'MAIN TERMINAL');
+            if(!monitor) return;
+
+            const tex = createSystemTexture(512, 256, {
+                header: "ACTIVE SESSION",
+                color: "#00e676",
+                lines: [
+                    "INCOMING TRAFFIC", 
+                    "----------------", 
+                    `IP: ${ip}`, 
+                    `GEO: ${geo}`,
+                    `STATUS: ${status}`
+                ]
+            });
+            
+            monitor.material.map = tex;
+            monitor.material.needsUpdate = true;
+        }
+
+    </script>
+</body>
+</html>
