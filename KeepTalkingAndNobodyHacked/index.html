@@ -3,138 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keep Talking and Nobody Hacked</title>
+    <title>Keep Talking and Nobody Hacked: Advanced Threat</title>
     <style>
         /* =========================================
-           STYLE.CSS
+           STYLE.CSS (Сохранено и расширено)
            ========================================= */
         :root {
-            --bg-color: #050505;
-            --panel-bg: #111;
-            --panel-border: #333;
-            --neon-green: #33ff00;
-            --neon-red: #ff003c;
-            --neon-blue: #00eaff;
-            --neon-amber: #ffae00;
-            --tablet-frame: #0a0a0a;
-            --font-mono: 'Courier New', Courier, monospace;
-            --anim-speed: 0.35s;
+            --bg-color: #050505; --panel-bg: #111; --panel-border: #333;
+            --neon-green: #33ff00; --neon-red: #ff003c; --neon-blue: #00eaff; --neon-amber: #ffae00;
+            --tablet-frame: #0a0a0a; --font-mono: 'Courier New', Courier, monospace; --anim-speed: 0.35s;
         }
-
         * { box-sizing: border-box; user-select: none; }
-
-        body {
-            margin: 0; background-color: var(--bg-color); color: var(--neon-green);
-            font-family: var(--font-mono); height: 100vh; overflow: hidden;
-            display: flex; flex-direction: column; transition: filter 0.2s;
-        }
-
-        /* --- ЭФФЕКТЫ --- */
-        .scanlines {
-            position: fixed; top:0; left:0; right:0; bottom:0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 999;
-        }
+        body { margin: 0; background-color: var(--bg-color); color: var(--neon-green); font-family: var(--font-mono); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
-        .vignette {
-            position: fixed; top:0; left:0; right:0; bottom:0;
-            background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.95) 100%);
-            pointer-events: none; z-index: 998; transition: background 1s;
-        }
-
-        .vignette.critical {
-            background: radial-gradient(circle, rgba(50,0,0,0.1) 40%, rgba(255,0,0,0.4) 100%);
-            animation: pulse-red 1s infinite alternate;
-        }
-
+        /* Эффекты */
+        .scanlines { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 999; }
+        .vignette { position: fixed; top:0; left:0; right:0; bottom:0; background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.95) 100%); pointer-events: none; z-index: 998; transition: background 1s; }
+        .vignette.critical { background: radial-gradient(circle, rgba(50,0,0,0.1) 40%, rgba(255,0,0,0.4) 100%); animation: pulse-red 1s infinite alternate; }
         @keyframes pulse-red { 0% { opacity: 0.8; } 100% { opacity: 1; } }
-
         .glitch-active { animation: glitch-anim 0.2s infinite; }
-        @keyframes glitch-anim {
-            0% { transform: translate(0) }
-            20% { transform: translate(-2px, 1px) }
-            40% { transform: translate(-1px, -1px) }
-            60% { transform: translate(2px, 1px) }
-            80% { transform: translate(1px, -1px) }
-            100% { transform: translate(0) }
-        }
+        @keyframes glitch-anim { 0% { transform: translate(0) } 20% { transform: translate(-2px, 1px) } 40% { transform: translate(-1px, -1px) } 60% { transform: translate(2px, 1px) } 80% { transform: translate(1px, -1px) } 100% { transform: translate(0) } }
 
-        #sys-logs {
-            position: fixed; top: 20px; right: 20px; width: 300px;
-            pointer-events: none; z-index: 900; display: flex; flex-direction: column; gap: 5px;
-        }
-        .log-msg {
-            background: rgba(255,0,0,0.2); color: var(--neon-red); border-left: 3px solid var(--neon-red);
-            padding: 5px 10px; font-size: 0.8rem; animation: fade-in-out 3s forwards;
-        }
+        /* Логи и события */
+        #sys-logs { position: fixed; top: 20px; right: 20px; width: 300px; pointer-events: none; z-index: 900; display: flex; flex-direction: column; gap: 5px; }
+        .log-msg { background: rgba(255,0,0,0.2); color: var(--neon-red); border-left: 3px solid var(--neon-red); padding: 5px 10px; font-size: 0.8rem; animation: fade-in-out 3s forwards; }
+        .event-msg { background: rgba(255,170,0,0.2); color: var(--neon-amber); border-left: 3px solid var(--neon-amber); padding: 5px 10px; font-size: 0.8rem; animation: fade-in-out 4s forwards; font-weight: bold; }
         @keyframes fade-in-out { 0% { opacity:0; transform:translateX(20px); } 10% { opacity:1; transform:translateX(0); } 90% { opacity:1; } 100% { opacity:0; } }
 
-        /* --- ЭКРАНЫ --- */
-        .screen {
-            position: absolute; width: 100%; height: 100%; display: none; flex-direction: column;
-            align-items: center; justify-content: center; background: rgba(5,5,5,0.95); z-index: 10;
-        }
+        /* Экраны */
+        .screen { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(5,5,5,0.95); z-index: 10; }
         .screen.active { display: flex; }
-
-        /* --- МЕНЮ & UI --- */
         .settings-bar { margin-top: 20px; display: flex; gap: 20px; align-items: center; background: #111; padding: 10px 20px; border: 1px solid #333; }
         .score-display { position: absolute; top: 20px; left: 20px; color: var(--neon-amber); font-size: 1.2rem; z-index: 20;}
 
-        /* --- ИГРОВОЕ ПОЛЕ --- */
+        /* HUD & Модули */
         #screen-game { justify-content: flex-start; padding: 20px; transition: filter var(--anim-speed); background: var(--bg-color); }
         #screen-game.dimmed { filter: blur(5px) brightness(0.3); pointer-events: none; }
-
-        .hud-panel {
-            display: flex; width: 100%; max-width: 1000px; justify-content: space-between;
-            background: #0f0f0f; border-bottom: 2px solid #333; padding: 10px; margin-bottom: 10px;
-        }
-        .digital-display {
-            font-size: 2rem; background: #000; padding: 5px 15px; border: 1px solid #333; color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red);
-        }
+        .hud-panel { display: flex; width: 100%; max-width: 1000px; justify-content: space-between; background: #0f0f0f; border-bottom: 2px solid #333; padding: 10px; margin-bottom: 10px; }
+        .digital-display { font-size: 2rem; background: #000; padding: 5px 15px; border: 1px solid #333; color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
         .progress-container { flex-grow: 1; margin: 0 20px; border: 1px solid #333; background: #000; position: relative; }
         .progress-bar { height: 100%; background: var(--neon-red); width: 0%; transition: width 0.1s linear; }
         .strikes-box { display: flex; gap: 5px; align-items: center; }
         .strike { width: 15px; height: 15px; border: 2px solid var(--neon-red); border-radius: 50%; opacity: 0.2; }
         .strike.active { background: var(--neon-red); opacity: 1; box-shadow: 0 0 8px var(--neon-red); }
 
-        .modules-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 1000px; height: 60vh; overflow-y: auto; padding-right: 5px;
-        }
+        .modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 1000px; height: 60vh; overflow-y: auto; padding-right: 5px; }
         ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #111; } ::-webkit-scrollbar-thumb { background: #444; }
 
-        .module {
-            background: var(--panel-bg); border: 2px solid var(--panel-border); padding: 10px;
-            display: flex; flex-direction: column; position: relative; transition: border-color 0.2s; cursor: pointer;
-        }
+        .module { background: var(--panel-bg); border: 2px solid var(--panel-border); padding: 10px; display: flex; flex-direction: column; position: relative; transition: border-color 0.2s; cursor: pointer; }
         .module:hover { border-color: #555; }
         .module.selected { border-color: var(--neon-blue); box-shadow: inset 0 0 15px rgba(0, 234, 255, 0.1); }
         .module.solved { opacity: 0.4; border-color: var(--neon-green); pointer-events: none; }
-        .module.solved::after {
-            content: attr(data-secured); position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg);
-            color: var(--neon-green); border: 3px solid var(--neon-green); padding: 5px 10px; font-weight: bold; font-size: 1.5rem;
-            background: rgba(0,0,0,0.9); z-index: 5;
-        }
-
+        .module.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(100%); }
+        .module.disabled::after { content: "СБОЙ ПИТАНИЯ"; position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); color: var(--neon-red); font-weight: bold; font-size: 1.2rem; background: #000; padding: 5px; }
+        .module.solved::after { content: attr(data-secured); position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); color: var(--neon-green); border: 3px solid var(--neon-green); padding: 5px 10px; font-weight: bold; font-size: 1.5rem; background: rgba(0,0,0,0.9); z-index: 5; }
         .mod-header { display: flex; justify-content: space-between; border-bottom: 1px solid #333; margin-bottom: 10px; font-size: 0.8rem; color: #777; }
         .mod-content { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center; }
-        .data-display { background: #000; color: var(--neon-green); padding: 10px; width: 100%; text-align: center; font-family: var(--font-mono); border: 1px solid #333; }
-        .mod-controls { display: flex; gap: 5px; width: 100%; }
-        .mod-btn { flex: 1; background: #222; color: #fff; border: 1px solid #444; padding: 10px; cursor: pointer; font-family: var(--font-mono); transition: 0.1s; }
-        .mod-btn:hover { background: #444; }
-        .mod-btn:active { background: #fff; color: #000; }
+        .data-display { background: #000; color: var(--neon-green); padding: 10px; width: 100%; text-align: center; font-family: var(--font-mono); border: 1px solid #333; font-size: 0.9rem; min-height: 60px; display: flex; align-items: center; justify-content: center; flex-direction: column;}
+        .mod-controls { display: flex; gap: 5px; width: 100%; flex-wrap: wrap; justify-content: center;}
+        .mod-btn { flex: 1; background: #222; color: #fff; border: 1px solid #444; padding: 8px; cursor: pointer; font-family: var(--font-mono); transition: 0.1s; min-width: 30%; font-size: 0.8rem;}
+        .mod-btn:hover { background: #444; } .mod-btn:active { background: #fff; color: #000; }
 
-        /* --- ПЛАНШЕТ --- */
-        #tablet-container {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 92vh; z-index: 1000;
-            pointer-events: none; display: flex; justify-content: center;
-        }
-        .tablet-device {
-            width: 90%; max-width: 900px; height: 100%; background: var(--tablet-frame); border: 4px solid #333; border-bottom: none;
-            border-radius: 20px 20px 0 0; box-shadow: 0 -10px 50px rgba(0,0,0,0.9);
-            transform: translateY(110%); transition: transform var(--anim-speed) cubic-bezier(0.175, 0.885, 0.32, 1.1);
-            display: flex; flex-direction: column; pointer-events: auto; position: relative;
-        }
+        /* Планшет */
+        #tablet-container { position: fixed; bottom: 0; left: 0; right: 0; height: 92vh; z-index: 1000; pointer-events: none; display: flex; justify-content: center; }
+        .tablet-device { width: 90%; max-width: 900px; height: 100%; background: var(--tablet-frame); border: 4px solid #333; border-bottom: none; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 50px rgba(0,0,0,0.9); transform: translateY(110%); transition: transform var(--anim-speed) cubic-bezier(0.175, 0.885, 0.32, 1.1); display: flex; flex-direction: column; pointer-events: auto; position: relative; }
         .tablet-device.up { transform: translateY(0); }
         .tablet-cam { height: 20px; background: #000; margin: 10px 40% 5px 40%; border-radius: 10px; border: 1px solid #333; }
         .tablet-screen { background: #151815; flex-grow: 1; margin: 0 15px 15px 15px; border: 2px inset #555; display: flex; flex-direction: column; overflow: hidden; position: relative; }
@@ -149,18 +81,12 @@
         .manual-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .manual-table th { border-bottom: 1px solid #777; text-align: left; padding: 5px; color: var(--neon-blue); }
         .manual-table td { padding: 5px; border-bottom: 1px solid #333; }
-
-        .hint-overlay {
-            position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 1.2rem;
-            color: rgba(255,255,255,0.5); pointer-events: none; animation: pulse 2s infinite; z-index: 2000;
-        }
-
+        
+        .hint-overlay { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 1.2rem; color: rgba(255,255,255,0.5); pointer-events: none; animation: pulse 2s infinite; z-index: 2000; }
         .center-msg { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;}
         h1 { font-size: 3rem; margin-bottom: 10px; text-shadow: 0 0 10px var(--neon-green); text-transform: uppercase; }
         .btn-main { background: transparent; border: 2px solid var(--neon-green); color: var(--neon-green); padding: 15px 40px; font-size: 1.5rem; cursor: pointer; margin-top: 20px; font-family: var(--font-mono); transition: 0.2s; text-transform: uppercase;}
         .btn-main:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px var(--neon-green); }
-        
-        /* Цвета кнопок для разных экранов */
         .btn-danger { border-color: var(--neon-red); color: var(--neon-red); }
         .btn-danger:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 20px var(--neon-red); }
         .btn-blue { border-color: var(--neon-blue); color: var(--neon-blue); }
@@ -231,7 +157,7 @@
         <div class="sys-info" style="width:100%; max-width:1000px; margin-bottom:10px; display:flex; justify-content:space-between; color:#777;">
             <span>OS: <b id="sys-os" style="color:var(--neon-amber)">LINUX</b></span>
             <span>PORT: <b id="sys-port" style="color:var(--neon-amber)">8080</b></span>
-            <span>VER: <b id="sys-ver" style="color:var(--neon-amber)">2.0</b></span>
+            <span>NET: <b id="sys-net" style="color:var(--neon-amber)">SECURE</b></span>
         </div>
         <div id="modules-container" class="modules-grid"></div>
         <div class="hint-overlay" id="action-hint" data-i18n="hint_open_tablet">НАЖМИТЕ [TAB] ДЛЯ ПЛАНШЕТА</div>
@@ -241,8 +167,8 @@
         <div id="tablet" class="tablet-device">
             <div class="tablet-cam"></div>
             <nav class="tablet-tabs">
-                <button class="tab-btn active" onclick="Tablet.switchTab('manual')">[1] <span data-i18n="tab_manual">РУКОВОДСТВО</span></button>
-                <button class="tab-btn" onclick="Tablet.switchTab('module')">[2] <span data-i18n="tab_module">ДАННЫЕ МОДУЛЯ</span></button>
+                <button class="tab-btn active" onclick="Tablet.switchTab('manual')">[1] РУКОВОДСТВО</button>
+                <button class="tab-btn" onclick="Tablet.switchTab('module')">[2] ДАННЫЕ МОДУЛЯ</button>
             </nav>
             <div class="tablet-screen">
                 <div class="scanline-overlay"></div>
@@ -257,154 +183,191 @@
            ========================================= */
 
         const I18N_RU = {
-            score_label: "РЕКОРД (УРОВЕНЬ):",
-            title_main: "СОХРАНЯЙ СПОКОЙСТВИЕ<br><span style='color:var(--neon-red)'>И НЕ ДАЙ СЕБЯ ВЗЛОМАТЬ</span>",
-            title_sub: "СИСТЕМА: КРИТИЧЕСКАЯ УГРОЗА",
-            audio_on: "ЗВУК",
-            btn_start: "ЗАПУСТИТЬ ЗАЩИТУ",
-            
-            game_over: "СИСТЕМА ВЗЛОМАНА",
-            level_reached: "ДОСТИГНУТ УРОВЕНЬ:",
-            record: "РЕКОРД:",
-            btn_restart: "НАЧАТЬ ЗАНОВО",
-            btn_menu: "В ГЛАВНОЕ МЕНЮ",
-            
-            sys_secured: "СИСТЕМА ЗАЩИЩЕНА",
-            level_complete: "УРОВЕНЬ ЗАВЕРШЁН",
-            btn_next_threat: "СЛЕДУЮЩАЯ УГРОЗА",
-            
-            hud_time: "ВРЕМЯ",
-            hud_level: "УРОВЕНЬ",
-            hud_strikes: "ОШИБКИ",
-            hint_open_tablet: "НАЖМИТЕ [TAB] ДЛЯ ПЛАНШЕТА",
-            hint_close_tablet: "НАЖМИТЕ [TAB] ЧТОБЫ ОПУСТИТЬ",
-            tab_manual: "РУКОВОДСТВО",
-            tab_module: "ДАННЫЕ",
-            mod_secured: "ОБЕЗВРЕЖЕН",
-            no_module_sel: "МОДУЛЬ НЕ ВЫБРАН",
-            no_module_desc: "Выберите модуль на главном экране для просмотра данных.",
-            logs: ["АНОМАЛИЯ ЯДРА", "СБОЙ ПАМЯТИ", "ОБНАРУЖЕН БЭКДОР", "УТЕЧКА ПАКЕТОВ", "ПЕРЕГРУЗКА ЦП"]
+            score_label: "РЕКОРД (УРОВЕНЬ):", title_main: "СОХРАНЯЙ СПОКОЙСТВИЕ<br><span style='color:var(--neon-red)'>И НЕ ДАЙ СЕБЯ ВЗЛОМАТЬ</span>", title_sub: "СИСТЕМА: КРИТИЧЕСКАЯ УГРОЗА", audio_on: "ЗВУК", btn_start: "ЗАПУСТИТЬ ЗАЩИТУ",
+            game_over: "СИСТЕМА ВЗЛОМАНА", level_reached: "ДОСТИГНУТ УРОВЕНЬ:", record: "РЕКОРД:", btn_restart: "НАЧАТЬ ЗАНОВО", btn_menu: "В ГЛАВНОЕ МЕНЮ",
+            sys_secured: "СИСТЕМА ЗАЩИЩЕНА", level_complete: "УРОВЕНЬ ЗАВЕРШЁН", btn_next_threat: "СЛЕДУЮЩАЯ УГРОЗА",
+            hud_time: "ВРЕМЯ", hud_level: "УРОВЕНЬ", hud_strikes: "ОШИБКИ", hint_open_tablet: "НАЖМИТЕ [TAB] ДЛЯ ПЛАНШЕТА", hint_close_tablet: "НАЖМИТЕ [TAB] ЧТОБЫ ОПУСТИТЬ",
+            mod_secured: "ОБЕЗВРЕЖЕН", no_module_sel: "МОДУЛЬ НЕ ВЫБРАН", no_module_desc: "Выберите модуль на главном экране для просмотра данных.",
+            logs: ["АНОМАЛИЯ ЯДРА", "СБОЙ ПАМЯТИ", "ОБНАРУЖЕН БЭКДОР", "УТЕЧКА ПАКЕТОВ", "ПЕРЕГРУЗКА ЦП", "ВТОРЖЕНИЕ В БД", "ПОДМЕНА СЕРТИФИКАТА"]
         };
 
-        function translateUI() {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (I18N_RU[key]) el.innerHTML = I18N_RU[key];
-            });
-        }
+        function translateUI() { document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (I18N_RU[key]) el.innerHTML = I18N_RU[key]; }); }
 
         // --- ЗВУКОВАЯ СИСТЕМА ---
         const AudioSys = {
             ctx: null, enabled: true, volume: 0.5,
             init: function() {
-                if (!this.ctx) {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    this.ctx = new AudioContext();
-                }
+                if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); }
                 if (this.ctx.state === 'suspended') this.ctx.resume();
-                this.enabled = document.getElementById('audio-toggle').checked;
-                this.volume = parseFloat(document.getElementById('vol-slider').value);
+                this.enabled = document.getElementById('audio-toggle').checked; this.volume = parseFloat(document.getElementById('vol-slider').value);
             },
             playTick: function(urgency) {
                 if (!this.enabled || !this.ctx || !Game.isActive) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(400 + (urgency * 600), this.ctx.currentTime);
-                gain.gain.setValueAtTime(0, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.05 * this.volume * (1 + urgency), this.ctx.currentTime + 0.01);
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'square'; osc.frequency.setValueAtTime(400 + (urgency * 600), this.ctx.currentTime);
+                gain.gain.setValueAtTime(0, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0.05 * this.volume * (1 + urgency), this.ctx.currentTime + 0.01);
                 gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.1);
             },
             playTablet: function() {
                 if (!this.enabled || !this.ctx) return;
-                const bSize = this.ctx.sampleRate * 0.25; 
-                const buffer = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bSize; i++) data[i] = Math.random() * 2 - 1;
+                const bSize = this.ctx.sampleRate * 0.25; const buffer = this.ctx.createBuffer(1, bSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0); for (let i = 0; i < bSize; i++) data[i] = Math.random() * 2 - 1;
                 const noise = this.ctx.createBufferSource(); noise.buffer = buffer;
                 const filter = this.ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 800;
-                const gain = this.ctx.createGain();
-                gain.gain.setValueAtTime(0.3 * this.volume, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
-                noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
-                noise.start();
+                const gain = this.ctx.createGain(); gain.gain.setValueAtTime(0.3 * this.volume, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+                noise.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination); noise.start();
             }
         };
 
         document.getElementById('audio-toggle').addEventListener('change', (e) => AudioSys.enabled = e.target.checked);
         document.getElementById('vol-slider').addEventListener('input', (e) => AudioSys.volume = parseFloat(e.target.value));
 
-        // --- МОДУЛИ ---
+        // --- БАЗОВЫЙ КЛАСС МОДУЛЯ ---
         class BaseModule {
-            constructor(id) { this.id = id; this.solved = false; this.el = null; }
+            constructor(id) { this.id = id; this.solved = false; this.el = null; this.isDisabled = false; }
             render() { return document.createElement('div'); }
             getDetails() { return `<div class="detail-view"><p>НЕТ ДАННЫХ</p></div>`; }
-            select() {
-                if (!Game.isActive) return; // ЗАЩИТА ОТ БАГОВ: Блокировка ввода после конца игры
-                Game.selectModule(this.id);
-            }
-            markSolved() {
-                this.solved = true;
-                if(this.el) {
-                    this.el.classList.add('solved');
-                    this.el.classList.remove('selected');
-                    this.el.setAttribute('data-secured', I18N_RU.mod_secured);
-                }
-                Game.checkWin();
-            }
+            select() { if (!Game.isActive || this.isDisabled) return; Game.selectModule(this.id); }
+            markSolved() { this.solved = true; if(this.el) { this.el.classList.add('solved'); this.el.classList.remove('selected'); this.el.setAttribute('data-secured', I18N_RU.mod_secured); } Game.checkWin(); }
             fail() { Game.strike(); }
+            disableTemporarily(ms) { 
+                this.isDisabled = true; this.el.classList.add('disabled'); 
+                setTimeout(() => { this.isDisabled = false; if(this.el) this.el.classList.remove('disabled'); }, ms); 
+            }
         }
 
+        // 1. PORT FLOOD (Существующий)
         class PortFlood extends BaseModule {
             constructor(id) { super(id); this.port = Math.floor(Math.random()*900)+100; this.protocol = Math.random()>0.5?'UDP':'TCP'; }
             solve(action) {
-                if (!Game.isActive || this.solved) return; // ЗАЩИТА ОТ БАГОВ
+                if (!Game.isActive || this.solved || this.isDisabled) return;
                 let correct = 'FILTER';
                 if (Game.sysInfo.os === 'LINUX') correct = (this.protocol === 'UDP') ? 'BLOCK' : 'ALLOW';
                 else if (Game.sysInfo.os === 'WINDOWS') correct = (this.port % 2 === 0) ? 'BLOCK' : 'ALLOW';
                 if (action === correct) this.markSolved(); else this.fail();
             }
             render() {
-                const div = document.createElement('div'); div.className = 'module';
-                div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); };
-                this.el = div;
-                div.innerHTML = `
-                    <div class="mod-header"><span>ПОРТЫ</span><div class="mod-status"></div></div>
-                    <div class="mod-content">
-                        <div class="data-display">PORT: ${this.port} / ${this.protocol}</div>
-                        <div class="mod-controls">
-                            <button class="mod-btn" onclick="Game.modules[${this.id}].solve('BLOCK')">БЛОК</button>
-                            <button class="mod-btn" onclick="Game.modules[${this.id}].solve('FILTER')">ФИЛЬТР</button>
-                            <button class="mod-btn" onclick="Game.modules[${this.id}].solve('ALLOW')">ПРОПУСК</button>
-                        </div>
-                    </div>`;
+                const div = document.createElement('div'); div.className = 'module'; div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); }; this.el = div;
+                div.innerHTML = `<div class="mod-header"><span>ПОРТЫ</span></div>
+                    <div class="mod-content"><div class="data-display">PORT: ${this.port} / ${this.protocol}</div>
+                    <div class="mod-controls"><button class="mod-btn" onclick="Game.modules[${this.id}].solve('BLOCK')">БЛОК</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('FILTER')">ФИЛЬТР</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('ALLOW')">ПРОПУСК</button></div></div>`;
                 return div;
             }
-            getDetails() {
-                return `<div class="detail-view">
-                        <h3>АНАЛИЗ ТРАФИКА</h3>
-                        <div class="big-data" style="font-size:3rem; border:2px dashed #444; padding:20px; margin:20px 0;">${this.port}</div>
-                        <p>ПРОТОКОЛ: <span style="color:#fff">${this.protocol}</span></p>
-                    </div>`;
-            }
+            getDetails() { return `<div class="detail-view"><h3>АНАЛИЗ ТРАФИКА</h3><div class="big-data" style="font-size:3rem; border:2px dashed #444; padding:20px;">${this.port}</div><p>ПРОТОКОЛ: <span style="color:#fff">${this.protocol}</span></p></div>`; }
         }
 
+        // 2. СИГНАТУРЫ (Многошаговый базовый)
         class SignatureCheck extends BaseModule {
-            constructor(id, stepsCount) {
-                super(id); this.totalSteps = stepsCount; this.currentStep = 0; this.sequence = [];
-                const types = ['A', 'B', 'C'];
-                for(let i=0; i<this.totalSteps; i++) this.sequence.push({ type: types[Math.floor(Math.random()*types.length)], val: Math.floor(Math.random()*90)+10 });
-            }
+            constructor(id, steps) { super(id); this.totalSteps = steps; this.currentStep = 0; this.sequence = []; const types = ['A', 'B', 'C']; for(let i=0; i<this.totalSteps; i++) this.sequence.push({ type: types[Math.floor(Math.random()*types.length)], val: Math.floor(Math.random()*90)+10 }); }
             solve(action) {
-                if (!Game.isActive || this.solved) return; // ЗАЩИТА ОТ БАГОВ
-                const item = this.sequence[this.currentStep];
-                let correct = 'REJECT';
+                if (!Game.isActive || this.solved || this.isDisabled) return;
+                const item = this.sequence[this.currentStep]; let correct = 'REJECT';
                 if (item.type === 'A') correct = (item.val % 2 === 0) ? 'APPROVE' : 'REJECT';
                 else if (item.type === 'B') correct = (Game.sysInfo.os === 'LINUX') ? 'APPROVE' : 'REJECT';
                 else if (item.type === 'C') correct = (item.val < 50) ? 'APPROVE' : 'REJECT';
+                if (action === correct) { this.currentStep++; if(this.currentStep >= this.totalSteps) this.markSolved(); else this.updateUI(); } else this.fail();
+            }
+            updateUI() { if(this.solved || !this.el) return; const item = this.sequence[this.currentStep]; this.el.querySelector('.data-display').innerHTML = `ШАГ ${this.currentStep+1}/${this.totalSteps}<br>ТИП: ${item.type} | ID: ${item.val}`; }
+            render() {
+                const div = document.createElement('div'); div.className = 'module'; div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); }; this.el = div; const item = this.sequence[0];
+                div.innerHTML = `<div class="mod-header"><span>СИГНАТУРЫ</span></div><div class="mod-content"><div class="data-display">ШАГ 1/${this.totalSteps}<br>ТИП: ${item.type} | ID: ${item.val}</div><div class="mod-controls"><button class="mod-btn" onclick="Game.modules[${this.id}].solve('APPROVE')" style="color:var(--neon-green)">ОДОБРИТЬ</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('REJECT')" style="color:var(--neon-red)">ОТКЛОНИТЬ</button></div></div>`;
+                return div;
+            }
+            getDetails() { return `<div class="detail-view"><h3>ПОТОКОВАЯ ВАЛИДАЦИЯ</h3><p style="color:var(--neon-amber)">ТРЕБУЕТСЯ ПОСЛЕДОВАТЕЛЬНАЯ ПРОВЕРКА ${this.totalSteps} СИГНАТУР</p></div>`; }
+        }
 
+        // 3. НОВЫЙ МОДУЛЬ: DNS АНОМАЛИЯ
+        class DNSAnomaly extends BaseModule {
+            constructor(id) {
+                super(id);
+                const domains = ["google.com", "update.sys", "login-bank.xyz", "secure-auth.net"];
+                this.domain = domains[Math.floor(Math.random() * domains.length)];
+                this.queries = Math.floor(Math.random() * 2000);
+            }
+            solve(action) {
+                if (!Game.isActive || this.solved || this.isDisabled) return;
+                let correct = 'ALLOW';
+                if (this.domain.endsWith('.xyz') || this.queries > 1000) correct = 'BLOCK';
+                else if (this.domain.includes('login') || this.domain.includes('auth')) correct = 'QUARANTINE';
+                if (action === correct) this.markSolved(); else this.fail();
+            }
+            render() {
+                const div = document.createElement('div'); div.className = 'module'; div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); }; this.el = div;
+                div.innerHTML = `<div class="mod-header"><span>DNS ТРАФИК</span></div>
+                    <div class="mod-content"><div class="data-display" style="font-size:0.8rem">${this.domain}<br>REQ: ${this.queries}</div>
+                    <div class="mod-controls"><button class="mod-btn" onclick="Game.modules[${this.id}].solve('ALLOW')">ALLOW</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('QUARANTINE')">QUAR.</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('BLOCK')">BLOCK</button></div></div>`;
+                return div;
+            }
+            getDetails() { return `<div class="detail-view"><h3>DNS АНАЛИЗАТОР</h3><div class="big-data" style="font-size:2rem; padding:10px;">${this.domain}</div><p>ЧАСТОТА ЗАПРОСОВ: <span style="color:var(--neon-amber)">${this.queries}/мин</span></p></div>`; }
+        }
+
+        // 4. НОВЫЙ МОДУЛЬ: SSL СЕРТИФИКАТ
+        class SSLCert extends BaseModule {
+            constructor(id) {
+                super(id);
+                const issuers = ["GlobalSign", "LetsEncrypt", "UnknownRoot", "SysAdmin"];
+                this.issuer = issuers[Math.floor(Math.random() * issuers.length)];
+                this.expiryDays = Math.floor(Math.random() * 400) - 50; // -50 to 350
+            }
+            solve(action) {
+                if (!Game.isActive || this.solved || this.isDisabled) return;
+                let correct = 'TRUST';
+                if (this.expiryDays < 0) correct = 'REVOKE';
+                else if (this.issuer === "UnknownRoot") correct = 'REVOKE';
+                else if (this.issuer === "LetsEncrypt" && Game.sysInfo.net === 'SECURE') correct = 'WARN';
+                if (action === correct) this.markSolved(); else this.fail();
+            }
+            render() {
+                const div = document.createElement('div'); div.className = 'module'; div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); }; this.el = div;
+                div.innerHTML = `<div class="mod-header"><span>SSL СЕРТИФИКАТ</span></div>
+                    <div class="mod-content"><div class="data-display" style="font-size:0.75rem">ISS: ${this.issuer}<br>EXP: ${this.expiryDays} DAYS</div>
+                    <div class="mod-controls"><button class="mod-btn" onclick="Game.modules[${this.id}].solve('TRUST')">TRUST</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('WARN')">WARN</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('REVOKE')">REVOKE</button></div></div>`;
+                return div;
+            }
+            getDetails() { return `<div class="detail-view"><h3>SSL ДАННЫЕ</h3><p>ИЗДАТЕЛЬ: ${this.issuer}</p><p>ДНЕЙ ДО ИСТЕЧЕНИЯ: <span style="color:${this.expiryDays < 0 ? 'red' : 'green'}">${this.expiryDays}</span></p></div>`; }
+        }
+
+        // 5. НОВЫЙ МОДУЛЬ: SQL ИНЪЕКЦИИ (БД)
+        class DBQuery extends BaseModule {
+            constructor(id) {
+                super(id);
+                const queries = ["SELECT * FROM users", "UNION SELECT admin", "DROP TABLE logs", "UPDATE config SET val=1"];
+                this.query = queries[Math.floor(Math.random() * queries.length)];
+            }
+            solve(action) {
+                if (!Game.isActive || this.solved || this.isDisabled) return;
+                let correct = 'EXECUTE';
+                if (this.query.includes("DROP") || this.query.includes("UNION")) correct = 'BLOCK';
+                else if (this.query.includes("UPDATE")) correct = 'ISOLATE';
+                if (action === correct) this.markSolved(); else this.fail();
+            }
+            render() {
+                const div = document.createElement('div'); div.className = 'module'; div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); }; this.el = div;
+                div.innerHTML = `<div class="mod-header"><span>БАЗА ДАННЫХ</span></div>
+                    <div class="mod-content"><div class="data-display" style="font-size:0.7rem; word-break:break-all;">${this.query}</div>
+                    <div class="mod-controls"><button class="mod-btn" onclick="Game.modules[${this.id}].solve('EXECUTE')">EXEC</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('ISOLATE')">ISOLATE</button><button class="mod-btn" onclick="Game.modules[${this.id}].solve('BLOCK')">BLOCK</button></div></div>`;
+                return div;
+            }
+            getDetails() { return `<div class="detail-view"><h3>СЛУЖБА БД</h3><div class="big-data" style="font-size:1.5rem">${this.query}</div><p>ПРОВЕРЬТЕ НАЛИЧИЕ ЗАПРЕЩЕННЫХ ОПЕРАТОРОВ.</p></div>`; }
+        }
+
+        // 6. НОВЫЙ МОДУЛЬ: СУПЕР-ЧЕКЛИСТ (Многошаговая угроза для высоких уровней, 5-10 шагов)
+        class ComplexChecklist extends BaseModule {
+            constructor(id, steps) {
+                super(id); this.totalSteps = steps; this.currentStep = 0;
+                this.tasks = [];
+                const acts = ['ISOLATE', 'DELETE', 'ENCRYPT', 'BYPASS'];
+                for(let i=0; i<this.totalSteps; i++) {
+                    this.tasks.push({ code: Math.floor(Math.random()*9000)+1000, act: acts[Math.floor(Math.random()*acts.length)] });
+                }
+            }
+            solve(action) {
+                if (!Game.isActive || this.solved || this.isDisabled) return;
+                // Правило: Если код четный - выполняем act. Если нечетный - BYPASS.
+                const task = this.tasks[this.currentStep];
+                let correct = (task.code % 2 === 0) ? task.act : 'BYPASS';
+                
                 if (action === correct) {
                     this.currentStep++;
                     if(this.currentStep >= this.totalSteps) this.markSolved();
@@ -413,32 +376,22 @@
             }
             updateUI() {
                 if(this.solved || !this.el) return;
-                const item = this.sequence[this.currentStep];
-                this.el.querySelector('.data-display').innerHTML = `ШАГ ${this.currentStep+1}/${this.totalSteps}<br>ТИП: ${item.type} | ID: ${item.val}`;
+                const task = this.tasks[this.currentStep];
+                this.el.querySelector('.data-display').innerHTML = `УГРОЗА ${this.currentStep+1}/${this.totalSteps}<br>ID: ${task.code} | ${task.act}?`;
             }
             render() {
-                const div = document.createElement('div'); div.className = 'module';
-                div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); };
-                this.el = div;
-                const item = this.sequence[0];
-                div.innerHTML = `
-                    <div class="mod-header"><span>СИГНАТУРЫ</span><div class="mod-status"></div></div>
-                    <div class="mod-content">
-                        <div class="data-display" style="font-size:0.9rem">ШАГ 1/${this.totalSteps}<br>ТИП: ${item.type} | ID: ${item.val}</div>
-                        <div class="mod-controls">
-                            <button class="mod-btn" onclick="Game.modules[${this.id}].solve('APPROVE')" style="color:var(--neon-green)">ОДОБРИТЬ</button>
-                            <button class="mod-btn" onclick="Game.modules[${this.id}].solve('REJECT')" style="color:var(--neon-red)">ОТКЛОНИТЬ</button>
-                        </div>
-                    </div>`;
+                const div = document.createElement('div'); div.className = 'module'; div.onclick = (e) => { if(!e.target.classList.contains('mod-btn')) this.select(); }; this.el = div; const task = this.tasks[0];
+                div.innerHTML = `<div class="mod-header"><span>КОМПЛЕКСНАЯ УГРОЗА</span></div>
+                    <div class="mod-content"><div class="data-display" style="font-size:0.8rem">УГРОЗА 1/${this.totalSteps}<br>ID: ${task.code} | ${task.act}?</div>
+                    <div class="mod-controls">
+                        <button class="mod-btn" onclick="Game.modules[${this.id}].solve('ISOLATE')">ISOL</button>
+                        <button class="mod-btn" onclick="Game.modules[${this.id}].solve('DELETE')">DEL</button>
+                        <button class="mod-btn" onclick="Game.modules[${this.id}].solve('ENCRYPT')">ENC</button>
+                        <button class="mod-btn" onclick="Game.modules[${this.id}].solve('BYPASS')">BYP</button>
+                    </div></div>`;
                 return div;
             }
-            getDetails() {
-                 return `<div class="detail-view">
-                        <h3>ПОТОКОВАЯ ВАЛИДАЦИЯ</h3>
-                        <p style="color:var(--neon-amber)">ТРЕБУЕТСЯ ПОСЛЕДОВАТЕЛЬНАЯ ПРОВЕРКА ${this.totalSteps} СИГНАТУР</p>
-                        <p>ОШИБКА НЕ СБРАСЫВАЕТ ПРОГРЕСС, НО ВЫЗЫВАЕТ СТРАЙК.</p>
-                    </div>`;
-            }
+            getDetails() { return `<div class="detail-view"><h3>МНОГОСЛОЙНАЯ АТАКА</h3><p style="color:var(--neon-red)">ВНИМАНИЕ: ${this.totalSteps} УЗЛОВ ЗАРАЖЕНО.</p><p>Требуется ручное устранение каждого узла по протоколу Комплексной Угрозы.</p></div>`; }
         }
 
         // --- ПЛАНШЕТ ---
@@ -449,24 +402,15 @@
             close: function() { this.isOpen = false; this.animate(); },
             animate: function() {
                 this.isAnimating = true; AudioSys.playTablet();
-                const el = document.getElementById('tablet');
-                const sys = document.getElementById('screen-game');
-                const hint = document.getElementById('action-hint');
-                if (this.isOpen) {
-                    el.classList.add('up'); sys.classList.add('dimmed');
-                    hint.innerText = I18N_RU.hint_close_tablet; this.renderContent();
-                } else {
-                    el.classList.remove('up'); sys.classList.remove('dimmed');
-                    hint.innerText = I18N_RU.hint_open_tablet;
-                }
+                const el = document.getElementById('tablet'); const sys = document.getElementById('screen-game'); const hint = document.getElementById('action-hint');
+                if (this.isOpen) { el.classList.add('up'); sys.classList.add('dimmed'); hint.innerText = I18N_RU.hint_close_tablet; this.renderContent(); } 
+                else { el.classList.remove('up'); sys.classList.remove('dimmed'); hint.innerText = I18N_RU.hint_open_tablet; }
                 setTimeout(() => { this.isAnimating = false; }, 350);
             },
             switchTab: function(tabName) {
-                if (!this.isOpen) return;
-                this.currentTab = tabName;
+                if (!this.isOpen) return; this.currentTab = tabName;
                 document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                const btnIdx = tabName === 'manual' ? 0 : 1;
-                document.querySelectorAll('.tab-btn')[btnIdx].classList.add('active');
+                const btnIdx = tabName === 'manual' ? 0 : 1; document.querySelectorAll('.tab-btn')[btnIdx].classList.add('active');
                 this.renderContent();
             },
             renderContent: function() {
@@ -477,25 +421,28 @@
             getManualHTML: function() {
                 return `
                 <div class="manual-page">
-                    <h2>РАЗДЕЛ 1: ПОРТЫ</h2>
+                    <h2>БАЗОВЫЕ ПРОТОКОЛЫ</h2>
                     <div class="manual-entry">
                         <table class="manual-table">
-                            <tr><th>ОС СИСТЕМЫ</th><th>УСЛОВИЕ</th><th>ДЕЙСТВИЕ</th></tr>
-                            <tr><td>LINUX</td><td>Трафик UDP</td><td>БЛОК</td></tr>
-                            <tr><td>LINUX</td><td>Трафик TCP</td><td>ПРОПУСК</td></tr>
-                            <tr><td>WINDOWS</td><td>Четный PORT</td><td>БЛОК</td></tr>
-                            <tr><td>WINDOWS</td><td>Нечетный PORT</td><td>ПРОПУСК</td></tr>
-                            <tr><td>UNIX</td><td>Любое</td><td>ФИЛЬТР</td></tr>
+                            <tr><th>СИСТЕМА</th><th>ПОРТЫ (OS/Proto)</th><th>СИГНАТУРЫ (Шаги)</th></tr>
+                            <tr><td>LINUX</td><td>UDP -> BLOCK, TCP -> ALLOW</td><td>Тип B -> APPROVE</td></tr>
+                            <tr><td>WINDOWS</td><td>Четный -> BLOCK, Неч. -> ALLOW</td><td>-</td></tr>
+                            <tr><td>ЛЮБАЯ</td><td>UNIX -> FILTER</td><td>Тип A -> APPROVE если ID Четный<br>Тип C -> APPROVE если ID < 50</td></tr>
                         </table>
                     </div>
-                    <h2>РАЗДЕЛ 2: СИГНАТУРЫ</h2>
+                    <h2>ПРОТОКОЛЫ УГРОЗ II УРОВНЯ</h2>
                     <div class="manual-entry">
-                        <table class="manual-table">
-                            <tr><th>ТИП СИГНАТУРЫ</th><th>УСЛОВИЕ ОДОБРЕНИЯ (APPROVE)</th></tr>
-                            <tr><td style="color:var(--neon-amber)">ТИП A</td><td>Одобрить, если ID — <strong>ЧЁТНОЕ ЧИСЛО</strong>. Иначе Отклонить.</td></tr>
-                            <tr><td style="color:var(--neon-blue)">ТИП B</td><td>Одобрить, только если ОС системы — <strong>LINUX</strong>. Иначе Отклонить.</td></tr>
-                            <tr><td style="color:var(--neon-green)">ТИП C</td><td>Одобрить, если ID <strong>МЕНЬШЕ 50</strong>. Иначе Отклонить.</td></tr>
-                        </table>
+                        <p><strong>DNS:</strong> Если домен .xyz ИЛИ REQ > 1000 -> BLOCK. Содержит 'login'/'auth' -> QUARANTINE. Иначе ALLOW.</p>
+                        <p><strong>SSL:</strong> EXP < 0 ИЛИ ISS="UnknownRoot" -> REVOKE. ISS="LetsEncrypt" при NET=SECURE -> WARN. Иначе TRUST.</p>
+                        <p><strong>БД (SQL):</strong> Запрос содержит DROP или UNION -> BLOCK. Содержит UPDATE -> ISOLATE. Иначе EXECUTE.</p>
+                    </div>
+                    <h2>КОМПЛЕКСНАЯ УГРОЗА (КРАСНЫЙ КОД)</h2>
+                    <div class="manual-entry">
+                        <p>Если модуль запрашивает подтверждение действия для узла (ID):</p>
+                        <ul>
+                            <li>Если ID <strong>ЧЁТНЫЙ</strong>: Подтвердить запрошенное действие (Нажать кнопку действия).</li>
+                            <li>Если ID <strong>НЕЧЁТНЫЙ</strong>: Игнорировать действие, нажать <strong>BYPASS (BYP)</strong>.</li>
+                        </ul>
                     </div>
                 </div>`;
             }
@@ -503,121 +450,120 @@
 
         // --- GAME CONTROLLER ---
         const Game = {
-            level: 1, highScore: 1,
-            modules: [], selectedModuleId: null,
+            level: 1, highScore: 1, modules: [], selectedModuleId: null,
             timer: 180, maxTime: 180, infection: 0, strikes: 0,
             isActive: false, sysInfo: {}, lastTickTime: 0,
 
             initStorage: function() {
-                try {
-                    const saved = localStorage.getItem('ktanh_highscore');
-                    if (saved) this.highScore = parseInt(saved);
-                    document.getElementById('high-score-val').innerText = this.highScore;
-                } catch(e) {}
+                try { const saved = localStorage.getItem('ktanh_highscore'); if (saved) this.highScore = parseInt(saved); document.getElementById('high-score-val').innerText = this.highScore; } catch(e) {}
                 translateUI();
             },
 
+            // Масштабирование сложности: добавляем модули в пул
             getDifficulty: function() {
                 let modsCount = 2 + Math.floor(this.level / 2); if (modsCount > 8) modsCount = 8;
-                let time = 180 - (this.level * 5); if (time < 90) time = 90;
+                let time = 180 - (this.level * 3); if (time < 60) time = 60;
                 let checkSteps = 3 + Math.floor(this.level * 1.5); if (checkSteps > 15) checkSteps = 15;
                 return { mods: modsCount, time: time, steps: checkSteps };
             },
 
-            startNew: function() {
-                AudioSys.init();
-                this.level = 1; // Сброс сложности
-                this.startRound();
-            },
-            
+            startNew: function() { AudioSys.init(); this.level = 1; this.startRound(); },
             startNextLevel: function() {
-                this.level++; // Переход к следующему уровню
-                if (this.level > this.highScore) {
-                    this.highScore = this.level;
-                    try { localStorage.setItem('ktanh_highscore', this.highScore); } catch(e){}
-                    document.getElementById('high-score-val').innerText = this.highScore;
-                }
+                this.level++;
+                if (this.level > this.highScore) { this.highScore = this.level; try { localStorage.setItem('ktanh_highscore', this.highScore); } catch(e){} document.getElementById('high-score-val').innerText = this.highScore; }
                 this.startRound();
             },
 
             startRound: function() {
-                this.isActive = true;
-                const diff = this.getDifficulty();
-                
-                // Полный сброс параметров раунда
-                this.timer = diff.time; this.maxTime = diff.time;
-                this.infection = 0; this.strikes = 0; this.selectedModuleId = null;
+                this.isActive = true; const diff = this.getDifficulty();
+                this.timer = diff.time; this.maxTime = diff.time; this.infection = 0; this.strikes = 0; this.selectedModuleId = null;
                 document.getElementById('current-level-display').innerText = this.level;
                 
                 const oss = ['LINUX', 'WINDOWS', 'UNIX'];
-                this.sysInfo = { os: oss[Math.floor(Math.random()*oss.length)], port: 8000 + Math.floor(Math.random()*1000), ver: (Math.random()*5+1).toFixed(1) };
-                document.getElementById('sys-os').innerText = this.sysInfo.os;
-                document.getElementById('sys-port').innerText = this.sysInfo.port;
-                document.getElementById('sys-ver').innerText = this.sysInfo.ver;
+                this.sysInfo = { os: oss[Math.floor(Math.random()*oss.length)], port: 8000 + Math.floor(Math.random()*1000), net: Math.random()>0.5?'SECURE':'PUBLIC' };
+                document.getElementById('sys-os').innerText = this.sysInfo.os; document.getElementById('sys-port').innerText = this.sysInfo.port; document.getElementById('sys-net').innerText = this.sysInfo.net;
 
-                const container = document.getElementById('modules-container');
-                container.innerHTML = ''; this.modules = [];
+                const container = document.getElementById('modules-container'); container.innerHTML = ''; this.modules = [];
+                
+                // Пул доступных модулей растет с уровнем
+                let availableModules = [PortFlood, SignatureCheck];
+                if (this.level >= 3) availableModules.push(DNSAnomaly, SSLCert);
+                if (this.level >= 5) availableModules.push(DBQuery);
+                if (this.level >= 8) availableModules.push(ComplexChecklist);
+
                 for(let i=0; i<diff.mods; i++) {
-                    let m = (i === diff.mods - 1 || (this.level >= 3 && Math.random() > 0.6)) ? new SignatureCheck(i, diff.steps) : new PortFlood(i);
+                    let ModClass = availableModules[Math.floor(Math.random() * availableModules.length)];
+                    // Гарантируем сложный модуль на высоких уровнях для 10+ шагов
+                    if (i === diff.mods - 1 && this.level >= 10) ModClass = ComplexChecklist;
+                    
+                    let m = new ModClass(i, diff.steps); // Передаем steps для тех, кому нужно
                     this.modules.push(m); container.appendChild(m.render());
                 }
 
-                this.resetUI();
-                requestAnimationFrame(() => this.gameLoop()); // Старт цикла
+                this.resetUI(); requestAnimationFrame(() => this.gameLoop());
             },
 
             resetUI: function() {
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('screen-game').classList.add('active');
-                document.body.classList.remove('glitch-active');
-                document.getElementById('vignette').classList.remove('critical');
+                document.body.classList.remove('glitch-active'); document.getElementById('vignette').classList.remove('critical');
                 document.getElementById('sys-logs').innerHTML = '';
-                if(Tablet.isOpen) Tablet.close();
-                this.updateHUD();
+                if(Tablet.isOpen) Tablet.close(); this.updateHUD();
+            },
+
+            // ДИНАМИЧЕСКИЕ СОБЫТИЯ
+            triggerRandomEvent: function() {
+                if (Math.random() < 0.7) {
+                    // Глитч модуля
+                    const unsolved = this.modules.filter(m => !m.solved);
+                    if (unsolved.length > 0) {
+                        const target = unsolved[Math.floor(Math.random()*unsolved.length)];
+                        target.disableTemporarily(4000);
+                        this.spawnEventLog("ВНИМАНИЕ: СБОЙ ПИТАНИЯ МОДУЛЯ");
+                    }
+                } else {
+                    // Резкий скачок вируса
+                    this.infection += 10;
+                    this.spawnEventLog("КРИТИЧЕСКИЙ ВСПЛЕСК ЗАРАЖЕНИЯ");
+                }
+            },
+
+            spawnEventLog: function(text) {
+                const logs = document.getElementById('sys-logs'); const span = document.createElement('div'); span.className = 'event-msg';
+                span.innerText = text; logs.appendChild(span); setTimeout(() => { if(span.parentElement) span.remove(); }, 4000);
             },
 
             gameLoop: function() {
-                if(!this.isActive) return; // ЗАЩИТА ОТ БАГОВ: Полная остановка процессов
+                if(!this.isActive) return;
 
                 this.timer -= 0.016; 
-                this.infection += (0.001 * (1 + this.strikes)); 
+                this.infection += (0.001 * (1 + this.strikes + (this.level*0.2))); // Вирус быстрее на высоких ур.
 
                 let urgency = Math.max(1 - (this.timer / this.maxTime), this.infection / 100);
                 this.updateHUD();
 
+                // Шанс динамического события (каждый кадр, поэтому шанс очень мал)
+                if (this.level >= 4 && Math.random() < 0.0005) this.triggerRandomEvent();
+
                 if (this.infection > 70 || this.timer < 30) {
-                    document.body.classList.add('glitch-active');
-                    document.getElementById('vignette').classList.add('critical');
-                    if (Math.random() < 0.005) this.spawnLog();
+                    document.body.classList.add('glitch-active'); document.getElementById('vignette').classList.add('critical');
+                    if (Math.random() < 0.01) {
+                        const logs = document.getElementById('sys-logs'); const span = document.createElement('div'); span.className = 'log-msg';
+                        span.innerText = I18N_RU.logs[Math.floor(Math.random() * I18N_RU.logs.length)];
+                        logs.appendChild(span); setTimeout(() => { if(span.parentElement) span.remove(); }, 3000);
+                    }
                 }
 
                 const now = Date.now();
-                if (now - this.lastTickTime > (1000 - (urgency * 800))) {
-                    AudioSys.playTick(urgency);
-                    this.lastTickTime = now;
-                }
+                if (now - this.lastTickTime > (1000 - (urgency * 800))) { AudioSys.playTick(urgency); this.lastTickTime = now; }
 
-                // ПРОВЕРКА ПРОИГРЫША
-                if (this.timer <= 0 || this.infection >= 100) {
-                    this.timer = 0; // Предотвращаем уход в минус
-                    this.updateHUD();
-                    this.endGame(false); // Вызов Game Over
-                } else {
-                    requestAnimationFrame(() => this.gameLoop());
-                }
-            },
-
-            spawnLog: function() {
-                const logs = document.getElementById('sys-logs');
-                const span = document.createElement('div'); span.className = 'log-msg';
-                span.innerText = I18N_RU.logs[Math.floor(Math.random() * I18N_RU.logs.length)];
-                logs.appendChild(span); setTimeout(() => { if(span.parentElement) span.remove(); }, 3000);
+                if (this.timer <= 0 || this.infection >= 100) { this.timer = 0; this.updateHUD(); this.endGame(false); } 
+                else { requestAnimationFrame(() => this.gameLoop()); }
             },
 
             selectModule: function(id) {
                 if (Tablet.isOpen || !this.isActive) return;
-                this.selectedModuleId = id;
-                document.querySelectorAll('.module').forEach(el => el.classList.remove('selected'));
+                this.selectedModuleId = id; document.querySelectorAll('.module').forEach(el => el.classList.remove('selected'));
                 this.modules[id].el.classList.add('selected');
             },
 
@@ -630,49 +576,25 @@
                 if (this.strikes >= 3) this.endGame(false);
             },
 
-            checkWin: function() {
-                // ПЕРЕХОД К СЛЕДУЮЩЕМУ УРОВНЮ: если все модули решены
-                if(this.modules.every(m => m.solved)) this.endGame(true);
-            },
+            checkWin: function() { if(this.modules.every(m => m.solved)) this.endGame(true); },
 
             endGame: function(win) {
-                this.isActive = false; // Строгая блокировка таймера и ввода
-                if(Tablet.isOpen) Tablet.close();
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.body.classList.remove('glitch-active');
-                
-                if (win) {
-                    document.getElementById('screen-win').classList.add('active'); // Показываем экран победы
-                } else {
-                    // Формируем статистику для Game Over
-                    document.getElementById('death-stats').innerHTML = `
-                        ${I18N_RU.level_reached} <b style="color:var(--neon-amber)">${this.level}</b><br><br>
-                        ${I18N_RU.record} <b style="color:var(--neon-green)">${this.highScore}</b>
-                    `;
-                    document.getElementById('screen-gameover').classList.add('active'); // Показываем Game Over
-                    
-                    // Обновляем рекорд при проигрыше, если он побит
-                    if (this.level > this.highScore) {
-                        this.highScore = this.level;
-                        try { localStorage.setItem('ktanh_highscore', this.highScore); } catch(e){}
-                        document.getElementById('high-score-val').innerText = this.highScore;
-                    }
+                this.isActive = false; if(Tablet.isOpen) Tablet.close();
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.body.classList.remove('glitch-active');
+                if (win) { document.getElementById('screen-win').classList.add('active'); } 
+                else {
+                    document.getElementById('death-stats').innerHTML = `${I18N_RU.level_reached} <b style="color:var(--neon-amber)">${this.level}</b><br><br>${I18N_RU.record} <b style="color:var(--neon-green)">${this.highScore}</b>`;
+                    document.getElementById('screen-gameover').classList.add('active');
+                    if (this.level > this.highScore) { this.highScore = this.level; try { localStorage.setItem('ktanh_highscore', this.highScore); } catch(e){} document.getElementById('high-score-val').innerText = this.highScore; }
                 }
             },
 
-            resetToMenu: function() {
-                this.isActive = false;
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById('screen-menu').classList.add('active');
-            },
-
+            resetToMenu: function() { this.isActive = false; document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('screen-menu').classList.add('active'); },
             updateHUD: function() {
-                let t = Math.max(0, Math.ceil(this.timer));
-                let m = Math.floor(t / 60); let s = t % 60;
+                let t = Math.max(0, Math.ceil(this.timer)); let m = Math.floor(t / 60); let s = t % 60;
                 document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
                 document.getElementById('infection-bar').style.width = Math.min(this.infection, 100) + '%';
-                const dots = document.querySelectorAll('.strike');
-                dots.forEach((d, i) => { if (i < this.strikes) d.classList.add('active'); else d.classList.remove('active'); });
+                const dots = document.querySelectorAll('.strike'); dots.forEach((d, i) => { if (i < this.strikes) d.classList.add('active'); else d.classList.remove('active'); });
             }
         };
 
@@ -680,10 +602,7 @@
         document.addEventListener('keydown', (e) => {
             if (!Game.isActive) return;
             if (e.code === 'Tab') { e.preventDefault(); Tablet.toggle(); }
-            if (Tablet.isOpen) {
-                if (e.key === '1') Tablet.switchTab('manual');
-                if (e.key === '2') Tablet.switchTab('module');
-            }
+            if (Tablet.isOpen) { if (e.key === '1') Tablet.switchTab('manual'); if (e.key === '2') Tablet.switchTab('module'); }
         });
 
         window.onload = () => Game.initStorage();
