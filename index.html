@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-игры - Главная</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+
+    <div class="scroll-rail">
+        <div class="rail-number">01</div>
+        <div class="rail-track">
+            <a href="#sec-01" class="rail-dot active" data-target="01"><span class="rail-tooltip">Главная</span></a>
+            <a href="#sec-02" class="rail-dot" data-target="02"><span class="rail-tooltip">Игры</span></a>
+            <a href="#sec-03" class="rail-dot" data-target="03"><span class="rail-tooltip">Подвал</span></a>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle" onclick="toggleSidebar()">
+                <span>☰</span>
+            </button>
+            <div class="logo">
+                <span class="logo-icon">🎮</span>
+                <span class="logo-text">SYS.GAMES</span>
+            </div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value">1250</div>
+                    <div class="stat-label">PTS</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">LVL</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">47</div>
+                    <div class="stat-label">GAMES</div>
+                </div>
+            </div>
+            
+            <div class="profile-info">
+                <div class="avatar">И</div>
+                <span class="user-name">Игрок</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="main-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <button class="close-sidebar" onclick="toggleSidebar()">×</button>
+            <h2 class="sidebar-title">[ SYS.MENU ]</h2>
+            <nav>
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="#" class="menu-link active" data-tab="tab-games">
+                            <span class="menu-icon">🏠</span>
+                            <span>Главная</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-tab="tab-games">
+                            <span class="menu-icon">🎯</span>
+                            <span>Мои игры</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-tab="tab-achievements">
+                            <span class="menu-icon">🏆</span>
+                            <span>Достижения</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-tab="tab-statistics">
+                            <span class="menu-icon">📊</span>
+                            <span>Статистика</span>
+                        </a>
+                    </li>
+                    <li class="menu-item">
+                        <a href="#" class="menu-link" data-tab="tab-leaderboards">
+                            <span class="menu-icon">👥</span>
+                            <span>Лидеры</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-hidden="true">
+                        <a href="#" class="menu-link">
+                            <span class="menu-icon">⚙️</span>
+                            <span>Настройки</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="container">
+                
+                <div id="tab-games" class="tab-panel active">
+                    <section id="sec-01" class="observe-section" data-index="01">
+                        <header class="hero-header">
+                            <div class="sys-badge">WARNING // AUTHORIZED PERSONNEL ONLY</div>
+                            <h1>🎮 ДОБРО ПОЖАЛОВАТЬ</h1>
+                            <p class="subtitle">ВЫБЕРИТЕ ИГРОВОЙ МОДУЛЬ ДЛЯ ЗАПУСКА</p>
+                        </header>                    
+                    </section>
+
+                    <section id="sec-02" class="observe-section" data-index="02">
+                        <div class="games-grid">
+                            <div class="game-card">
+                                <div class="scan-line"></div>
+                                <div class="game-icon">🛏️</div>
+                                <h2 class="game-title">Clean Desk</h2>
+                                <p class="game-description">Перед тем как уйти домой, нужно сделать обязательные дела!</p>
+                                <button class="play-button" onclick="location.href='CleanDesk/index.html'">INITIATE</button>
+                            </div>
+
+                            <div class="game-card">
+                                <div class="scan-line"></div>
+                                <div class="game-icon">👮🏿</div>
+                                <h2 class="game-title">Cyber Inspector</h2>
+                                <p class="game-description">Работа на таможне веб-сайта!</p>
+                                <button class="play-button" onclick="location.href='CyberInspector/index.html'">INITIATE</button>
+                            </div>
+
+                            <div class="game-card">
+                                <div class="scan-line"></div>
+                                <div class="game-icon">🐍</div>
+                                <h2 class="game-title">Remember Me</h2>
+                                <p class="game-description">Вспомните что такое учеба!</p>
+                                <button class="play-button" onclick="location.href='RememberMe/RememberMe.html'">INITIATE</button>
+                            </div>
+
+                            <div class="game-card">
+                                <div class="scan-line"></div>
+                                <div class="game-icon">🛡️</div>
+                                <h2 class="game-title">Security OS</h2>
+                                <p class="game-description">Взлом паролей и защита от соц. инженерии. Проверь себя на прочность!</p>
+                                <button class="play-button" onclick="location.href='SecurityAwarnessOS/index.html'">INITIATE</button>
+                            </div>
+
+                            <div class="game-card">
+                                <div class="scan-line"></div>
+                                <div class="game-icon">📻</div>
+                                <h2 class="game-title">Not A Hacker</h2>
+                                <p class="game-description">Проверка доменов - обучение!</p>
+                                <button class="play-button" onclick="location.href='NoIAmNotAHacker/index.html'">INITIATE</button>
+                            </div>
+
+                            <div class="game-card">
+                                <div class="scan-line"></div>
+                                <div class="game-icon">💣</div>
+                                <h2 class="game-title">Keep Talking...</h2>
+                                <p class="game-description">Что-то интересное и очень взрывоопасное.</p>
+                                <button class="play-button" onclick="location.href='KeepTalkingAndNobodyHacked/index.html'">INITIATE</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="tab-achievements" class="tab-panel">
+                    <section class="observe-section in-view">
+                        <header class="hero-header">
+                            <div class="sys-badge">SYS // RECORDS</div>
+                            <h1>🏆 ДОСТИЖЕНИЯ</h1>
+                            <p class="subtitle">ПРОГРЕСС ВЫПОЛНЕНИЯ ЗАДАЧ</p>
+                        </header>
+                        <div class="achievements-grid" id="achievements-container">
+                            </div>
+                    </section>
+                </div>
+
+                <div id="tab-statistics" class="tab-panel">
+                    <section class="observe-section in-view">
+                        <header class="hero-header">
+                            <div class="sys-badge">SYS // ANALYTICS</div>
+                            <h1>📊 СТАТИСТИКА</h1>
+                            <p class="subtitle">СВОДНЫЕ ДАННЫЕ ПРОФИЛЯ</p>
+                        </header>
+                        <div class="stats-summary" id="stats-summary-container">
+                            </div>
+                        <div class="stats-table-wrapper" id="stats-table-container">
+                            </div>
+                    </section>
+                </div>
+
+                <div id="tab-leaderboards" class="tab-panel">
+                    <section class="observe-section in-view">
+                        <header class="hero-header">
+                            <div class="sys-badge">SYS // NETWORK</div>
+                            <h1>👥 ЛИДЕРЫ</h1>
+                            <p class="subtitle">ГЛОБАЛЬНЫЙ РЕЙТИНГ АГЕНТОВ</p>
+                        </header>
+                        <div class="leaderboard-controls" id="leaderboard-selectors">
+                            </div>
+                        <div class="leaderboard-list-wrapper" id="leaderboard-container">
+                            </div>
+                    </section>
+                </div>
+
+                <section id="sec-03" class="observe-section" data-index="03">
+                    <footer>
+                        <div class="footer-line"></div>
+                        <p>&copy; 2024 SYS.GAMES // ВСЕ ПРАВА ЗАЩИЩЕНЫ</p>
+                    </footer>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <nav class="bottom-tab-bar">
+        <button class="bottom-tab-btn active" data-tab="tab-games">
+            <span class="bt-icon">🎯</span>
+            <span class="bt-text">Игры</span>
+        </button>
+        <button class="bottom-tab-btn" data-tab="tab-achievements">
+            <span class="bt-icon">🏆</span>
+            <span class="bt-text">Достижения</span>
+        </button>
+        <button class="bottom-tab-btn" data-tab="tab-statistics">
+            <span class="bt-icon">📊</span>
+            <span class="bt-text">Статс</span>
+        </button>
+        <button class="bottom-tab-btn" data-tab="tab-leaderboards">
+            <span class="bt-icon">👥</span>
+            <span class="bt-text">Лидеры</span>
+        </button>
+    </nav>
+
+    <script src="js/scripts.js"></script>
+</body>
+</html>
