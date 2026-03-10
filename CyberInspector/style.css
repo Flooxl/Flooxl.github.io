@@ -24,6 +24,40 @@ body {
     user-select: none;
     cursor: default;
 }
+/* Стиль кнопки выхода */
+.global-exit-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 9999;
+    padding: 3px 16px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00eaff; /* Неоновый голубой */
+    border: 1px solid #00eaff;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 5px rgba(0, 234, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.global-exit-btn:hover {
+    background: #00eaff;
+    color: #000;
+    box-shadow: 0 0 15px #00eaff;
+    transform: translateY(-2px);
+}
+#inspector-exit {
+    position: static !important; /* Выключаем фиксированную позицию */
+    margin-right: 20px !important; /* Делаем отступ от текста ДЕНЬ */
+    height: fit-content;
+    align-self: center; /* Центрируем по вертикали внутри бара */
+}
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar { width: 8px; }
@@ -222,4 +256,5 @@ body {
 /* Protocol Styles */
 .protocol-content { border: 4px solid var(--danger); background: #100; }
 .protocol-rule { color: #fff; font-size: 1.2rem; margin: 15px 0; text-align: left; border-bottom: 1px solid #500; padding-bottom: 5px; }
+
 .protocol-rule::before { content: "⚠ "; color: var(--danger); }
