@@ -15,7 +15,34 @@
         }
         * { box-sizing: border-box; user-select: none; }
         body { margin: 0; background-color: var(--bg-color); color: var(--neon-green); font-family: var(--font-mono); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        
+        /* Стиль кнопки выхода */
+.global-exit-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 9999;
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00eaff; /* Неоновый голубой */
+    border: 1px solid #00eaff;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 5px rgba(0, 234, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.global-exit-btn:hover {
+    background: #00eaff;
+    color: #000;
+    box-shadow: 0 0 15px #00eaff;
+    transform: translateY(-2px);
+}
         /* Эффекты */
         .scanlines { position: fixed; top:0; left:0; right:0; bottom:0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 999; }
         .vignette { position: fixed; top:0; left:0; right:0; bottom:0; background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.95) 100%); pointer-events: none; z-index: 998; transition: background 1s; }
@@ -34,7 +61,7 @@
         .screen { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(5,5,5,0.95); z-index: 10; }
         .screen.active { display: flex; }
         .settings-bar { margin-top: 20px; display: flex; gap: 20px; align-items: center; background: #111; padding: 10px 20px; border: 1px solid #333; }
-        .score-display { position: absolute; top: 20px; left: 20px; color: var(--neon-amber); font-size: 1.2rem; z-index: 20;}
+                .score-display { position: absolute; top: 20px; left: 140px; color: var(--neon-amber); font-size: 1.2rem; z-index: 20; }
 
         /* HUD & Модули */
         #screen-game { justify-content: flex-start; padding: 20px; transition: filter var(--anim-speed); background: var(--bg-color); }
@@ -94,6 +121,7 @@
     </style>
 </head>
 <body>
+    <button class="global-exit-btn" onclick="location.href='../index.html'">⏏ EXIT</button>
 
     <div class="scanlines"></div>
     <div id="vignette" class="vignette"></div>
