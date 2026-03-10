@@ -29,7 +29,34 @@ body {
     border-bottom: 1px solid var(--border);
     background: var(--panel);
 }
+/* Стиль кнопки выхода */
+.global-exit-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 9999;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00eaff; /* Неоновый голубой */
+    border: 1px solid #00eaff;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 5px rgba(0, 234, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
+.global-exit-btn:hover {
+    background: #00eaff;
+    color: #000;
+    box-shadow: 0 0 15px #00eaff;
+    transform: translateY(-2px);
+}
 .exit-btn {
     background: var(--red);
     color: white;
@@ -246,3 +273,4 @@ textarea:focus { outline: none; border-color: var(--accent); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
