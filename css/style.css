@@ -221,3 +221,19 @@ footer { text-align: left; padding: 40px 0; font-family: var(--font-tech); font-
     .profile-card-large { padding: 20px; }
     .prof-titles h2 { font-size: 1.8em; }
 }
+
+.game-card.game-cleandesk {
+    /* Путь к вашей картинке */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                      url('../img/CleanDesk.png'); 
+    
+    background-size: cover;       /* Растянуть на всю карточку */
+    background-position: center;  /* Центрировать изображение */
+    border: 1px solid var(--accent); /* Опционально: подчеркнуть рамку */
+}
+
+/* Чтобы иконка и текст не сливались, можно немного подсветить их при наведении */
+.game-card.game-cleandesk:hover {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                      url('../img/CleanDesk.png');
+}
