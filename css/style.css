@@ -171,14 +171,7 @@ h1 { font-size: 3.5em; font-weight: 900; text-transform: uppercase; margin-botto
 .scan-line { position: absolute; top: -10px; left: 0; width: 100%; height: 2px; background: var(--accent); box-shadow: 0 0 10px var(--accent); opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 10; }
 .game-card:hover .scan-line { opacity: 0.8; animation: scan 2s linear infinite; }
 @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-.game-icon {
-    display: block;            /* Делаем блочным элементом */
-    margin-left: auto;         /* Авто-отступ слева */
-    margin-right: auto;        /* Авто-отступ справа */
-    width: fit-content;        /* Ширина только по размеру иконки */
-    font-size: 3rem;
-    text-align: center;
-}
+.game-icon { font-size: 3em; margin-bottom: 20px; }
 .game-title { font-size: 1.8em; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; }
 .game-description { color: var(--gray-dark); margin-bottom: 25px; line-height: 1.5; min-height: 45px; }
 .play-button { display: block; width: 100%; padding: 15px; background: var(--black); color: var(--accent); border: none; font-family: var(--font-tech); font-size: 1.1em; font-weight: bold; cursor: pointer; text-transform: uppercase; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); transition: background 0.3s, color 0.3s; }
