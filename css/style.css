@@ -221,3 +221,35 @@ footer { text-align: left; padding: 40px 0; font-family: var(--font-tech); font-
     .profile-card-large { padding: 20px; }
     .prof-titles h2 { font-size: 1.8em; }
 }
+
+/* CleanDesk */
+.game-card.game-cleandesk {
+    position: relative;
+    overflow: hidden; /* Важно, чтобы размытие не выходило за границы */
+    background: #000; /* Цвет фона, пока грузится картинка */
+    z-index: 1;
+}
+
+.game-card.game-cleandesk::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    
+    /* Путь к вашей картинке */
+    background-image: url('../путь_к_фото'); 
+    background-size: cover;
+    background-position: center;
+    
+    /* РАЗМЫТИЕ И ЗАТЕМНЕНИЕ */
+    filter: blur(5px) brightness(0.4); 
+    
+    /* Увеличиваем масштаб, чтобы убрать белые края от блюра */
+    transform: scale(1.1); 
+    z-index: -1; /* Уводим на задний план */
+}
+
+/* Дополнительно: делаем текст чуть ярче для контраста */
+.game-card.game-cleandesk .game-title {
+    color: #00ff41; /* Ярко-зеленый в стиле терминала */
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+}
