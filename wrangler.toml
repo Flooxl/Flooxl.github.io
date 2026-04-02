@@ -1,0 +1,8 @@
+name = "sys-games-auth"
+main = "src/index.js"
+compatibility_date = "2024-03-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sys-games-db"
+database_id = "" # Заполнишь на Шаге 3
