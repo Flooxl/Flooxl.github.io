@@ -27,7 +27,7 @@ const GAME_CONFIG = {
         ]
     },
     NoIAMNotAHacker: {
-        name: "Not I Am Not a Hacker", image: "gameicons/NoH.png", url: "NoIAmNotAHacker/index.html",
+        name: "No, I Am Not a Hacker", image: "gameicons/NoH.png", url: "NoIAmNotAHacker/index.html",
         desc: "Поток запросов на публикацию. Кто-то пришёл с добром, кто-то маскирует взлом под длинной ссылкой. Ваша работа — отличить норму от угрозы.",
         achievements: [
             { id: "master_moderator", title: "Мастер модерации", desc: "Проверить 50 запросов за сессию.", target: 50, getProgress: (stats) => Math.min(stats.score || 0, 50) },
