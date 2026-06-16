@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Platform | Satbayev University</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    
+    <div id="auth-screen" class="auth-wrapper" style="display: none;">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2>CYBER.EDU</h2>
+                <p style="color: var(--text-muted); font-size: 0.9em; margin-top: 5px;">Платформа кибербезопасности</p>
+            </div>
+            <form id="login-form" class="auth-form active">
+                <div class="form-group"><label>Email или Логин</label><input type="text" id="login-input" required></div>
+                <div class="form-group"><label>Пароль</label><input type="password" id="login-password" required></div>
+                <div id="login-error" class="auth-error"></div>
+                <button type="submit" class="auth-btn">Войти в систему</button>
+                <p class="auth-switch">Нет аккаунта? <a onclick="toggleAuthMode(event)">Создать</a></p>
+            </form>
+            <form id="register-form" class="auth-form">
+                <div class="form-group"><label>Логин</label><input type="text" id="reg-username" required minlength="3"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="reg-email" required></div>
+                <div class="form-group"><label>Пароль</label><input type="password" id="reg-password" required minlength="6"></div>
+                <div class="form-group"><label>Повторите пароль</label><input type="password" id="reg-confirm" required minlength="6"></div>
+                <div id="reg-error" class="auth-error"></div>
+                <button type="submit" class="auth-btn">Зарегистрироваться</button>
+                <p class="auth-switch">Уже есть аккаунт? <a onclick="toggleAuthMode(event)">Войти</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" style="display: none;">
+        
+        <div class="top-bar">
+            <div class="logo">
+                <span class="logo-icon">🛡️</span> CYBER.EDU
+            </div>
+            <div class="top-controls">
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+                <div class="profile-info" onclick="switchTab('tab-profile')">
+                    <div class="avatar" id="user-avatar-initial">?</div>
+                    <span class="user-name" id="display-username">GUEST</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-wrapper">
+            <aside class="sidebar">
+                <nav>
+                    <a href="#" class="menu-link active" data-tab="tab-home"><span class="menu-icon">🏠</span><span>Главная</span></a>
+                    <a href="#" class="menu-link" data-tab="tab-games"><span class="menu-icon">🎮</span><span>Модули</span></a>
+                    <a href="#" class="menu-link" data-tab="tab-achievements"><span class="menu-icon">🏆</span><span>Достижения</span></a>
+                    <a href="#" class="menu-link" data-tab="tab-leaderboard"><span class="menu-icon">📊</span><span>Рейтинг</span></a>
+                    <a href="#" class="menu-link" data-tab="tab-profile"><span class="menu-icon">👤</span><span>Профиль</span></a>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+                
+                <div id="tab-home" class="tab-panel active">
+                    <div class="section-header">
+                        <h1 id="greeting-text">Добро пожаловать!</h1>
+                        <p>Продолжай обучение и повышай уровень киберграмотности.</p>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 30px;">
+                        <h3>Твой общий прогресс</h3>
+                        <div class="progress-wrap" style="margin-top: 15px;">
+                            <div class="progress-header"><span>Освоено навыков</span><span id="overall-progress-text">0%</span></div>
+                            <div class="progress-bar"><div class="progress-fill" id="overall-progress-bar" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div class="card stat-box">
+                            <div class="stat-lbl">Очки рейтинга</div>
+                            <div class="stat-val" id="home-score">0</div>
+                        </div>
+                        <div class="card stat-box">
+                            <div class="stat-lbl">Открыто достижений</div>
+                            <div class="stat-val" id="home-achs">0</div>
+                        </div>
+                        <div class="card stat-box" style="cursor: pointer; background: var(--primary); color: #fff;" onclick="switchTab('tab-games')">
+                            <div class="stat-val" style="color:#fff">Начать</div>
+                            <div class="stat-lbl" style="color:rgba(255,255,255,0.8)">Перейти к модулям ➔</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-games" class="tab-panel">
+                    <div class="section-header">
+                        <h1>Учебные Модули</h1>
+                        <p>Выбери симулятор для тренировки навыков.</p>
+                    </div>
+                    <div class="games-grid" id="games-container">
+                        </div>
+                </div>
+
+                <div id="tab-achievements" class="tab-panel">
+                    <div class="section-header">
+                        <h1>Твои Награды</h1>
+                        <p>Выполняй особые условия в модулях, чтобы открыть их все.</p>
+                    </div>
+                    <div class="ach-grid" id="achievements-container">
+                        </div>
+                </div>
+
+                <div id="tab-leaderboard" class="tab-panel">
+                    <div class="section-header">
+                        <h1>Таблица Лидеров</h1>
+                        <p>Топ студентов платформы. Формула: (Ачивки × 100) + Рекорды + Попытки.</p>
+                    </div>
+                    
+                    <div id="leaderboard-content">
+                        <div style="text-align: center; padding: 50px;">Загрузка данных...</div>
+                    </div>
+                </div>
+
+                <div id="tab-profile" class="tab-panel">
+                    <div class="section-header">
+                        <h1>Профиль Студента</h1>
+                        <p>Детальная статистика аккаунта.</p>
+                    </div>
+                    
+                    <div class="profile-grid">
+                        <div class="card profile-overview">
+                            <div class="avatar-large" id="prof-page-avatar">?</div>
+                            <h2 id="prof-page-username" style="margin-bottom: 5px;">GUEST</h2>
+                            <p id="prof-page-email" style="color: var(--text-muted); font-size: 0.9em; margin-bottom: 15px;">-</p>
+                            <span style="background: var(--success); color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold;">ONLINE</span>
+                            
+                            <button class="logout-btn" id="logout-btn">Выйти из аккаунта</button>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>Статистика по играм</h3>
+                            <div id="profile-games-stats" style="margin-top: 20px; display: flex; flex-direction: column; gap: 20px;">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="js/scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Platform | Satbayev University</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    
+    <div id="auth-screen" class="auth-wrapper" style="display: none;">
+        <div class="auth-bg-particles"></div>
+        <div class="auth-container">
+            <div class="auth-header">
+                <h2>CYBER<span class="text-accent">.EDU</span></h2>
+                <p>Платформа кибербезопасности</p>
+            </div>
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label>Email или Логин</label>
+                    <input type="text" id="login-input" placeholder="Введите логин..." required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="login-password" placeholder="Введите пароль..." required>
+                </div>
+                <div id="login-error" class="auth-error"></div>
+                <button type="submit" class="auth-btn glow-effect">ВОЙТИ В СИСТЕМУ</button>
+                <p class="auth-switch">Нет аккаунта? <a onclick="toggleAuthMode(event)">Создать</a></p>
+            </form>
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label>Логин</label>
+                    <input type="text" id="reg-username" placeholder="Ваш никнейм..." required minlength="3">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="reg-email" placeholder="Ваш email..." required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="reg-password" placeholder="Минимум 6 символов..." required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Повторите пароль</label>
+                    <input type="password" id="reg-confirm" placeholder="Подтвердите пароль..." required minlength="6">
+                </div>
+                <div id="reg-error" class="auth-error"></div>
+                <button type="submit" class="auth-btn glow-effect">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+                <p class="auth-switch">Уже есть аккаунт? <a onclick="toggleAuthMode(event)">Войти</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-screen" style="display: none;">
+        
+        <header class="top-bar">
+            <div class="logo">
+                <span class="logo-icon">🛡️</span> CYBER<span class="text-accent">.EDU</span>
+            </div>
+            
+            <nav class="main-nav">
+                <a href="#" class="menu-link active" data-tab="tab-home">Главная</a>
+                <a href="#" class="menu-link" data-tab="tab-games">Библиотека</a>
+                <a href="#" class="menu-link" data-tab="tab-achievements">Достижения</a>
+                <a href="#" class="menu-link" data-tab="tab-leaderboard">Рейтинг</a>
+                <a href="#" class="menu-link dummy" onclick="return false;">Сообщество</a>
+                <a href="#" class="menu-link dummy" onclick="return false;">Roadmap</a>
+            </nav>
+
+            <div class="top-controls">
+                <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" style="display:none;">🌙</button>
+                <div class="profile-info" onclick="switchTab('tab-profile')">
+                    <div class="avatar" id="user-avatar-initial">?</div>
+                    <div class="user-details-nav">
+                        <span class="user-name" id="display-username">GUEST</span>
+                        <span class="user-status text-success">В сети</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-wrapper">
+            <main class="main-content">
+                
+                <div id="tab-home" class="tab-panel active fade-in">
+                    <div class="hero-banner">
+                        <div class="hero-content">
+                            <h1 id="greeting-text">Добро пожаловать, Агент!</h1>
+                            <p>Симуляторы кибератак, анализ угроз и повышение грамотности. Твоя тренировка начинается здесь.</p>
+                            <div class="hero-actions">
+                                <button class="btn-primary glow-effect" onclick="switchTab('tab-games')">НАЧАТЬ ТРЕНИРОВКУ</button>
+                                <button class="btn-secondary" onclick="switchTab('tab-leaderboard')">СМОТРЕТЬ РЕЙТИНГ</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <div class="card glass-card">
+                            <h3>Сводка профиля</h3>
+                            <div class="progress-wrap" style="margin-top: 15px;">
+                                <div class="progress-header"><span>Глобальный прогресс</span><span id="overall-progress-text" class="text-accent">0%</span></div>
+                                <div class="progress-bar"><div class="progress-fill glow-bg" id="overall-progress-bar" style="width: 0%"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="stats-row">
+                            <div class="card stat-box glass-card hover-scale">
+                                <div class="stat-icon">📊</div>
+                                <div class="stat-info">
+                                    <div class="stat-lbl">Очки рейтинга</div>
+                                    <div class="stat-val text-accent" id="home-score">0</div>
+                                </div>
+                            </div>
+                            <div class="card stat-box glass-card hover-scale">
+                                <div class="stat-icon">🏆</div>
+                                <div class="stat-info">
+                                    <div class="stat-lbl">Достижения</div>
+                                    <div class="stat-val text-success" id="home-achs">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="news-section slide-up">
+                        <h2 class="section-title">Что нового</h2>
+                        <div class="news-grid">
+                            <div class="news-card hover-scale">
+                                <div class="news-img" style="background: linear-gradient(45deg, #1999ff, #2a475e);"></div>
+                                <div class="news-content">
+                                    <span class="news-date">СЕГОДНЯ</span>
+                                    <h4>Запуск модуля Keep Talking and Nobody Hacked</h4>
+                                    <p>Новая симуляция уже доступна. Обезвредьте систему до истечения времени.</p>
+                                </div>
+                            </div>
+                            <div class="news-card hover-scale">
+                                <div class="news-img" style="background: linear-gradient(45deg, #5ba32b, #1b2838);"></div>
+                                <div class="news-content">
+                                    <span class="news-date">ВЧЕРА</span>
+                                    <h4>Обновление системы рейтинга</h4>
+                                    <p>Формула начисления очков обновлена. Проверьте свои позиции в Leaderboard.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-games" class="tab-panel fade-in">
+                    <div class="section-header">
+                        <h1>Библиотека Модулей</h1>
+                        <p>Выбери симулятор для тренировки навыков. Проходи сценарии и зарабатывай очки.</p>
+                    </div>
+                    <div class="games-grid" id="games-container">
+                        </div>
+                </div>
+
+                <div id="tab-achievements" class="tab-panel fade-in">
+                    <div class="section-header">
+                        <h1>Твои Награды</h1>
+                        <p>Выполняй особые условия в модулях, чтобы разблокировать достижения.</p>
+                    </div>
+                    <div class="ach-grid" id="achievements-container">
+                        </div>
+                </div>
+
+                <div id="tab-leaderboard" class="tab-panel fade-in">
+                    <div class="section-header">
+                        <h1>Зал Славы</h1>
+                        <p>Топ студентов платформы. Очки = (Ачивки × 100) + Рекорды + Попытки.</p>
+                    </div>
+                    <div id="leaderboard-content">
+                        <div class="loading-state">Загрузка данных нейросети...</div>
+                    </div>
+                </div>
+
+              <div id="tab-profile" class="tab-panel fade-in">
+    <div class="profile-hero glass-card">
+        <div class="profile-avatar-wrapper">
+            <div class="avatar-large glow-effect" id="prof-page-avatar">?</div>
+            <div class="profile-level">PRO</div>
+        </div>
+        <div class="profile-details">
+            <h2 id="prof-page-username">GUEST</h2>
+            <p id="prof-page-email" class="text-muted">-</p>
+            <span class="status-badge text-success">• В сети</span>
+        </div>
+        <button class="logout-btn hover-scale" id="logout-btn">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+    </div>
+    
+    <div class="analytics-dashboard">
+        <div class="card glass-card chart-box">
+            <h3>Профиль компетенций</h3>
+            <canvas id="radarChart"></canvas>
+        </div>
+        <div class="card glass-card chart-box">
+            <h3>Анализ уязвимостей (Ошибки)</h3>
+            <canvas id="pieChart"></canvas>
+        </div>
+        <div class="card glass-card chart-box list-box">
+            <h3>Динамика успеваемости</h3>
+            <canvas id="lineChart" style="max-height: 250px;"></canvas>
+        </div>
+        <div class="card glass-card list-box">
+            <h3>Детализация по модулям</h3>
+            <div id="profile-games-stats" class="detailed-stats-list">
+                </div>
+        </div>
+    </div>
+</div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="js/scripts.js"></script>
+</body>
+</html>
