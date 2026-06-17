@@ -18,8 +18,8 @@ const GAME_CONFIG = {
             { id: "veteran_inspector", title: "Ветеран IT-таможни", desc: "Дожить до 5-го дня (Streak).", target: 5, getProgress: (stats) => Math.min(stats.streak || 0, 5) }
         ]
     },
-    KeeptalkingAndNobodyHacked: {
-        name: "Keep Talking...", image: "gameicons/KeepTalking.png", url: "KeeptalkingAndNobodyHacked/index.html",
+    KeepTalkingAndNobodyHacked: {
+        name: "Keep Talking...", image: "gameicons/KeepTalking.png", url: "KeepTalkingAndNobodyHacked/index.html",
         desc: "Система под атакой. Модули заражены. Используя руководство, анализируйте данные и обезвреживайте угрозы. Ошибка — и система будет взломана.",
         achievements: [
             { id: "defender_pro", title: "Защитник PRO", desc: "Достигнуть 10-го уровня угрозы.", target: 10, getProgress: (stats) => Math.min(stats.streak || 0, 10) }
